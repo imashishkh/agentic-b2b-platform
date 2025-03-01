@@ -1,19 +1,20 @@
 
 import React from "react";
-import { ManagerAgentMessage, UserMessage } from "./ManagerAgent";
-
-export type MessageType = "agent" | "user";
+import { AgentMessage } from "./AgentMessage";
+import { UserMessage } from "./ManagerAgent";
+import { AgentType } from "@/agents/AgentTypes";
 
 export interface ChatMessageProps {
-  type: MessageType;
+  type: "user" | "agent";
   content: string;
   isLoading?: boolean;
+  agentType?: AgentType;
 }
 
-export function ChatMessage({ type, content, isLoading = false }: ChatMessageProps) {
-  if (type === "agent") {
-    return <ManagerAgentMessage message={content} isLoading={isLoading} />;
-  } else {
+export function ChatMessage({ type, content, isLoading = false, agentType = AgentType.MANAGER }: ChatMessageProps) {
+  if (type === "user") {
     return <UserMessage message={content} />;
+  } else {
+    return <AgentMessage message={content} agentType={agentType} isLoading={isLoading} />;
   }
 }
