@@ -1,6 +1,6 @@
 
 import { useState, useRef } from "react";
-import { ArrowRight, Link, Settings } from "lucide-react";
+import { ArrowRight, Link, Settings, FolderUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
@@ -26,11 +26,12 @@ export function ChatInput({ className }: ChatInputProps) {
   // State for the message input
   const [message, setMessage] = useState("");
   
-  // Reference to the hidden file input element
+  // Reference to the hidden file input elements
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   
-  // State for tracking the selected file
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // State for tracking the selected files
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   /**
    * Handles the sending of messages and files
@@ -38,14 +39,14 @@ export function ChatInput({ className }: ChatInputProps) {
    */
   const handleSendMessage = () => {
     // Only send if there's a message or file
-    if (!message.trim() && !selectedFile) return;
+    if (!message.trim() && selectedFiles.length === 0) return;
     
     // In a real app, this would send the message to a backend
     toast.success("Message sent successfully");
     
     // Reset the form after sending
     setMessage("");
-    setSelectedFile(null);
+    setSelectedFiles([]);
   };
 
   /**
@@ -53,10 +54,21 @@ export function ChatInput({ className }: ChatInputProps) {
    * @param {React.ChangeEvent<HTMLInputElement>} e - Change event
    */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      setSelectedFile(file);
-      toast.success(`File selected: ${file.name}`);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      // Convert FileList to array and append to selectedFiles
+      const newFiles = Array.from(files);
+      setSelectedFiles(prev => [...prev, ...newFiles]);
+      
+      // Show success toast with file count
+      if (newFiles.length === 1) {
+        toast.success(`File selected: ${newFiles[0].name}`);
+      } else {
+        toast.success(`${newFiles.length} files selected`);
+      }
+      
+      // Reset the file input
+      e.target.value = '';
     }
   };
 
@@ -70,6 +82,14 @@ export function ChatInput({ className }: ChatInputProps) {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  /**
+   * Removes a file from the selected files list
+   * @param {number} index - Index of the file to remove
+   */
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -110,10 +130,11 @@ export function ChatInput({ className }: ChatInputProps) {
           </PopoverContent>
         </Popover>
         
-        {/* File upload button */}
+        {/* Single file upload button */}
         <button 
           className="p-2 text-sayhalo-dark opacity-70 hover:opacity-100 transition-opacity"
           onClick={() => fileInputRef.current?.click()}
+          title="Upload file"
         >
           <Link size={20} />
           <input 
@@ -122,6 +143,25 @@ export function ChatInput({ className }: ChatInputProps) {
             ref={fileInputRef}
             onChange={handleFileChange}
             accept="image/*,.pdf,.doc,.docx,.txt"
+            multiple
+          />
+        </button>
+
+        {/* Folder upload button */}
+        <button 
+          className="p-2 text-sayhalo-dark opacity-70 hover:opacity-100 transition-opacity"
+          onClick={() => folderInputRef.current?.click()}
+          title="Upload folder"
+        >
+          <FolderUp size={20} />
+          <input 
+            type="file" 
+            className="hidden" 
+            ref={folderInputRef}
+            onChange={handleFileChange}
+            directory=""
+            webkitdirectory=""
+            multiple
           />
         </button>
         
@@ -135,13 +175,17 @@ export function ChatInput({ className }: ChatInputProps) {
           onKeyDown={handleKeyDown}
         />
         
-        {/* Selected file display */}
-        {selectedFile && (
+        {/* Selected files display */}
+        {selectedFiles.length > 0 && (
           <div className="flex items-center gap-1 bg-sayhalo-dark/10 px-2 py-1 rounded-md mr-2">
-            <span className="text-xs truncate max-w-[100px]">{selectedFile.name}</span>
+            <span className="text-xs truncate max-w-[100px]">
+              {selectedFiles.length === 1 
+                ? selectedFiles[0].name 
+                : `${selectedFiles.length} files selected`}
+            </span>
             <button 
               className="text-sayhalo-dark/70 hover:text-sayhalo-dark"
-              onClick={() => setSelectedFile(null)}
+              onClick={() => setSelectedFiles([])}
             >
               ×
             </button>
@@ -157,6 +201,26 @@ export function ChatInput({ className }: ChatInputProps) {
           <ArrowRight size={16} />
         </button>
       </div>
+
+      {/* Selected files preview - only show if multiple files are selected */}
+      {selectedFiles.length > 1 && (
+        <div className="mt-2 p-2 bg-white/80 backdrop-blur-sm rounded-md max-h-32 overflow-y-auto">
+          <p className="text-xs font-medium mb-1">Selected files ({selectedFiles.length}):</p>
+          <ul className="space-y-1">
+            {selectedFiles.map((file, index) => (
+              <li key={index} className="flex items-center justify-between text-xs">
+                <span className="truncate max-w-[250px]">{file.name}</span>
+                <button 
+                  onClick={() => removeFile(index)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
