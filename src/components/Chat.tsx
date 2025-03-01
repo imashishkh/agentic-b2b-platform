@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChatMessage, ChatMessageProps } from "./ChatMessage";
 import { toast } from "sonner";
+import { searchInternet, askClaude } from "@/utils/aiServices";
 
 // Enhanced backstory for the agent
 const agentBackstory = `
@@ -33,18 +34,8 @@ I believe in an iterative development process that starts with core functionalit
 const initialMessages: ChatMessageProps[] = [
   {
     type: "agent",
-    content: "Hello! I'm your project manager agent. I'll help guide you through building an e-commerce platform. Shall we start by defining the core requirements?"
+    content: "Hello! I'm your project manager agent for building an e-commerce platform. Could you please upload a markdown file with your project requirements? Alternatively, you can describe your project and I'll help organize it into phases and tasks."
   }
-];
-
-// Set of questions the agent will ask in sequence
-const nextQuestions = [
-  "What type of products do you want to focus on for your e-commerce platform?",
-  "Do you want to include both buyer and seller interfaces like Alibaba?",
-  "What payment methods would you like to support?",
-  "What's your preferred design style? Modern, minimal, colorful, etc?",
-  "Would you like to include features for international shipping and multiple currencies?",
-  "Should we prioritize mobile responsiveness or desktop experience first?",
 ];
 
 interface ChatProps {
@@ -53,10 +44,11 @@ interface ChatProps {
 
 export function Chat({ chatRef }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessageProps[]>(initialMessages);
-  const [questionIndex, setQuestionIndex] = useState(0);
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const [isFetchingResponse, setIsFetchingResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [projectPhases, setProjectPhases] = useState<any[]>([]);
+  const [hasRequestedFile, setHasRequestedFile] = useState(true);
 
   // Add a new message to the chat
   const addMessage = (message: ChatMessageProps) => {
@@ -68,64 +60,104 @@ export function Chat({ chatRef }: ChatProps) {
     try {
       setIsFetchingResponse(true);
       
-      // Simple markdown task extraction (headers become task categories, list items become tasks)
-      const tasks: { category: string; items: string[] }[] = [];
-      let currentCategory = "General";
-      let currentItems: string[] = [];
-      
-      markdown.split('\n').forEach(line => {
-        const trimmedLine = line.trim();
+      // First, ask Claude (or simulated LLM) to help structure the content
+      const promptForClaude = `
+        I have a markdown file with e-commerce project requirements. Please analyze it and structure it into development phases and specific tasks. 
+        Break it down into logical sprints or milestones. For each task, include:
+        1. Task name/description
+        2. Estimated complexity (Low/Medium/High)
+        3. Dependencies on other tasks if applicable
         
-        // Check for headers
-        if (trimmedLine.startsWith('# ')) {
-          // If we have items in the current category, save them
-          if (currentItems.length > 0) {
-            tasks.push({ category: currentCategory, items: [...currentItems] });
-            currentItems = [];
-          }
-          currentCategory = trimmedLine.substring(2);
-        } 
-        // Check for h2 headers
-        else if (trimmedLine.startsWith('## ')) {
-          // If we have items in the current category, save them
-          if (currentItems.length > 0) {
-            tasks.push({ category: currentCategory, items: [...currentItems] });
-            currentItems = [];
-          }
-          currentCategory = trimmedLine.substring(3);
-        }
-        // Check for list items
-        else if (trimmedLine.startsWith('- ') || trimmedLine.match(/^\d+\. /)) {
-          // Extract the task content (remove the list marker)
-          const taskContent = trimmedLine.replace(/^- /, '').replace(/^\d+\. /, '');
-          currentItems.push(taskContent);
-        }
-      });
+        Here's the markdown content:
+        
+        ${markdown}
+      `;
       
-      // Add any remaining items
-      if (currentItems.length > 0) {
-        tasks.push({ category: currentCategory, items: [...currentItems] });
-      }
+      const claudeResponse = await askClaude(promptForClaude);
+      
+      // Now use the internet search to find relevant resources
+      const searchQuery = "Best practices for implementing " + 
+        extractKeyFeatures(markdown) + " in an e-commerce platform";
+      const searchResults = await searchInternet(searchQuery);
+      
+      // Combine the Claude analysis with search results
+      const enhancedResponse = `
+        ## Project Analysis and Task Breakdown
+        
+        ${claudeResponse}
+        
+        ## Relevant Resources and Best Practices
+        
+        ${searchResults}
+      `;
       
       setIsFetchingResponse(false);
       
-      // Format the extracted tasks as a message
-      let taskMessage = "I've analyzed the markdown and extracted these tasks:\n\n";
+      // Update project phases based on the analysis
+      const extractedPhases = extractPhasesFromResponse(enhancedResponse);
+      setProjectPhases(extractedPhases);
       
-      tasks.forEach(({ category, items }) => {
-        taskMessage += `**${category}**\n`;
-        items.forEach((item, index) => {
-          taskMessage += `${index + 1}. ${item}\n`;
-        });
-        taskMessage += '\n';
-      });
-      
-      return taskMessage;
+      return enhancedResponse;
     } catch (error) {
       console.error("Error parsing markdown:", error);
       setIsFetchingResponse(false);
       return "I encountered an error parsing the markdown. Please check the format and try again.";
     }
+  };
+  
+  // Helper function to extract key features from markdown for search
+  const extractKeyFeatures = (markdown: string): string => {
+    // Look for common e-commerce features in the markdown
+    const features = [];
+    
+    if (markdown.toLowerCase().includes("payment")) features.push("payment processing");
+    if (markdown.toLowerCase().includes("product") && markdown.toLowerCase().includes("catalog")) 
+      features.push("product catalog");
+    if (markdown.toLowerCase().includes("cart") || markdown.toLowerCase().includes("checkout")) 
+      features.push("shopping cart and checkout");
+    if (markdown.toLowerCase().includes("user") && markdown.toLowerCase().includes("account")) 
+      features.push("user accounts");
+    if (markdown.toLowerCase().includes("search")) features.push("search functionality");
+    if (markdown.toLowerCase().includes("review")) features.push("product reviews");
+    
+    return features.length > 0 ? features.join(", ") : "e-commerce platform features";
+  };
+  
+  // Helper function to extract phases from the LLM response
+  const extractPhasesFromResponse = (response: string): any[] => {
+    // This is a simplified implementation - in a real app, 
+    // you would have more sophisticated parsing
+    const phases = [];
+    
+    // Look for headings that might indicate phases
+    const phaseRegex = /##\s+(Phase|Sprint|Milestone)\s+(\d+|[IVX]+):\s*([^\n]+)/gi;
+    let phaseMatch;
+    
+    while ((phaseMatch = phaseRegex.exec(response)) !== null) {
+      const phaseName = phaseMatch[3];
+      const phaseContent = response.slice(phaseMatch.index + phaseMatch[0].length);
+      const endIndex = phaseContent.search(/##\s+(Phase|Sprint|Milestone)/i);
+      
+      const phaseText = endIndex !== -1 ? 
+        phaseContent.slice(0, endIndex) : 
+        phaseContent;
+      
+      // Extract tasks from the phase content
+      const tasks = [];
+      const taskRegex = /-\s+([^\n]+)/g;
+      let taskMatch;
+      
+      while ((taskMatch = taskRegex.exec(phaseText)) !== null) {
+        tasks.push(taskMatch[1]);
+      }
+      
+      phases.push({
+        name: phaseName,
+        tasks: tasks
+      });
+    }
+    
+    return phases;
   };
 
   // Process the user's message and generate an agent response
@@ -137,9 +169,27 @@ export function Chat({ chatRef }: ChatProps) {
     setIsAgentTyping(true);
     
     try {
+      // Check if this is the first user message and they didn't upload a file
+      if (hasRequestedFile && 
+          !userMessage.includes("```markdown") && 
+          !userMessage.includes("```md") &&
+          !userMessage.toLowerCase().includes(".md")) {
+        
+        // They didn't provide a markdown file, so ask if they want to create a structured plan
+        setTimeout(() => {
+          addMessage({ 
+            type: "agent", 
+            content: "I notice you haven't uploaded a markdown file. Would you like me to help you create a structured development plan based on our conversation? I can break down your e-commerce requirements into phases and specific tasks. Let's start by discussing the core features you need."
+          });
+          setHasRequestedFile(false);
+          setIsAgentTyping(false);
+        }, 1000);
+        return;
+      }
+      
       // Check if this is a markdown parsing request
-      if (userMessage.toLowerCase().includes("parse markdown") || 
-          userMessage.toLowerCase().includes("convert markdown") || 
+      if (userMessage.includes("```markdown") || 
+          userMessage.includes("```md") || 
           userMessage.toLowerCase().includes(".md")) {
         
         let markdownContent = userMessage;
@@ -153,29 +203,52 @@ export function Chat({ chatRef }: ChatProps) {
           }
         }
         
+        setHasRequestedFile(false);
         const taskList = await parseMarkdownToTasks(markdownContent);
         setTimeout(() => {
           addMessage({ type: "agent", content: taskList });
-          setIsAgentTyping(false);
+          
+          // Follow-up question about the breakdown
+          setTimeout(() => {
+            addMessage({ 
+              type: "agent", 
+              content: "Now that we have the project broken down, which phase or specific task would you like to discuss in more detail? I can provide technical advice, implementation strategies, or suggest resources for any part of the project."
+            });
+            setIsAgentTyping(false);
+          }, 1000);
         }, 1000);
         return;
       }
       
       // Regular response flow
-      setTimeout(() => {
-        // Add agent response
-        if (questionIndex < nextQuestions.length) {
-          addMessage({ type: "agent", content: nextQuestions[questionIndex] });
-          setQuestionIndex(questionIndex + 1);
-        } else {
-          // If we've gone through all predefined questions, provide a summary
-          addMessage({ 
-            type: "agent", 
-            content: "Thank you for all this information! This gives us a great foundation to start planning your e-commerce platform. Let's start breaking down the technical components we'll need to implement." 
-          });
-        }
-        setIsAgentTyping(false);
-      }, 1500);
+      // If we have project phases, provide context-aware responses
+      if (projectPhases.length > 0) {
+        // Use Claude (or simulated LLM) to generate a response based on the context
+        const promptForClaude = `
+          The user is asking about their e-commerce project with the following phases:
+          ${JSON.stringify(projectPhases)}
+          
+          Their message is: "${userMessage}"
+          
+          Please provide a helpful, technical response that references the project structure above.
+          Focus on implementation details, technical considerations, and actionable advice.
+        `;
+        
+        const claudeResponse = await askClaude(promptForClaude);
+        
+        setTimeout(() => {
+          addMessage({ type: "agent", content: claudeResponse });
+          setIsAgentTyping(false);
+        }, 1000);
+      } else {
+        // Generic response when we don't have structured project information yet
+        const claudeResponse = await askClaude(userMessage);
+        
+        setTimeout(() => {
+          addMessage({ type: "agent", content: claudeResponse });
+          setIsAgentTyping(false);
+        }, 1000);
+      }
     } catch (error) {
       console.error("Error processing message:", error);
       setIsAgentTyping(false);
@@ -193,7 +266,7 @@ export function Chat({ chatRef }: ChatProps) {
         processUserMessage
       };
     }
-  }, [chatRef, questionIndex]);
+  }, [chatRef, projectPhases, hasRequestedFile]);
 
   // Auto-scroll to the latest message
   useEffect(() => {
