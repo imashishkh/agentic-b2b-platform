@@ -3,38 +3,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base theme variables for light mode */
 @layer base {
   :root {
+    /* Core system colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
+    /* Card related colors */
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
 
+    /* Popover related colors */
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
+    /* Primary and related colors */
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
 
+    /* Secondary and related colors */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
+    /* Muted UI elements */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
+    /* Accent colors */
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
+    /* Destructive action colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    /* UI element borders, inputs, and focus rings */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
+    /* Border radius for elements */
     --radius: 0.5rem;
 
+    /* Sidebar specific colors */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -45,34 +57,46 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  /* Dark mode theme variables */
   .dark {
+    /* Core system colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
+    /* Card related colors */
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
+    /* Popover related colors */
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
+    /* Primary and related colors */
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
+    /* Secondary and related colors */
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
+    /* Muted UI elements */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
+    /* Accent colors */
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
+    /* Destructive action colors */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+    /* UI element borders, inputs, and focus rings */
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
+    /* Sidebar specific colors */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -84,6 +108,7 @@
   }
 }
 
+/* Apply border styling to all elements */
 @layer base {
   * {
     @apply border-border;
@@ -94,33 +119,38 @@
   }
 }
 
+/* Glass effect styling - light version */
 .glass {
   @apply bg-white/85 backdrop-blur-md border border-white/20 shadow-sm;
 }
 
+/* Glass effect styling - dark version */
 .glass-dark {
   @apply bg-sayhalo-dark/85 backdrop-blur-md border border-white/10 shadow-md;
 }
 
+/* Card styling with glass effect and hover animations */
 .glass-card {
   @apply bg-white/90 backdrop-blur-md border border-white/15 shadow-sm 
          hover:shadow-lg hover:bg-white/95 transition-all duration-300 ease-in-out;
 }
 
+/* Noise texture overlay for adding depth */
 .noise-bg {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
+/* Gradient background for the app */
 .gradient-bg {
   background: linear-gradient(135deg, #f0f0fa 0%, #e6e6ff 100%);
 }
 
-/* Add rounded button styles */
+/* Rounded button styling */
 .rounded-button {
   @apply rounded-full bg-sayhalo-dark/10 flex items-center justify-center hover:bg-sayhalo-dark/20 transition-colors;
 }
 
-/* Add pill-shaped input styles */
+/* Pill-shaped input styling */
 .pill-input {
   @apply rounded-full bg-white/90 border border-white/20 shadow-sm;
 }

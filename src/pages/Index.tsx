@@ -6,12 +6,23 @@ import { ChatInput } from "@/components/ChatInput";
 import { WelcomeMessage } from "@/components/WelcomeMessage";
 import { Toaster } from "@/components/ui/sonner";
 
+/**
+ * Index Page Component
+ * 
+ * Main landing page for the SayHalo chat application.
+ * Displays the welcome message, suggestion cards, and chat input.
+ * Implements the glassmorphism design pattern.
+ * 
+ * @returns {JSX.Element} - Rendered index page
+ */
 const Index = () => {
   return (
     <div className="min-h-screen w-full gradient-bg noise-bg relative flex flex-col">
+      {/* Toast notification container */}
       <Toaster position="top-center" />
+      
       <div className="w-full max-w-[1200px] mx-auto h-screen flex flex-col px-6 md:px-8">
-        {/* Header with more padding */}
+        {/* Header with logo and user profile button */}
         <header className="flex items-center justify-between py-6">
           <div className="flex items-center gap-3">
             <div className="bg-sayhalo-dark rounded-xl p-2">
@@ -29,7 +40,7 @@ const Index = () => {
           <WelcomeMessage />
         </div>
 
-        {/* Suggestion Cards - updated to be more centered and square */}
+        {/* Suggestion Cards - displayed in a responsive grid */}
         <div className="w-full max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
           <SuggestCard 
             icon={<Plane size={20} className="text-white" />}
@@ -48,7 +59,7 @@ const Index = () => {
           />
         </div>
 
-        {/* Chat Input - centered and pill-shaped */}
+        {/* Chat Input - fixed at the bottom of the screen */}
         <div className="py-6 fixed bottom-0 left-0 right-0 px-4">
           <div className="max-w-xl mx-auto">
             <ChatInput />
