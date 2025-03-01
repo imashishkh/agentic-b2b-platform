@@ -4,10 +4,12 @@ import { SayHaloLogo } from "@/components/SayHaloLogo";
 import { SuggestCard } from "@/components/SuggestCard";
 import { ChatInput } from "@/components/ChatInput";
 import { WelcomeMessage } from "@/components/WelcomeMessage";
+import { Toaster } from "@/components/ui/sonner";
 
 const Index = () => {
   return (
     <div className="min-h-screen w-full gradient-bg noise-bg relative flex flex-col">
+      <Toaster position="top-center" />
       <div className="w-full max-w-[1200px] mx-auto h-screen flex flex-col px-4 md:px-6">
         {/* Header */}
         <header className="flex items-center justify-between py-4">
