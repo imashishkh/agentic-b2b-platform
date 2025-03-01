@@ -31,6 +31,25 @@ export class ManagerAgent extends BaseAgent {
     const isConsultation = userMessage.includes("One of your team members") && 
                           userMessage.includes("needs guidance");
     
+    // Check if this is a coordination request
+    const isCoordination = userMessage.includes("synthesize these different specialist inputs");
+    
+    if (isCoordination) {
+      return `
+        As the Development Manager and technical lead, you're being asked to coordinate inputs from multiple specialists.
+        
+        ${userMessage}
+        
+        Your job is to create a clear development plan that:
+        1. Establishes the correct sequence of tasks
+        2. Identifies critical dependencies between different parts of the system
+        3. Highlights integration points that need special attention
+        4. Provides clear technical guidance on how components should work together
+        
+        Remember that you have final decision-making authority on technical approaches.
+      `;
+    }
+    
     if (isConsultation) {
       return `
         As the Development Manager and technical lead for this e-commerce project, you're being consulted by one of your team specialists.
@@ -68,6 +87,23 @@ export class ManagerAgent extends BaseAgent {
     // The manager is never "stuck" in the same way as specialists
     // This prevents infinite loops when consulting the manager
     return false;
+  }
+  
+  /**
+   * Override detectDependencies for the Manager to return no dependencies
+   * This prevents infinite loops in coordination
+   */
+  protected detectDependencies(response: string, userMessage: string): { 
+    hasDependencies: boolean; 
+    dependentAgents: AgentType[];
+    dependencyDetails: string;
+  } {
+    // The manager doesn't need to coordinate with others as it has final authority
+    return { 
+      hasDependencies: false, 
+      dependentAgents: [], 
+      dependencyDetails: "" 
+    };
   }
   
   protected createSearchQuery(message: string, projectPhases: any[]): string {

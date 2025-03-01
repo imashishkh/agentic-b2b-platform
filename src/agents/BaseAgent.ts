@@ -29,6 +29,12 @@ export abstract class BaseAgent implements Agent {
       // Call Claude API (or simulated response)
       const claudeResponse = await askClaude(promptForClaude);
       
+      // Check if dependencies on other teams are detected
+      const dependencyInfo = this.detectDependencies(claudeResponse, userMessage);
+      if (dependencyInfo.hasDependencies) {
+        return await this.coordinateWithOtherAgents(userMessage, dependencyInfo, projectPhases);
+      }
+      
       // If the response indicates the agent is not confident or stuck
       if (this.isAgentStuck(claudeResponse)) {
         return await this.consultDevManager(userMessage, claudeResponse, projectPhases);
@@ -68,7 +74,157 @@ export abstract class BaseAgent implements Agent {
       Focus on providing technical, actionable advice specific to your domain of expertise.
       Be detailed yet concise. Include code snippets where appropriate.
       
+      If you need to coordinate with other specialists, include "COORDINATE_WITH:" followed by the specialist type and what you need from them.
+      For example: "COORDINATE_WITH:BACKEND:Need API endpoints for product data before I can implement the frontend components"
+      
       If you're not confident in your answer or this is outside your expertise, please respond with "ESCALATE:" followed by your best attempt at an answer.
+    `;
+  }
+  
+  /**
+   * Detects if the response or user message indicates dependencies on other teams
+   */
+  protected detectDependencies(response: string, userMessage: string): { 
+    hasDependencies: boolean; 
+    dependentAgents: AgentType[];
+    dependencyDetails: string;
+  } {
+    const dependencyInfo = {
+      hasDependencies: false,
+      dependentAgents: [] as AgentType[],
+      dependencyDetails: ""
+    };
+    
+    // Check if the response explicitly mentions coordination needs
+    const coordinateRegex = /COORDINATE_WITH:([A-Z]+):(.+?)(?=COORDINATE_WITH:|$)/g;
+    let match;
+    
+    while ((match = coordinateRegex.exec(response)) !== null) {
+      dependencyInfo.hasDependencies = true;
+      const agentTypeStr = match[1].toLowerCase();
+      const detail = match[2].trim();
+      
+      // Convert string to AgentType
+      const agentType = this.stringToAgentType(agentTypeStr);
+      if (agentType && !dependencyInfo.dependentAgents.includes(agentType)) {
+        dependencyInfo.dependentAgents.push(agentType);
+      }
+      
+      dependencyInfo.dependencyDetails += `${detail} `;
+    }
+    
+    // If no explicit coordination tags but there's implicit dependency language
+    if (!dependencyInfo.hasDependencies) {
+      // Look for phrases that suggest dependencies
+      const dependencyPhrases = [
+        { regex: /need.*(api|endpoint|backend|server)/i, agent: AgentType.BACKEND },
+        { regex: /backend.*first/i, agent: AgentType.BACKEND },
+        { regex: /database.*(schema|model|design)/i, agent: AgentType.DATABASE },
+        { regex: /UI|design.*needed/i, agent: AgentType.UX },
+        { regex: /deployment|pipeline.*setup/i, agent: AgentType.DEVOPS },
+        { regex: /frontend.*integration/i, agent: AgentType.FRONTEND }
+      ];
+      
+      for (const phrase of dependencyPhrases) {
+        if (response.match(phrase.regex) || userMessage.match(phrase.regex)) {
+          dependencyInfo.hasDependencies = true;
+          if (!dependencyInfo.dependentAgents.includes(phrase.agent)) {
+            dependencyInfo.dependentAgents.push(phrase.agent);
+            dependencyInfo.dependencyDetails += `Need input from ${phrase.agent} specialist. `;
+          }
+        }
+      }
+    }
+    
+    return dependencyInfo;
+  }
+  
+  /**
+   * Converts a string to an AgentType enum value
+   */
+  protected stringToAgentType(typeString: string): AgentType | null {
+    const normalizedString = typeString.toLowerCase();
+    switch (normalizedString) {
+      case 'frontend': return AgentType.FRONTEND;
+      case 'backend': return AgentType.BACKEND;
+      case 'database': return AgentType.DATABASE;
+      case 'devops': return AgentType.DEVOPS;
+      case 'ux': return AgentType.UX;
+      case 'manager': return AgentType.MANAGER;
+      default: return null;
+    }
+  }
+  
+  /**
+   * Coordinates with other agents when dependencies are detected
+   */
+  protected async coordinateWithOtherAgents(
+    userMessage: string,
+    dependencyInfo: { hasDependencies: boolean; dependentAgents: AgentType[]; dependencyDetails: string },
+    projectPhases: any[]
+  ): Promise<string> {
+    // If no dependencies to handle or we're the manager, skip coordination
+    if (!dependencyInfo.hasDependencies || this.type === AgentType.MANAGER) {
+      return this.consultDevManager(userMessage, "Need coordination with multiple teams", projectPhases);
+    }
+    
+    let responses: string[] = [];
+    
+    // Consult each dependent agent
+    for (const agentType of dependencyInfo.dependentAgents) {
+      const agent = createAgent(agentType);
+      
+      // Create a focused prompt for the dependency
+      const dependencyPrompt = `
+        I'm the ${this.title} and I need your input on the following task:
+        "${userMessage}"
+        
+        Specifically, I need your expertise on: ${dependencyInfo.dependencyDetails}
+        
+        Please provide a short, focused response that I can use to move forward with my part of the task.
+        Focus on the technical requirements and interfaces between our systems.
+      `;
+      
+      try {
+        const agentResponse = await agent.generateResponse(dependencyPrompt, projectPhases);
+        responses.push(`## Input from ${agent.title}:\n\n${agentResponse}\n`);
+      } catch (error) {
+        console.error(`Error consulting with ${agentType} agent:`, error);
+        responses.push(`## Input from ${agentType} specialist (failed to retrieve):\n\nI was unable to get specific information from this team at the moment.\n`);
+      }
+    }
+    
+    // Synthesize a response that includes coordination details
+    const myExpertise = `As the ${this.title}, here's my assessment based on the inputs from other teams:`;
+    
+    // Consult with manager to synthesize the final coordinated response
+    const managerAgent = createAgent(AgentType.MANAGER);
+    const synthesisPrompt = `
+      As the Development Manager, please synthesize these different specialist inputs into a cohesive plan:
+      
+      Original user request: "${userMessage}"
+      
+      ${responses.join('\n')}
+      
+      The ${this.title}'s initial assessment: "${dependencyInfo.dependencyDetails}"
+      
+      Please create a coordinated response that outlines:
+      1. The correct sequence of development steps
+      2. Dependencies between different teams
+      3. A clear path forward for implementation
+      4. Any technical integration points that need special attention
+    `;
+    
+    const coordinatedPlan = await managerAgent.generateResponse(synthesisPrompt, projectPhases);
+    
+    return `
+# Coordinated Development Plan
+
+${myExpertise}
+
+${coordinatedPlan}
+
+Let me know if you'd like to focus on a specific aspect of this plan or if you need more details on any part of the implementation.
     `;
   }
   
