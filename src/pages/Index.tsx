@@ -7,6 +7,21 @@ import { ChatInput } from "@/components/ChatInput";
 import { ApiSettings } from "@/components/ApiSettings";
 import { SuggestCard } from "@/components/SuggestCard";
 
+// Define the correct prop types for components with TypeScript errors
+interface ApiSettingsProps {
+  onClose: () => void;
+}
+
+interface WelcomeMessageProps {
+  onStart: () => void;
+}
+
+interface SuggestCardProps {
+  title: string;
+  description: string;
+  onClick: () => void;
+}
+
 const Index = () => {
   const [chatStarted, setChatStarted] = useState(false);
   
@@ -14,16 +29,16 @@ const Index = () => {
   const [showApiSettings, setShowApiSettings] = useState(false);
   
   // Reference to chat methods exposed by ChatProcessor
-  const chatRef = useRef<{ processUserMessage: (message: string) => void }>(null);
+  const chatRef = useRef<{ processUserMessage: (message: string, files?: File[]) => void }>(null);
   
   const handleStart = () => {
     setChatStarted(true);
   };
   
   // Handle sending a message via the chat input
-  const handleSendMessage = (message: string) => {
+  const handleSendMessage = (message: string, files?: File[]) => {
     if (chatRef.current) {
-      chatRef.current.processUserMessage(message);
+      chatRef.current.processUserMessage(message, files);
     }
   };
   

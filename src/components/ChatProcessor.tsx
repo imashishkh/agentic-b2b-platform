@@ -22,7 +22,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   } = useChat();
 
   // Process the user's message and generate an agent response
-  const processUserMessage = async (userMessage: string) => {
+  const processUserMessage = async (userMessage: string, files?: File[]) => {
     // Add user message to chat
     addMessage({ type: "user", content: userMessage });
     
@@ -30,6 +30,82 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     setIsAgentTyping(true);
     
     try {
+      // Check if files were uploaded
+      if (files && files.length > 0) {
+        const markdownFiles = files.filter(file => 
+          file.name.endsWith('.md') || file.type === 'text/markdown'
+        );
+        
+        if (markdownFiles.length > 0) {
+          setIsFetchingResponse(true);
+          
+          // Read and process the first markdown file
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            try {
+              const markdownContent = e.target?.result as string;
+              const result = await parseMarkdownToTasks(markdownContent);
+              setProjectPhases(result.phases);
+              
+              // Create task assignments by agent type
+              const taskAssignments = assignTasksToAgents(result.phases);
+              
+              // Add the analysis response
+              addMessage({ 
+                type: "agent", 
+                content: result.response,
+                agentType: AgentType.MANAGER
+              });
+              
+              // Add task assignments message
+              setTimeout(() => {
+                addMessage({ 
+                  type: "agent", 
+                  content: generateTaskAssignmentMessage(taskAssignments),
+                  agentType: AgentType.MANAGER
+                });
+                
+                // Follow-up question
+                setTimeout(() => {
+                  addMessage({ 
+                    type: "agent", 
+                    content: "Which specific task would you like to start working on first? I can provide technical advice or connect you with the appropriate specialist.",
+                    agentType: AgentType.MANAGER
+                  });
+                  setIsAgentTyping(false);
+                }, 1000);
+              }, 1000);
+            } catch (error) {
+              console.error("Error processing markdown file:", error);
+              addMessage({ 
+                type: "agent", 
+                content: "I encountered an error while processing your markdown file. Please check the format and try again.",
+                agentType: AgentType.MANAGER
+              });
+              setIsAgentTyping(false);
+            } finally {
+              setIsFetchingResponse(false);
+              setHasRequestedFile(false);
+            }
+          };
+          
+          reader.onerror = () => {
+            addMessage({ 
+              type: "agent", 
+              content: "There was an error reading your file. Please try again with a different file.",
+              agentType: AgentType.MANAGER
+            });
+            setIsAgentTyping(false);
+            setIsFetchingResponse(false);
+          };
+          
+          reader.readAsText(markdownFiles[0]);
+          return;
+        }
+      }
+      
+      // Continue with existing logic for handling text inputs
+      
       // Check if this is the first user message and they didn't upload a file
       if (hasRequestedFile && 
           !userMessage.includes("```markdown") && 
@@ -72,6 +148,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
           const result = await parseMarkdownToTasks(markdownContent);
           setProjectPhases(result.phases);
           
+          // Create task assignments by agent type
+          const taskAssignments = assignTasksToAgents(result.phases);
+          
           setTimeout(() => {
             addMessage({ 
               type: "agent", 
@@ -79,14 +158,23 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
               agentType: AgentType.MANAGER
             });
             
-            // Follow-up question about the breakdown
+            // Add task assignments message
             setTimeout(() => {
               addMessage({ 
                 type: "agent", 
-                content: "Now that we have the project broken down, which phase or specific task would you like to discuss in more detail? I can provide technical advice, implementation strategies, or suggest resources for any part of the project.",
+                content: generateTaskAssignmentMessage(taskAssignments),
                 agentType: AgentType.MANAGER
               });
-              setIsAgentTyping(false);
+              
+              // Follow-up question
+              setTimeout(() => {
+                addMessage({ 
+                  type: "agent", 
+                  content: "Which specific task would you like to start working on first? I can provide technical advice or connect you with the appropriate specialist.",
+                  agentType: AgentType.MANAGER
+                });
+                setIsAgentTyping(false);
+              }, 1000);
             }, 1000);
           }, 1000);
         } catch (error) {
@@ -143,6 +231,75 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         agentType: AgentType.MANAGER
       });
     }
+  };
+
+  /**
+   * Analyzes project phases and assigns tasks to appropriate agent types
+   */
+  const assignTasksToAgents = (phases: any[]): Record<AgentType, string[]> => {
+    const assignments: Record<AgentType, string[]> = {
+      [AgentType.FRONTEND]: [],
+      [AgentType.BACKEND]: [],
+      [AgentType.DATABASE]: [],
+      [AgentType.DEVOPS]: [],
+      [AgentType.UX]: [],
+      [AgentType.MANAGER]: []
+    };
+    
+    phases.forEach(phase => {
+      phase.tasks.forEach((task: string) => {
+        // Use keywords to determine which agent should handle each task
+        if (task.match(/frontend|UI|component|react|design|css|tailwind|style|layout|responsive|mobile|desktop|animation/i)) {
+          assignments[AgentType.FRONTEND].push(task);
+        } 
+        else if (task.match(/backend|API|endpoint|server|route|controller|middleware|authentication|authorization/i)) {
+          assignments[AgentType.BACKEND].push(task);
+        }
+        else if (task.match(/database|DB|schema|model|query|SQL|NoSQL|migration|table|document|collection|entity/i)) {
+          assignments[AgentType.DATABASE].push(task);
+        }
+        else if (task.match(/deployment|CI\/CD|pipeline|container|docker|kubernetes|cloud|AWS|Azure|GCP|monitoring|logging/i)) {
+          assignments[AgentType.DEVOPS].push(task);
+        }
+        else if (task.match(/UX|UI|user experience|wireframe|mockup|prototype|user research|usability|accessibility|flow/i)) {
+          assignments[AgentType.UX].push(task);
+        }
+        else {
+          // Default to manager for coordination tasks and anything not clearly matching other agents
+          assignments[AgentType.MANAGER].push(task);
+        }
+      });
+    });
+    
+    return assignments;
+  };
+
+  /**
+   * Generates a formatted message with task assignments for each agent
+   */
+  const generateTaskAssignmentMessage = (assignments: Record<AgentType, string[]>): string => {
+    const agentNames = {
+      [AgentType.FRONTEND]: "Frontend Developer",
+      [AgentType.BACKEND]: "Backend Developer",
+      [AgentType.DATABASE]: "Database Architect",
+      [AgentType.DEVOPS]: "DevOps Engineer",
+      [AgentType.UX]: "UX Designer",
+      [AgentType.MANAGER]: "Development Manager"
+    };
+    
+    let message = "## Task Assignments by Specialist\n\n";
+    
+    Object.entries(assignments).forEach(([agentType, tasks]) => {
+      if (tasks.length === 0) return;
+      
+      message += `### ${agentNames[agentType as AgentType]}\n`;
+      tasks.forEach(task => {
+        message += `- ${task}\n`;
+      });
+      message += "\n";
+    });
+    
+    return message;
   };
 
   // Expose the processUserMessage method to the parent component via the ref

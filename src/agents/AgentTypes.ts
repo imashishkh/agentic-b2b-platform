@@ -32,4 +32,5 @@ export interface AgentMessageProps {
   message: string;
   agentType: AgentType;
   isLoading?: boolean;
+  isTaskAssignment?: boolean;
 }

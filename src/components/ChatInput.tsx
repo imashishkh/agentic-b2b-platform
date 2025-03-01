@@ -1,4 +1,3 @@
-
 import { useState, useRef, ChangeEvent } from "react";
 import { ArrowRight, Link, Settings, FolderUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,7 +11,7 @@ import { toast } from "sonner";
  */
 interface ChatInputProps {
   className?: string;
-  onSendMessage?: (message: string) => void;
+  onSendMessage?: (message: string, files?: File[]) => void;
 }
 
 /**
@@ -45,7 +44,7 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
     
     // Call the onSendMessage callback if provided
     if (onSendMessage) {
-      onSendMessage(message);
+      onSendMessage(message, selectedFiles.length > 0 ? selectedFiles : undefined);
     } else {
       // Default behavior if no callback is provided
       toast.success("Message sent successfully");
@@ -149,7 +148,7 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
             className="hidden" 
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept="image/*,.pdf,.doc,.docx,.txt"
+            accept=".md,.markdown,text/markdown"
             multiple
           />
         </button>
