@@ -103,8 +103,8 @@
 }
 
 .glass-card {
-  @apply bg-white/85 backdrop-blur-md border border-white/15 shadow-sm 
-         hover:shadow-md hover:bg-white/90 transition-all duration-300 ease-in-out;
+  @apply bg-white/90 backdrop-blur-md border border-white/15 shadow-sm 
+         hover:shadow-lg hover:bg-white/95 transition-all duration-300 ease-in-out;
 }
 
 .noise-bg {
@@ -113,4 +113,14 @@
 
 .gradient-bg {
   background: linear-gradient(135deg, #f0f0fa 0%, #e6e6ff 100%);
+}
+
+/* Add rounded button styles */
+.rounded-button {
+  @apply rounded-full bg-sayhalo-dark/10 flex items-center justify-center hover:bg-sayhalo-dark/20 transition-colors;
+}
+
+/* Add pill-shaped input styles */
+.pill-input {
+  @apply rounded-full bg-white/90 border border-white/20 shadow-sm;
 }

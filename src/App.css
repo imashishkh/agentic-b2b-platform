@@ -29,4 +29,15 @@ body, html {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.pill-input {
+  border-radius: 9999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Update gradient background to match the image */
+.gradient-bg {
+  background: linear-gradient(135deg, #f0f0fa 0%, #e6e6ff 100%);
 }
