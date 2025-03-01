@@ -8,9 +8,11 @@ import { toast } from "sonner";
 /**
  * Props interface for the ChatInput component
  * @property {string} [className] - Optional CSS class name for styling
+ * @property {function} [onSendMessage] - Callback function when a message is sent
  */
 interface ChatInputProps {
   className?: string;
+  onSendMessage?: (message: string) => void;
 }
 
 /**
@@ -22,7 +24,7 @@ interface ChatInputProps {
  * @param {ChatInputProps} props - Component properties
  * @returns {JSX.Element} - Rendered chat input component
  */
-export function ChatInput({ className }: ChatInputProps) {
+export function ChatInput({ className, onSendMessage }: ChatInputProps) {
   // State for the message input
   const [message, setMessage] = useState("");
   
@@ -41,8 +43,13 @@ export function ChatInput({ className }: ChatInputProps) {
     // Only send if there's a message or file
     if (!message.trim() && selectedFiles.length === 0) return;
     
-    // In a real app, this would send the message to a backend
-    toast.success("Message sent successfully");
+    // Call the onSendMessage callback if provided
+    if (onSendMessage) {
+      onSendMessage(message);
+    } else {
+      // Default behavior if no callback is provided
+      toast.success("Message sent successfully");
+    }
     
     // Reset the form after sending
     setMessage("");
@@ -168,7 +175,7 @@ export function ChatInput({ className }: ChatInputProps) {
         {/* Message input field */}
         <input 
           type="text" 
-          placeholder="Ask SayHalo anything..." 
+          placeholder="Ask DevManager anything..." 
           className="flex-1 py-3 px-2 bg-transparent border-none outline-none text-sayhalo-dark placeholder:text-sayhalo-light/70"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
