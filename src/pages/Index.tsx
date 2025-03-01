@@ -16,7 +16,7 @@ import { useState, useRef } from "react";
  */
 const Index = () => {
   const [showWelcome, setShowWelcome] = useState(true);
-  const chatRef = useRef<{ processUserMessage: (message: string) => void }>(null);
+  const chatRef = useRef<any>(null);
 
   const handleStartChat = () => {
     setShowWelcome(false);
@@ -78,7 +78,7 @@ const Index = () => {
           ) : (
             <div className="w-full h-full overflow-hidden flex flex-col">
               <div className="flex-1 overflow-y-auto">
-                <Chat ref={chatRef} />
+                <Chat chatRef={chatRef} />
               </div>
             </div>
           )}

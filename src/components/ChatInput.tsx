@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, ChangeEvent } from "react";
 import { ArrowRight, Link, Settings, FolderUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -166,9 +166,13 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
             className="hidden" 
             ref={folderInputRef}
             onChange={handleFileChange}
-            directory=""
-            webkitdirectory=""
+            // Using a data attribute approach instead of the non-standard properties
+            // @ts-ignore - These are non-standard attributes but they work in modern browsers
             multiple
+            {...({
+              webkitdirectory: "",
+              directory: ""
+            } as any)}
           />
         </button>
         
