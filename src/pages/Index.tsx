@@ -7,21 +7,6 @@ import { ChatInput } from "@/components/ChatInput";
 import { ApiSettings } from "@/components/ApiSettings";
 import { SuggestCard } from "@/components/SuggestCard";
 
-// Define the correct prop types for components with TypeScript errors
-interface ApiSettingsProps {
-  onClose: () => void;
-}
-
-interface WelcomeMessageProps {
-  onStart: () => void;
-}
-
-interface SuggestCardProps {
-  title: string;
-  description: string;
-  onClick: () => void;
-}
-
 const Index = () => {
   const [chatStarted, setChatStarted] = useState(false);
   

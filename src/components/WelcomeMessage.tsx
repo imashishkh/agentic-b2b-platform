@@ -5,9 +5,11 @@ import { SayHaloLogo } from "./SayHaloLogo";
 /**
  * Props interface for the WelcomeMessage component
  * @property {string} [username] - Optional username to display in the greeting
+ * @property {function} onStart - Callback function when user starts the chat
  */
 interface WelcomeMessageProps {
   username?: string;
+  onStart: () => void;
 }
 
 /**
@@ -31,7 +33,7 @@ const welcomeMessages = [
  * @param {WelcomeMessageProps} props - Component properties
  * @returns {JSX.Element} - Rendered welcome message component
  */
-export function WelcomeMessage({ username = "Asal Design" }: WelcomeMessageProps) {
+export function WelcomeMessage({ username = "Asal Design", onStart }: WelcomeMessageProps) {
   // State to track the current welcome message index
   const [messageIndex, setMessageIndex] = useState(0);
   
@@ -65,6 +67,14 @@ export function WelcomeMessage({ username = "Asal Design" }: WelcomeMessageProps
       <p className="text-sayhalo-light text-center max-w-[70%] mx-auto mt-3 text-base">
         Ready to assist you with anything you need, from answering questions to providing recommendations. Let's get started!
       </p>
+      
+      {/* Start button */}
+      <button 
+        onClick={onStart}
+        className="mt-6 px-8 py-3 bg-sayhalo-dark text-white font-medium rounded-lg hover:bg-opacity-90 transition-all"
+      >
+        Start Chat
+      </button>
     </div>
   );
 }

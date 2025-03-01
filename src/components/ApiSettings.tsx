@@ -15,7 +15,11 @@ import { Label } from "@/components/ui/label";
 import { Settings } from "lucide-react";
 import { toast } from "sonner";
 
-export function ApiSettings() {
+interface ApiSettingsProps {
+  onClose: () => void;
+}
+
+export function ApiSettings({ onClose }: ApiSettingsProps) {
   const [claudeApiKey, setClaudeApiKey] = useState("");
   const [searchApiKey, setSearchApiKey] = useState("");
   const [open, setOpen] = useState(false);
@@ -41,6 +45,7 @@ export function ApiSettings() {
     
     toast.success("API keys saved successfully");
     setOpen(false);
+    onClose();
   };
 
   const clearApiKeys = () => {
@@ -54,10 +59,18 @@ export function ApiSettings() {
     
     toast.success("API keys cleared");
     setOpen(false);
+    onClose();
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      onClose();
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
           <Settings className="h-4 w-4" />
