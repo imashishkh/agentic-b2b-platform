@@ -1,7 +1,6 @@
 
 import { Hand, Plane, User, Wrench } from "lucide-react";
 import { SayHaloLogo } from "@/components/SayHaloLogo";
-import { SuggestCard } from "@/components/SuggestCard";
 import { ChatInput } from "@/components/ChatInput";
 import { WelcomeMessage } from "@/components/WelcomeMessage";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
  * Index Page Component
  * 
  * Main landing page for the SayHalo chat application.
- * Displays the welcome message, suggestion cards, and chat input.
+ * Displays the welcome message and chat input.
  * Implements the glassmorphism design pattern.
  * 
  * @returns {JSX.Element} - Rendered index page
@@ -38,25 +37,6 @@ const Index = () => {
         {/* Chat Area - Empty State with Welcome Message */}
         <div className="flex-1 flex flex-col items-center justify-center">
           <WelcomeMessage />
-        </div>
-
-        {/* Suggestion Cards - displayed in a responsive grid */}
-        <div className="w-full max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
-          <SuggestCard 
-            icon={<Plane size={20} className="text-white" />}
-            title="Wanderlust Destinations 2024"
-            subtitle="Must-Visit Places"
-          />
-          <SuggestCard 
-            icon={<Hand size={20} className="text-white" />}
-            title="SayHalo AI: What Sets Us Apart"
-            subtitle="Key Differentiators"
-          />
-          <SuggestCard 
-            icon={<Wrench size={20} className="text-white" />}
-            title="Design Trends on TikTok 2024"
-            subtitle="Trending Now"
-          />
         </div>
 
         {/* Chat Input - fixed at the bottom of the screen */}
