@@ -39,7 +39,7 @@ export default function Index() {
               </div>
             </>
           ) : (
-            <WelcomeMessage onStartClick={() => setShowChat(true)} />
+            <WelcomeMessage onStart={() => setShowChat(true)} />
           )}
         </div>
         <ManagerAgent />
