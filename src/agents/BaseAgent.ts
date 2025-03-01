@@ -1,6 +1,13 @@
-
 import { Agent, AgentType } from "./AgentTypes";
-import { askClaude, searchInternet } from "@/utils/aiServices";
+import { 
+  askClaude, 
+  searchInternet, 
+  searchCodeExamples, 
+  searchPackages, 
+  testCode, 
+  troubleshootCode, 
+  checkSecurity 
+} from "@/utils/aiServices";
 import { createAgent } from "./AgentFactory";
 
 /**
@@ -12,6 +19,7 @@ export abstract class BaseAgent implements Agent {
   abstract title: string;
   abstract description: string;
   abstract expertise: string[];
+  private memory: Map<string, any> = new Map();
   
   /**
    * Determines if this agent can handle the specific message
@@ -40,6 +48,42 @@ export abstract class BaseAgent implements Agent {
         return await this.consultDevManager(userMessage, claudeResponse, projectPhases);
       }
       
+      // Check if we need to search for code examples
+      if (this.shouldSearchForCodeExamples(userMessage)) {
+        const codeQuery = this.createCodeSearchQuery(userMessage);
+        const codeExamples = await searchCodeExamples(codeQuery);
+        return this.enhanceResponseWithCodeExamples(claudeResponse, codeExamples);
+      }
+      
+      // Check if we need package information
+      if (this.shouldSearchForPackageInfo(userMessage)) {
+        const packageName = this.extractPackageName(userMessage);
+        const packageInfo = await searchPackages(packageName);
+        return this.enhanceResponseWithPackageInfo(claudeResponse, packageInfo);
+      }
+      
+      // Check if there's code that needs testing
+      if (this.shouldTestCode(userMessage, claudeResponse)) {
+        const codeToTest = this.extractCodeToTest(claudeResponse);
+        const testType = this.determineTestType(userMessage);
+        const testResults = await testCode(codeToTest, testType);
+        return this.enhanceResponseWithTestResults(claudeResponse, testResults);
+      }
+      
+      // Check if there are errors that need troubleshooting
+      if (this.shouldTroubleshootCode(userMessage)) {
+        const errorMessage = this.extractErrorMessage(userMessage);
+        const troubleshootingInfo = await troubleshootCode(errorMessage);
+        return this.enhanceResponseWithTroubleshooting(claudeResponse, troubleshootingInfo);
+      }
+      
+      // Check if we need to run a security check
+      if (this.shouldCheckSecurity(userMessage, claudeResponse)) {
+        const codeToCheck = this.extractCodeToCheck(claudeResponse);
+        const securityResults = await checkSecurity(codeToCheck);
+        return this.enhanceResponseWithSecurityCheck(claudeResponse, securityResults);
+      }
+      
       // If the message suggests we need additional information, search for it
       if (this.shouldSearchForAdditionalInfo(userMessage)) {
         const searchQuery = this.createSearchQuery(userMessage, projectPhases);
@@ -54,6 +98,20 @@ export abstract class BaseAgent implements Agent {
       console.error(`${this.name} agent error:`, error);
       return `I encountered an error processing your request. Please try again or contact the development team if the issue persists.`;
     }
+  }
+  
+  /**
+   * Store information in agent's memory
+   */
+  protected rememberInfo(key: string, value: any): void {
+    this.memory.set(key, value);
+  }
+  
+  /**
+   * Retrieve information from agent's memory
+   */
+  protected recallInfo(key: string): any {
+    return this.memory.get(key);
   }
   
   /**
@@ -312,6 +370,206 @@ Based on best practices and current industry standards:
 ${searchResults}
 
 Would you like me to elaborate on any specific aspect of these recommendations?
+    `;
+  }
+  
+  /**
+   * Determines if we should search for code examples
+   */
+  protected shouldSearchForCodeExamples(message: string): boolean {
+    return message.match(/example|sample|code|implementation|how to implement|pattern/i) !== null;
+  }
+  
+  /**
+   * Creates a search query for code examples
+   */
+  protected createCodeSearchQuery(message: string): string {
+    return `${this.type.toLowerCase()} ${message.replace(/can you (show|provide|give) (me )?(an |some )?(example|code|implementation)/i, "")} e-commerce`;
+  }
+  
+  /**
+   * Enhances the Claude response with code examples
+   */
+  protected enhanceResponseWithCodeExamples(claudeResponse: string, codeExamples: string): string {
+    return `
+${claudeResponse}
+
+## Implementation Examples
+
+Here are some code examples that might help:
+
+${codeExamples}
+
+Would you like me to explain any specific part in more detail?
+    `;
+  }
+  
+  /**
+   * Determines if we should search for package information
+   */
+  protected shouldSearchForPackageInfo(message: string): boolean {
+    return message.match(/package|library|dependency|install|npm|yarn/i) !== null;
+  }
+  
+  /**
+   * Extracts package name from user message
+   */
+  protected extractPackageName(message: string): string {
+    // Try to extract a package name from the message
+    const matches = message.match(/package[s]?\s+(?:called|named)?\s+['"]?([a-zA-Z0-9\-_@\/]+)['"]?/i) || 
+                   message.match(/['"]?([a-zA-Z0-9\-_@\/]+)['"]?\s+package/i) ||
+                   message.match(/install\s+['"]?([a-zA-Z0-9\-_@\/]+)['"]?/i);
+    
+    if (matches && matches[1]) {
+      return matches[1];
+    }
+    
+    // Default packages based on agent type if no specific package mentioned
+    const defaultPackages: Record<AgentType, string> = {
+      [AgentType.FRONTEND]: "react-query",
+      [AgentType.BACKEND]: "express",
+      [AgentType.DATABASE]: "prisma",
+      [AgentType.DEVOPS]: "docker",
+      [AgentType.UX]: "framer-motion",
+      [AgentType.MANAGER]: "project-management"
+    };
+    
+    return defaultPackages[this.type] || "react";
+  }
+  
+  /**
+   * Enhances the Claude response with package information
+   */
+  protected enhanceResponseWithPackageInfo(claudeResponse: string, packageInfo: string): string {
+    return `
+${claudeResponse}
+
+## Package Information
+
+${packageInfo}
+
+Let me know if you'd like to explore other packages or need help with implementation.
+    `;
+  }
+  
+  /**
+   * Determines if code testing is needed
+   */
+  protected shouldTestCode(message: string, response: string): boolean {
+    return (message.match(/test|validate|check|verify/i) !== null && 
+           response.includes("```")) || message.includes("test this code");
+  }
+  
+  /**
+   * Extracts code to test from Claude response
+   */
+  protected extractCodeToTest(response: string): string {
+    const codeBlockRegex = /```(?:jsx?|tsx?|javascript|typescript)?\n([\s\S]*?)\n```/g;
+    let match;
+    let extractedCode = "";
+    
+    while ((match = codeBlockRegex.exec(response)) !== null) {
+      extractedCode += match[1] + "\n\n";
+    }
+    
+    return extractedCode.trim() || "// No code found to test";
+  }
+  
+  /**
+   * Determines what type of test to run
+   */
+  protected determineTestType(message: string): string {
+    if (message.match(/unit test|test function|method test/i)) {
+      return "unit";
+    }
+    if (message.match(/integration|api test|component test/i)) {
+      return "integration";
+    }
+    return "general";
+  }
+  
+  /**
+   * Enhances the Claude response with test results
+   */
+  protected enhanceResponseWithTestResults(claudeResponse: string, testResults: string): string {
+    return `
+${claudeResponse}
+
+## Code Testing Results
+
+${testResults}
+
+Would you like me to help implement any of these suggestions?
+    `;
+  }
+  
+  /**
+   * Determines if troubleshooting is needed
+   */
+  protected shouldTroubleshootCode(message: string): boolean {
+    return message.match(/error|not working|issue|bug|fix|trouble|debug/i) !== null;
+  }
+  
+  /**
+   * Extracts error message from user message
+   */
+  protected extractErrorMessage(message: string): string {
+    // Try to extract text that looks like an error message
+    const errorMatches = message.match(/error[:\s]+([^\n]+)/i) || 
+                         message.match(/([^\s]+Error[^\.]+)/i);
+    
+    if (errorMatches && errorMatches[1]) {
+      return errorMatches[1].trim();
+    }
+    
+    // If no specific error found, use the whole message
+    return message;
+  }
+  
+  /**
+   * Enhances the Claude response with troubleshooting information
+   */
+  protected enhanceResponseWithTroubleshooting(claudeResponse: string, troubleshootingInfo: string): string {
+    return `
+${claudeResponse}
+
+## Troubleshooting Guide
+
+${troubleshootingInfo}
+
+Let me know if you'd like more specific help resolving this issue.
+    `;
+  }
+  
+  /**
+   * Determines if security check is needed
+   */
+  protected shouldCheckSecurity(message: string, response: string): boolean {
+    return (message.match(/secure|security|vulnerability|safe/i) !== null && 
+           response.includes("```")) || 
+           (message.includes("payment") && response.includes("```"));
+  }
+  
+  /**
+   * Extracts code to check for security issues
+   */
+  protected extractCodeToCheck(response: string): string {
+    // Same as extractCodeToTest
+    return this.extractCodeToTest(response);
+  }
+  
+  /**
+   * Enhances the Claude response with security check results
+   */
+  protected enhanceResponseWithSecurityCheck(claudeResponse: string, securityResults: string): string {
+    return `
+${claudeResponse}
+
+## Security Analysis
+
+${securityResults}
+
+Security is particularly important for e-commerce platforms. Let me know if you'd like help implementing any of these recommendations.
     `;
   }
 }
