@@ -1,6 +1,7 @@
 
 import { Agent, AgentType } from "./AgentTypes";
 import { askClaude, searchInternet } from "@/utils/aiServices";
+import { createAgent } from "./AgentFactory";
 
 /**
  * Base class for all AI agents with common functionality
@@ -27,6 +28,11 @@ export abstract class BaseAgent implements Agent {
       
       // Call Claude API (or simulated response)
       const claudeResponse = await askClaude(promptForClaude);
+      
+      // If the response indicates the agent is not confident or stuck
+      if (this.isAgentStuck(claudeResponse)) {
+        return await this.consultDevManager(userMessage, claudeResponse, projectPhases);
+      }
       
       // If the message suggests we need additional information, search for it
       if (this.shouldSearchForAdditionalInfo(userMessage)) {
@@ -61,6 +67,58 @@ export abstract class BaseAgent implements Agent {
       
       Focus on providing technical, actionable advice specific to your domain of expertise.
       Be detailed yet concise. Include code snippets where appropriate.
+      
+      If you're not confident in your answer or this is outside your expertise, please respond with "ESCALATE:" followed by your best attempt at an answer.
+    `;
+  }
+  
+  /**
+   * Determines if the agent appears to be stuck or uncertain based on their response
+   */
+  protected isAgentStuck(response: string): boolean {
+    // Check for indicators of uncertainty or explicit escalation requests
+    return response.includes("ESCALATE:") || 
+           response.includes("I'm not sure") || 
+           response.includes("This is outside my expertise") ||
+           response.includes("I don't have enough information");
+  }
+  
+  /**
+   * Consults the Dev Manager when this agent is stuck
+   */
+  protected async consultDevManager(userMessage: string, agentResponse: string, projectPhases: any[]): Promise<string> {
+    // Only create a new manager if this isn't already the manager
+    if (this.type === AgentType.MANAGER) {
+      // If the manager is already stuck, we don't want an infinite loop
+      return `I need more information to properly answer this question. ${agentResponse.replace("ESCALATE:", "")}`;
+    }
+    
+    // Create a manager agent
+    const managerAgent = createAgent(AgentType.MANAGER);
+    
+    // Create a prompt for the manager that includes the specialist's attempt
+    const managerPrompt = `
+      One of your team members (${this.title}) needs guidance on the following user question:
+      
+      "${userMessage}"
+      
+      The ${this.title} attempted to answer but wasn't confident:
+      
+      "${agentResponse.replace("ESCALATE:", "")}"
+      
+      As the Development Manager, please provide guidance or a more complete answer to help the team member.
+    `;
+    
+    // Get the manager's response
+    const managerResponse = await managerAgent.generateResponse(managerPrompt, projectPhases);
+    
+    // Format the final response to indicate it came via the manager
+    return `
+I consulted with the Development Manager about your question. Here's their guidance:
+
+${managerResponse}
+
+If you'd like more specific ${this.title.toLowerCase()} implementation details, please let me know.
     `;
   }
   
