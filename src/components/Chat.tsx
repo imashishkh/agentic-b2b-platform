@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { ChatMessage, ChatMessageProps } from "./ChatMessage";
 
 // Initial messages to bootstrap the conversation
@@ -20,7 +20,11 @@ const nextQuestions = [
   "Should we prioritize mobile responsiveness or desktop experience first?",
 ];
 
-export function Chat() {
+interface ChatProps {
+  chatRef: React.MutableRefObject<any>;
+}
+
+export function Chat({ chatRef }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessageProps[]>(initialMessages);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [isAgentTyping, setIsAgentTyping] = useState(false);
@@ -55,6 +59,15 @@ export function Chat() {
       setIsAgentTyping(false);
     }, 1500);
   };
+
+  // Expose the processUserMessage method to the parent component via the ref
+  React.useEffect(() => {
+    if (chatRef) {
+      chatRef.current = {
+        processUserMessage
+      };
+    }
+  }, [chatRef]);
 
   // Auto-scroll to the latest message
   useEffect(() => {
