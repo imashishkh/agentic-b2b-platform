@@ -3,6 +3,7 @@ import React from "react";
 import { AgentType, AgentMessageProps } from "@/agents/AgentTypes";
 import { SayHaloLogo } from "./SayHaloLogo";
 import { Code, Database, Layout, Server, Settings, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface ExtendedAgentMessageProps extends AgentMessageProps {
   isTaskAssignment?: boolean;
@@ -69,7 +70,11 @@ export function AgentMessage({ message, agentType, isLoading = false, isTaskAssi
 
   // Format markdown task assignments for display
   const formatTaskAssignments = (content: string) => {
-    if (!isTaskAssignment) return <p className="text-sayhalo-dark text-sm md:text-base">{content}</p>;
+    if (!isTaskAssignment) return (
+      <div className="prose prose-sm dark:prose-invert max-w-none">
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
+    );
     
     // Split content into sections
     const sections = content.split('###').filter(Boolean);
@@ -133,7 +138,9 @@ export function AgentMessage({ message, agentType, isLoading = false, isTaskAssi
         ) : isTaskAssignment ? (
           formatTaskAssignments(message)
         ) : (
-          <p className="text-sayhalo-dark text-sm md:text-base">{message}</p>
+          <div className="text-sayhalo-dark text-sm md:text-base">
+            <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">{message}</ReactMarkdown>
+          </div>
         )}
       </div>
     </div>

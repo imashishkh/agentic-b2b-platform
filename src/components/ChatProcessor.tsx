@@ -7,12 +7,59 @@ import { processMarkdownContent, extractMarkdownFromMessage } from "@/utils/mark
 import { useFileProcessor } from "@/hooks/useFileProcessor";
 import { useKnowledgeProcessor } from "@/hooks/useKnowledgeProcessor";
 import { useChatActions, setGlobalAddMessage, setGlobalSetProjectPhases } from "@/hooks/useChatActions";
+import { useToast } from "@/hooks/use-toast";
+
+// API key storage key
+const API_KEY_STORAGE_KEY = "claude_api_key";
 
 /**
  * Props interface for the ChatProcessor component
  */
 interface ChatProcessorProps {
   chatRef: React.MutableRefObject<any>;  // Reference to expose methods to parent
+}
+
+/**
+ * Function to call the Claude API
+ */
+async function callClaudeApi(prompt: string): Promise<string> {
+  const apiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+  
+  if (!apiKey) {
+    throw new Error("Claude API key not found. Please add it in Settings.");
+  }
+  
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01"
+      },
+      body: JSON.stringify({
+        model: "claude-3-sonnet-20240229",
+        max_tokens: 4000,
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Claude API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.content[0].text;
+  } catch (error) {
+    console.error("Error calling Claude API:", error);
+    throw error;
+  }
 }
 
 /**
@@ -40,6 +87,8 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     addTestingStrategy,
     setGitHubRepository
   } = useChat();
+  
+  const { toast } = useToast();
 
   // Set up global action handlers for non-React code
   useEffect(() => {
@@ -94,6 +143,22 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         );
         
         if (handled) return;
+      }
+      
+      // Check if it's a direct API settings-related request
+      if (userMessage.toLowerCase().includes("api key") || 
+          userMessage.toLowerCase().includes("claude api") ||
+          userMessage.toLowerCase().includes("anthropic") ||
+          userMessage.toLowerCase().includes("settings")) {
+        setTimeout(() => {
+          addMessage({ 
+            type: "agent", 
+            content: "You can set your Claude API key by clicking the Settings icon in the chat input bar. The API key will be stored securely in your browser's local storage and will be used to enhance the quality of AI responses.",
+            agentType: AgentType.MANAGER
+          });
+          setIsAgentTyping(false);
+        }, 1000);
+        return;
       }
       
       // Handle GitHub integration request
@@ -233,8 +298,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         return;
       }
       
-      // Continue with existing logic for handling text inputs
-      
       // Check if this is the first user message and they didn't upload a file
       if (hasRequestedFile && 
           !userMessage.includes("```markdown") && 
@@ -282,8 +345,34 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         // Create the appropriate agent instance
         const agent = createAgent(agentType);
         
-        // Generate response using the specialized agent
-        const response = await agent.generateResponse(userMessage, projectPhases);
+        // Generate prompt for Claude API or simulated response
+        const prompt = agent.createPrompt ? 
+          agent.createPrompt(userMessage, projectPhases) : 
+          `As an AI agent specializing in e-commerce development, please respond to: ${userMessage}`;
+        
+        let response;
+        
+        // Try to use Claude API if the key is available
+        const apiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+        
+        if (apiKey) {
+          try {
+            // Use Claude API for enhanced responses
+            response = await callClaudeApi(prompt);
+          } catch (error) {
+            console.error("Error using Claude API:", error);
+            // Fallback to simulated response
+            toast({
+              title: "API Error",
+              description: "Failed to use Claude API. Using simulated responses instead.",
+              variant: "destructive"
+            });
+            response = await agent.generateResponse(userMessage, projectPhases);
+          }
+        } else {
+          // No API key, use simulated response
+          response = await agent.generateResponse(userMessage, projectPhases);
+        }
         
         // If this is the manager agent, check if we need to enhance response with knowledge base
         let enhancedResponse = response;
@@ -297,10 +386,16 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
           }
         }
         
+        // Format the response for better readability using markdown
+        const formattedResponse = enhancedResponse
+          .replace(/\n\n/g, "\n\n")  // Ensure paragraph breaks
+          .replace(/^\s*(?:-|\*|\d+\.)\s(.+)$/gm, "- $1")  // Format list items consistently
+          .replace(/^(#+)\s*(.+)$/gm, "$1 $2");  // Ensure space after heading markers
+        
         setTimeout(() => {
           addMessage({ 
             type: "agent", 
-            content: enhancedResponse,
+            content: formattedResponse,
             agentType: agentType
           });
           setIsAgentTyping(false);
@@ -309,7 +404,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         console.error("Error generating response:", error);
         addMessage({ 
           type: "agent", 
-          content: "I encountered an error processing your message. Please try again.",
+          content: "I encountered an error processing your message. Please try again or check the API settings.",
           agentType: AgentType.MANAGER
         });
         setIsAgentTyping(false);
