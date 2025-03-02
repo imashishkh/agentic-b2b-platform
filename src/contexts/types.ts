@@ -39,6 +39,7 @@ export interface KnowledgeResource {
   lastAccessed?: string;
   accessCount?: number;
   calculatedScore?: number;
+  dateAdded?: string;
 }
 
 // Alias KnowledgeBaseResource to KnowledgeResource for backward compatibility
@@ -51,6 +52,16 @@ export interface ProjectTask {
   status: "open" | "in progress" | "completed";
   assignee?: string;
   dueDate?: Date;
+  // Add missing properties used in components
+  startDate?: string;
+  endDate?: string;
+  duration?: number;
+  progress?: number;
+  milestone?: boolean;
+  priority?: string;
+  assignedTo?: AgentType;
+  dependencies?: string[];
+  subtasks?: ProjectTask[];
 }
 
 // Define the Task type for compatibility
@@ -59,10 +70,11 @@ export type Task = ProjectTask;
 export interface ProjectPhase {
   id: string;
   name: string;
-  tasks: Task[];
-  startDate?: Date;
-  endDate?: Date;
+  tasks: ProjectTask[];
+  startDate?: string | Date;
+  endDate?: string | Date;
   status?: "planned" | "in-progress" | "completed";
+  milestones?: any[]; // Add to fix TaskVisualization.tsx errors
 }
 
 export interface Milestone {
@@ -101,6 +113,7 @@ export interface ArchitectureProposal {
     name: string;
     type: string;
     description: string;
+    dependencies?: string[];
   }[];
   relationships: {
     source: string;
@@ -108,6 +121,13 @@ export interface ArchitectureProposal {
     type: string;
   }[];
   approved?: boolean;
+  name?: string;
+  dateCreated?: string;
+  diagram?: string;
+  pattern?: string;
+  patternDescription?: string;
+  technologies?: string[];
+  dependencies?: any[];
 }
 
 export interface TestingStrategy {
@@ -125,6 +145,16 @@ export interface TestingStrategy {
     e2e: number;
   };
   approved?: boolean;
+  approaches?: any[];
+  testingLevels?: any[];
+  tooling?: any[];
+  name?: string;
+}
+
+export interface ExtendedTestingStrategy extends TestingStrategy {
+  approaches: any[];
+  testingLevels?: any[];
+  tooling?: any[];
 }
 
 export interface GitHubRepository {
@@ -154,6 +184,8 @@ export interface SecurityFinding {
   severity: "low" | "medium" | "high" | "critical";
   status: "open" | "fixed" | "false_positive" | "wont_fix";
   recommendation: string;
+  type?: string;
+  codeLocation?: string;
 }
 
 export interface ComplianceCheck {
@@ -168,7 +200,9 @@ export interface ComplianceRequirement {
   id: string;
   standard: string;
   description: string;
-  status: "implemented" | "pending" | "not_applicable";
+  status: "implemented" | "pending" | "not_applicable" | "passed" | "warning" | "failed";
+  name?: string;
+  recommendation?: string;
 }
 
 export interface PerformanceMetric {
@@ -192,6 +226,7 @@ export interface OptimizationRecommendation {
   effort: "low" | "medium" | "high";
   category: "frontend" | "backend" | "database" | "infrastructure";
   implemented: boolean;
+  metricId?: string;
 }
 
 export interface ChatContextType {
@@ -238,7 +273,7 @@ export interface ChatContextType {
   setIsFetchingResponse: (isFetching: boolean) => void;
   setIsLoadingExample: (isLoading: boolean) => void;
   addProjectPhase: (phase: any) => void;
-  setProjectPhases?: (phases: ProjectPhase[]) => void; 
+  setProjectPhases: (phases: ProjectPhase[]) => void; 
   setHasRequestedFile: (hasRequested: boolean) => void;
   addSuggestion: (suggestion: Suggestion) => void;
   removeSuggestion: (title: string) => void;
