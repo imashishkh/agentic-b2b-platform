@@ -26,7 +26,7 @@ export function ChatMessages({
   return (
     <div 
       ref={chatContainerRef} 
-      className="flex-1 overflow-y-auto p-4 pb-40 bg-blue-50/50"
+      className="flex-1 overflow-y-auto p-4 pb-44 bg-blue-50/50"
       style={{ maxHeight: 'calc(100vh - 160px)' }}
     >
       {messages.map((message, index) => (
