@@ -26,7 +26,8 @@ export default function ChatView() {
     suggestions,
     addMessage,
     securityReviewActive,
-    collaborationActive
+    // Use optional chaining for potentially undefined properties
+    collaborationActive = false // Provide default value
   } = useChat();
   
   const chatProcessorRef = useRef<any>(null);

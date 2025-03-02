@@ -1,3 +1,4 @@
+
 import { AgentType } from "@/agents/AgentTypes";
 import { ChatMessageProps } from "@/components/ChatMessage";
 
@@ -182,6 +183,57 @@ export interface ComplianceRequirement {
 }
 
 /**
+ * Performance metric interface
+ */
+export interface PerformanceMetric {
+  id: string;
+  name: string;
+  category: 'frontend' | 'backend' | 'network' | 'database' | 'memory';
+  description: string;
+  unit: string;
+  threshold: {
+    warning: number;
+    critical: number;
+  };
+  currentValue?: number;
+  benchmarkValue?: number;
+  trending?: 'improving' | 'stable' | 'degrading';
+  lastUpdated?: string;
+  priority?: 'low' | 'medium' | 'high'; // Added missing property
+  target?: number; // Added missing property
+  measurementMethod?: string; // Added missing property
+}
+
+/**
+ * Optimization recommendation interface
+ */
+export interface OptimizationRecommendation {
+  id: string;
+  metricId: string;
+  title: string;
+  description: string;
+  impact: 'low' | 'medium' | 'high';
+  effort: 'low' | 'medium' | 'high';
+  codeSnippet?: string;
+  resources?: string[];
+  priority?: 'low' | 'medium' | 'high'; // Added missing property
+  estimatedImpact?: string; // Added missing property
+}
+
+/**
+ * Monitoring tool interface
+ */
+export interface MonitoringTool {
+  name: string;
+  description: string;
+  purpose: string;
+  features: string[];
+  implementationComplexity: string;
+  setupInstructions: string;
+  metricsMapping: Record<string, string>;
+}
+
+/**
  * Chat context interface
  */
 export interface ChatContextType {
@@ -204,6 +256,7 @@ export interface ChatContextType {
   complianceChecks: ComplianceCheck[];
   vulnerabilityAssessments: any[];
   bestPracticesViolations: any[];
+  collaborationActive?: boolean; // Added missing property
   addMessage: (message: any) => void;
   clearMessages: () => void;
   setIsAgentTyping: (isTyping: boolean) => void;
@@ -230,4 +283,5 @@ export interface ChatContextType {
   updateComplianceCheck: (id: string, check: Partial<ComplianceCheck>) => void;
   addVulnerabilityAssessment: (assessment: any) => void;
   addBestPracticesViolation: (violation: any) => void;
+  setCollaborationActive?: (isActive: boolean) => void; // Added missing method
 }

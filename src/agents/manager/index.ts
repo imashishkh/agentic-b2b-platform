@@ -1,25 +1,21 @@
 
 import { BaseAgent } from "../BaseAgent";
 import { AgentType } from "../AgentTypes";
-import { toast } from "sonner";
-import { recommendArchitecturalPatterns } from "@/utils/architectureUtils";
-import { SecurityFinding, ComplianceRequirement } from "@/contexts/types";
-import { PerformanceMetric, OptimizationRecommendation } from "../AgentTypes";
-
-// Import the specialized manager modules
-import * as TaskManager from "./TaskManager";
-import * as SecurityManager from "./SecurityManager";
-import * as PerformanceManager from "./PerformanceManager";
-import * as MessageDetector from "./MessageDetector";
-import * as KnowledgeManager from "./KnowledgeManager";
+import TaskManager from "./TaskManager";
+import SecurityManager from "./SecurityManager";
+import PerformanceManager from "./PerformanceManager";
+import KnowledgeManager from "./KnowledgeManager";
+import MessageDetector from "./MessageDetector";
+import { 
+  PerformanceMetric, 
+  OptimizationRecommendation, 
+  SecurityFinding,
+  ComplianceRequirement
+} from "@/contexts/types";
+import { generatePerformanceReport } from "@/utils/performanceMonitoring";
 
 /**
- * DevManager Agent - Oversees project structure and coordinates between specialized agents
- * 
- * This agent serves as the primary coordinator for the entire e-commerce development project.
- * It handles high-level planning, task allocation, and cross-functional coordination.
- * The manager has final authority on technical decisions and can resolve conflicts between
- * specialist recommendations.
+ * DevManager Agent - Main agent implementation that integrates specialized manager modules
  */
 export class ManagerAgent extends BaseAgent {
   type = AgentType.MANAGER;
@@ -27,25 +23,7 @@ export class ManagerAgent extends BaseAgent {
   title = "Development Manager";
   description = "Coordinates project phases and integrates work from all specialized agents";
   
-  // Track the current project state
-  private projectRequirements: string = "";
-  private parsedTasks: any[] = [];
-  private assignedTasks: Map<AgentType, any[]> = new Map();
-  private performanceMetrics: PerformanceMetric[] = [];
-  private performanceRecommendations: OptimizationRecommendation[] = [];
-  
-  constructor() {
-    super();
-    // Initialize empty task assignments
-    Object.values(AgentType).forEach(agentType => {
-      this.assignedTasks.set(agentType, []);
-    });
-  }
-  
-  /**
-   * Areas of expertise for the Development Manager
-   * These inform the agent's capabilities and response generation
-   */
+  // Areas of expertise (kept from original implementation)
   expertise = [
     "Project planning",
     "Task breakdown",
@@ -61,10 +39,6 @@ export class ManagerAgent extends BaseAgent {
     "Vulnerability assessment",
     "Compliance checking",
     "Best practices enforcement",
-    "Security review",
-    "Vulnerability assessment",
-    "Compliance checking",
-    "Best practices enforcement",
     "Performance optimization strategy",
     "E-commerce domain expertise",
     "Knowledge base management",
@@ -73,7 +47,7 @@ export class ManagerAgent extends BaseAgent {
     "Testing strategy development",
     "GitHub integration"
   ];
-  
+
   /**
    * Determines if this agent can handle the given message
    * 
@@ -95,39 +69,21 @@ export class ManagerAgent extends BaseAgent {
     console.log("Processing markdown file in ManagerAgent");
     
     try {
-      // Store the requirements for future reference
-      this.projectRequirements = markdownContent;
+      // Extract tasks from the markdown using TaskManager
+      const extractedTasks = await TaskManager.parseMarkdownForTasks(markdownContent);
       
-      // Use enhanced markdown parsing if available
+      // Assign tasks to specialists
+      TaskManager.assignTasksToSpecialists(extractedTasks);
+      
+      // Generate task summary
       try {
-        const { extractTasksWithDependencies, generateDependencyGraph } = await import('@/utils/markdownParser');
-        
-        // Use enhanced task extraction with dependencies and priority detection
-        const extractedTasks = extractTasksWithDependencies(markdownContent);
-        this.parsedTasks = extractedTasks;
-        
-        // Generate dependency graph
+        const { generateDependencyGraph } = await import('@/utils/markdownParser');
         const dependencyGraph = generateDependencyGraph(extractedTasks);
-        console.log("Generated dependency graph:", dependencyGraph);
-        
-        // Assign tasks to different specialist agents
-        this.assignedTasks = await TaskManager.assignTasksToSpecialists(extractedTasks);
-        
-        return TaskManager.generateEnhancedTaskSummary(extractedTasks, dependencyGraph, this.projectRequirements);
+        return TaskManager.generateEnhancedTaskSummary(extractedTasks, dependencyGraph);
       } catch (error) {
-        console.error("Error using enhanced markdown parsing, falling back to basic:", error);
-        // Fall back to basic parsing if enhanced parsing fails
+        console.error("Error generating enhanced summary:", error);
+        return TaskManager.generateTaskSummary();
       }
-      
-      // Fall back to original method if enhanced method fails
-      // Extract tasks from the markdown
-      const tasks = await TaskManager.extractTasksFromMarkdown(markdownContent);
-      this.parsedTasks = tasks;
-      
-      // Assign tasks to different specialist agents
-      this.assignedTasks = await TaskManager.assignTasksToSpecialists(tasks);
-      
-      return TaskManager.generateTaskSummary(this.parsedTasks, this.assignedTasks);
     } catch (error) {
       console.error("Error processing markdown file:", error);
       return "I encountered an error while processing your requirements document. Please try again or upload a different file.";
@@ -135,89 +91,156 @@ export class ManagerAgent extends BaseAgent {
   }
   
   /**
-   * Generate a response based on the message
-   * 
-   * @param message - The user message
-   * @param projectPhases - Optional project phases
-   * @returns Promise with the response
+   * Proxy methods to the MessageDetector
    */
-  async generateResponse(message: string, projectPhases?: any[]): Promise<string> {
-    console.log("Generating response for:", message);
-    
-    // Check for message intent
-    if (MessageDetector.isFileUploadRequest(message)) {
-      // Handle file upload requests
-      return "I'll analyze your uploaded requirements document. Please give me a moment to process it.";
-    } else if (MessageDetector.isKnowledgeBaseRequest(message)) {
-      // Handle knowledge base requests
-      return KnowledgeManager.generateKnowledgeBasePrompt();
-    } else if (MessageDetector.isArchitectureRequest(message)) {
-      // Handle architecture proposals
-      const recommendations = recommendArchitecturalPatterns(this.projectRequirements || message);
-      const topPatterns = recommendations.slice(0, 3);
-      
-      const response = ["# Architecture Recommendations\n\n"];
-      response.push("Based on your requirements, I recommend these architectural patterns:\n\n");
-      
-      topPatterns.forEach((rec, index) => {
-        response.push(`## ${index + 1}. ${rec.pattern}\n\n`);
-        response.push(`${rec.description}\n\n`);
-        response.push("**Benefits:**\n\n");
-        response.push("- Scalability\n");
-        response.push("- Maintainability\n");
-        response.push("- Separation of concerns\n\n");
-      });
-      
-      return response.join("");
-    } else if (MessageDetector.isSecurityAssessmentRequest(message)) {
-      // Handle security assessment requests
-      const mockCode = "Sample code for demonstration"; // This would be actual code in a real implementation
-      const findings = await SecurityManager.performSecurityScan(mockCode);
-      const requirements = await SecurityManager.performComplianceCheck(mockCode);
-      
-      return SecurityManager.generateSecurityReport(findings, requirements);
-    } else if (MessageDetector.isPerformanceOptimizationRequest(message)) {
-      // Handle performance optimization requests
-      const metrics = PerformanceManager.getPerformanceMetrics();
-      return PerformanceManager.generatePerformanceMonitoringPlan("Your E-commerce Application");
-    } else if (MessageDetector.isTaskManagementRequest(message) && this.parsedTasks.length > 0) {
-      // Handle task management requests if tasks have been parsed
-      return TaskManager.generateTaskSummary(this.parsedTasks, this.assignedTasks);
-    } else {
-      // Default response
-      return super.generateResponse(message, projectPhases);
-    }
+  isKnowledgeBaseRequest(message: string): boolean {
+    return MessageDetector.isKnowledgeBaseRequest(message);
+  }
+  
+  isArchitectureRequest(message: string): boolean {
+    return MessageDetector.isArchitectureRequest(message);
+  }
+  
+  isTestingStrategyRequest(message: string): boolean {
+    return MessageDetector.isTestingStrategyRequest(message);
+  }
+  
+  isGitHubRequest(message: string): boolean {
+    return MessageDetector.isGitHubRequest(message);
+  }
+  
+  isFileUploadRequest(message: string): boolean {
+    return MessageDetector.isFileUploadRequest(message);
+  }
+  
+  isSecurityAssessmentRequest(message: string): boolean {
+    return MessageDetector.isSecurityAssessmentRequest(message);
   }
   
   /**
-   * Perform security scan on code
-   * 
-   * @param code - The code to scan
-   * @returns Promise with security findings
+   * Generate knowledge base prompt
+   */
+  generateKnowledgeBasePrompt(): string {
+    return KnowledgeManager.generateKnowledgeBasePrompt();
+  }
+  
+  /**
+   * Proxy methods to the SecurityManager
    */
   async performSecurityScan(code: string): Promise<SecurityFinding[]> {
     return SecurityManager.performSecurityScan(code);
   }
   
-  /**
-   * Perform compliance check on code
-   * 
-   * @param code - The code to check
-   * @param standard - The compliance standard
-   * @returns Promise with compliance requirements
-   */
   async performComplianceCheck(code: string, standard: string = "owasp"): Promise<ComplianceRequirement[]> {
     return SecurityManager.performComplianceCheck(code, standard);
   }
   
+  generateSecurityReport(findings: SecurityFinding[], requirements: ComplianceRequirement[]): string {
+    return SecurityManager.generateSecurityReport(findings, requirements);
+  }
+  
   /**
-   * Generate security report
-   * 
-   * @param findings - Security findings
-   * @param complianceRequirements - Compliance requirements
-   * @returns Formatted security report
+   * Proxy methods to the PerformanceManager
    */
-  generateSecurityReport(findings: SecurityFinding[], complianceRequirements: ComplianceRequirement[]): string {
-    return SecurityManager.generateSecurityReport(findings, complianceRequirements);
+  addPerformanceMetric(metric: PerformanceMetric): void {
+    PerformanceManager.addPerformanceMetric(metric);
+  }
+  
+  addOptimizationRecommendation(recommendation: OptimizationRecommendation): void {
+    PerformanceManager.addOptimizationRecommendation(recommendation);
+  }
+  
+  generatePerformanceReport(): string {
+    return generatePerformanceReport(
+      PerformanceManager.getPerformanceMetrics(), 
+      PerformanceManager.getOptimizationRecommendations()
+    );
+  }
+  
+  generatePerformanceMonitoringPlan(appName: string): string {
+    const metrics = PerformanceManager.getPerformanceMetrics();
+    const recommendations = PerformanceManager.getOptimizationRecommendations();
+    
+    const plan = ["# Performance Monitoring Plan\n\n"];
+    
+    plan.push(`## Overview for ${appName}\n\n`);
+    plan.push("This plan outlines the key metrics, tools, and processes for monitoring and optimizing the performance of your application.\n\n");
+    
+    // Key metrics
+    plan.push("## Key Performance Metrics\n\n");
+    
+    metrics.forEach(metric => {
+      plan.push(`### ${metric.name}\n\n`);
+      plan.push(`- **Description:** ${metric.description}\n`);
+      plan.push(`- **Target:** ${metric.threshold.warning} ${metric.unit}\n`);
+      plan.push(`- **Category:** ${metric.category}\n\n`);
+    });
+    
+    // Add recommendations
+    if (recommendations.length > 0) {
+      plan.push("## Recommended Optimizations\n\n");
+      
+      // Group by impact
+      const highImpact = recommendations.filter(r => r.impact === 'high');
+      const mediumImpact = recommendations.filter(r => r.impact === 'medium');
+      const lowImpact = recommendations.filter(r => r.impact === 'low');
+      
+      if (highImpact.length > 0) {
+        plan.push("### High Priority\n\n");
+        highImpact.forEach(rec => {
+          plan.push(`- **${rec.title}**: ${rec.description}\n\n`);
+        });
+      }
+      
+      if (mediumImpact.length > 0) {
+        plan.push("### Medium Priority\n\n");
+        mediumImpact.forEach(rec => {
+          plan.push(`- **${rec.title}**: ${rec.description}\n\n`);
+        });
+      }
+      
+      if (lowImpact.length > 0) {
+        plan.push("### Low Priority\n\n");
+        lowImpact.forEach(rec => {
+          plan.push(`- **${rec.title}**: ${rec.description}\n\n`);
+        });
+      }
+    }
+    
+    return plan.join("");
+  }
+  
+  /**
+   * Generate a monitoring tool setup document
+   */
+  generateMonitoringToolDoc(toolKey: string): string {
+    // Import monitoringToolIntegrations from the utility
+    const { monitoringToolIntegrations } = require("@/utils/performanceMonitoring");
+    
+    if (!monitoringToolIntegrations[toolKey]) {
+      return "# Error\n\nMonitoring tool not found.";
+    }
+    
+    const tool = monitoringToolIntegrations[toolKey];
+    return `# ${tool.name} Integration Guide\n\n${tool.description}\n\n${tool.setupInstructions}`;
+  }
+  
+  /**
+   * Generate technical documentation
+   */
+  generateTechnicalDocumentation(docType: string): string {
+    // Basic template based on type
+    switch (docType.toLowerCase()) {
+      case 'api':
+        return "# API Documentation\n\nThis document outlines the API endpoints and usage for the project.";
+      case 'technical':
+        return "# Technical Documentation\n\nThis document provides technical details about the project architecture and implementation.";
+      case 'user':
+        return "# User Guide\n\nThis document provides instructions for using the application.";
+      case 'maintenance':
+        return "# Maintenance Guide\n\nThis document provides guidelines for maintaining and updating the application.";
+      default:
+        return `# ${docType} Documentation\n\nThis document provides information about the ${docType} aspects of the project.`;
+    }
   }
 }
