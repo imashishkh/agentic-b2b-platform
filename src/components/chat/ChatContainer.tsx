@@ -183,7 +183,7 @@ export function ChatContainer() {
         <ChatView />
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 bg-white/95 border-t backdrop-blur-sm py-2 shadow-md">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 border-t backdrop-blur-sm py-2 shadow-md z-50">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-between mb-1.5">
             <div className="flex items-center gap-1">
