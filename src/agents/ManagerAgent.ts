@@ -1,4 +1,3 @@
-<lov-code>
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 import { createAgent } from "./AgentFactory";
@@ -135,8 +134,7 @@ export class ManagerAgent extends BaseAgent {
     // Add the total number of tasks
     const totalTasks = extractedTasks.length;
     const totalSubtasks = extractedTasks.reduce((count, task) => {
-      return count + (task.subtasks && Array.isArray(task.subtasks) ? task.subtasks.length : 0);
-    }, 0);
+      return count + (task.subtasks && Array.isArray(task.subtasks) ? task.subtasks.length : 0);\n    }, 0);
     
     summary.push(`I've analyzed your requirements document and extracted ${totalTasks} main tasks and ${totalSubtasks} subtasks with dependencies and priority information.\n`);
     
@@ -797,4 +795,4 @@ To add a resource, simply share a link with a brief description of what it conta
       });
     }
     
-    
+    return requirements;
