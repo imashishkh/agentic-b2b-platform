@@ -45,7 +45,7 @@ export function MessageInput({ value, onChange, onKeyDown, disabled }: MessageIn
       disabled={disabled}
       placeholder={disabled ? "DevManager is thinking..." : "Type a message or upload a project requirements file..."}
       className={cn(
-        "flex-1 py-3 px-4 rounded-full",
+        "flex-1 py-3.5 px-4 rounded-full",
         "bg-transparent border-none",
         "focus:outline-none focus:ring-0",
         "text-gray-700 min-w-0 transition-all",

@@ -5,17 +5,14 @@ import { SendButton } from "./SendButton";
 import { FileUploadButton } from "./FileUploadButton";
 import { FilePreview } from "./FilePreview";
 import { FileUploadProgress } from "./FileUploadProgress";
-import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
 
 /**
  * ChatInput Component
  * 
- * A unified interface for user interactions including:
+ * A streamlined interface for user interactions including:
  * - Text message input
  * - File uploads with progress indication
  * - Message sending functionality
- * - Example content generation
  * 
  * The component maintains its own state for the message content
  * while delegating file handling and message sending to parent components.
@@ -116,20 +113,6 @@ export function ChatInput({
           />
           <SendButton onClick={handleSendMessage} disabled={!message.trim() || isDisabled || isUploading} />
         </div>
-      </div>
-      
-      {/* Example button with more subtle styling */}
-      <div className="flex justify-end mt-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onExampleClick}
-          disabled={isDisabled || isUploading}
-          className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 bg-white/80 shadow-sm gap-1.5"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Example</span>
-        </Button>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
+
 import React from "react";
 import { ChatMessage } from "./ChatMessage";
-import { ChatMessageProps } from "./ChatMessage";
 import { AgentType } from "@/agents/AgentTypes";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -54,7 +54,7 @@ export function ChatMessages({
   }, [messages]);
   
   return (
-    <div className="flex-1 overflow-y-auto py-6 px-4 md:px-6 space-y-6 mb-40 md:mb-32">
+    <div className="flex-1 overflow-y-auto py-8 px-4 md:px-6 space-y-5 mb-16">
       {filteredMessages.map((message, index) => {
         // Check if the message is a documentation message
         const isDoc = typeof message.content === 'string' && isDocumentation(message.content);

@@ -63,9 +63,9 @@ export default function ChatView() {
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader />
         
-        {/* Main chat message area */}
+        {/* Main chat message area - increased height and improved spacing */}
         <div className="relative flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto pb-20 px-4">
+          <div className="h-full overflow-y-auto pb-24 px-4">
             <ChatMessages 
               messages={messages}
               isLoadingExample={isLoadingExample} 
@@ -76,8 +76,8 @@ export default function ChatView() {
           </div>
         </div>
         
-        {/* Chat input area with suggestions */}
-        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background to-transparent py-3">
+        {/* Chat input area with suggestions - repositioned closer to messages */}
+        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background to-transparent py-4">
           {/* Chat bubble suggestions - positioned above input */}
           {uniqueSuggestions.length > 0 && (
             <div className="max-w-2xl mx-auto px-4 mb-3">

@@ -27,7 +27,7 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
     <div className="space-y-2 w-full">
       {/* Optional header - only shown if needed */}
       {(title || description) && (
-        <div className="flex items-center gap-2 px-1.5 mb-1">
+        <div className="flex items-center gap-2 px-1.5 mb-1.5">
           <div className="bg-blue-100 p-1 rounded-full text-blue-600">
             <MessageCircle className="h-3.5 w-3.5" />
           </div>
@@ -52,7 +52,7 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
               size="sm"
               className="bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 hover:text-blue-800 
                         hover:border-blue-300 transition-colors text-sm font-normal justify-start 
-                        rounded-2xl rounded-bl-sm px-4 py-2 h-auto shadow-sm"
+                        rounded-2xl rounded-bl-sm px-4 py-2 h-auto shadow-sm hover:shadow-md"
               onClick={() => onSelect(optionMessage)}
             >
               <span className="mr-1.5">{optionText}</span>

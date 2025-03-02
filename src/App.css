@@ -98,6 +98,13 @@ body, html {
   background: linear-gradient(135deg, #4338ca, #3b82f6);
   color: #fff;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  margin-bottom: 14px;
+  transition: transform 0.2s ease;
+}
+
+.message-bubble-user:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .message-bubble-agent {
@@ -106,6 +113,13 @@ body, html {
   color: #1f2937;
   border: 1px solid #f1f5f9;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-bottom: 14px;
+  transition: transform 0.2s ease;
+}
+
+.message-bubble-agent:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* Documentation message styling */

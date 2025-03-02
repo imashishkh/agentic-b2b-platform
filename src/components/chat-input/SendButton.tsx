@@ -23,7 +23,7 @@ export const SendButton: React.FC<SendButtonProps> = ({ disabled, onClick }) => 
         "p-2 rounded-full flex items-center justify-center transition-all duration-200",
         disabled
           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-          : "bg-blue-500 text-white hover:bg-blue-600"
+          : "bg-blue-500 text-white hover:bg-blue-600 hover:shadow-md transform hover:scale-105"
       )}
       onClick={onClick}
       disabled={disabled}
