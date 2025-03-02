@@ -9,7 +9,8 @@ import {
   ChatContextType,
   SuggestionProps,
   SecurityReview,
-  ComplianceCheck
+  ComplianceCheck,
+  SetupWizardStep
 } from "./types";
 import { initialMessages, initialState } from "./initialState";
 
@@ -34,13 +35,15 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [projectPhases, setProjectPhases] = useState<any[]>([]);
   const [hasRequestedFile, setHasRequestedFile] = useState(false);
   const [currentAgentType, setCurrentAgentType] = useState<AgentType>(AgentType.MANAGER);
-  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseResource[]>([]);
+  const [knowledgeBase, setKnowledgeBase] = useState<{[category: string]: KnowledgeBaseResource[]}>({});
   const [isRequestingKnowledge, setIsRequestingKnowledge] = useState(false);
   const [architectureProposals, setArchitectureProposals] = useState<ArchitectureProposal[]>([]);
   const [testingStrategies, setTestingStrategies] = useState<TestingStrategy[]>([]);
   const [gitHubRepository, setGitHubRepo] = useState<GitHubRepository | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestionProps[]>([]);
   const [lastProcessedSuggestion, setLastProcessedSuggestion] = useState<string | null>(null);
+  // New state for wizard step tracking
+  const [currentWizardStep, setCurrentWizardStep] = useState<SetupWizardStep>(SetupWizardStep.INITIAL);
   
   // Security and compliance states
   const [securityReviewActive, setSecurityReviewActive] = useState(false);
@@ -104,8 +107,11 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
    * 
    * @param resource - The resource object to add to the knowledge base
    */
-  const addKnowledgeResource = (resource: KnowledgeBaseResource) => {
-    setKnowledgeBase(prev => [...prev, resource]);
+  const addKnowledgeResource = (category: string, resource: KnowledgeBaseResource) => {
+    setKnowledgeBase(prev => ({
+      ...prev,
+      [category]: [...(prev[category] || []), resource]
+    }));
   };
 
   /**
@@ -113,8 +119,11 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
    * 
    * @param id - The ID of the resource to remove
    */
-  const removeKnowledgeResource = (id: string) => {
-    setKnowledgeBase(prev => prev.filter(resource => resource.id !== id));
+  const removeKnowledgeResource = (category: string, id: string) => {
+    setKnowledgeBase(prev => ({
+      ...prev,
+      [category]: prev[category]?.filter(resource => resource.id !== id) || []
+    }));
   };
 
   /**
@@ -341,6 +350,8 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       projectPlans,
       currentPlanId,
       claudeAPIEnabled,
+      currentWizardStep,
+      setCurrentWizardStep,
       addMessage,
       clearMessages,
       setIsAgentTyping,

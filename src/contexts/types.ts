@@ -52,7 +52,7 @@ export interface ProjectTask {
   status: "open" | "in progress" | "completed";
   assignee?: string;
   dueDate?: Date;
-  // Add missing properties used in components
+  // Add properties used in components
   startDate?: string;
   endDate?: string;
   duration?: number;
@@ -74,7 +74,7 @@ export interface ProjectPhase {
   startDate?: string | Date;
   endDate?: string | Date;
   status?: "planned" | "in-progress" | "completed";
-  milestones?: any[]; // Add to fix TaskVisualization.tsx errors
+  milestones?: any[]; // For TaskVisualization.tsx
 }
 
 export interface Milestone {
@@ -229,6 +229,23 @@ export interface OptimizationRecommendation {
   metricId?: string;
 }
 
+// New enum to track the setup wizard steps
+export enum SetupWizardStep {
+  INITIAL = 'initial',
+  UPLOAD_REQUIREMENTS = 'upload_requirements',
+  REQUIREMENTS_UPLOADED = 'requirements_uploaded',
+  GITHUB_SETUP = 'github_setup',
+  GITHUB_CONNECTED = 'github_connected',
+  DOCUMENTATION_SETUP = 'documentation_setup',
+  DOCUMENTATION_ADDED = 'documentation_added',
+  UI_COMPONENTS_SETUP = 'ui_components_setup',
+  UI_COMPONENTS_ADDED = 'ui_components_added',
+  PROJECT_REVIEW = 'project_review',
+  PROJECT_APPROVED = 'project_approved',
+  PROJECT_IN_PROGRESS = 'project_in_progress',
+  PROJECT_COMPLETED = 'project_completed'
+}
+
 export interface ChatContextType {
   messages: ChatMessageProps[];
   isAgentTyping: boolean;
@@ -267,6 +284,9 @@ export interface ChatContextType {
   securityReviews?: SecurityReview[];
   complianceChecks?: ComplianceCheck[];
   isRequestingKnowledge?: boolean;
+  // New wizard state property
+  currentWizardStep: SetupWizardStep;
+  setCurrentWizardStep: (step: SetupWizardStep) => void;
   addMessage: (message: any) => void;
   clearMessages: () => void;
   setIsAgentTyping: (isTyping: boolean) => void;

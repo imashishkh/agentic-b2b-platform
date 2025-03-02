@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
@@ -5,7 +6,7 @@ import * as AgentFactory from "@/agents/AgentFactory";
 import { toast } from "sonner";
 import { ManagerAgent } from "@/agents/ManagerAgent";
 import { extractTasksWithDependencies, generateDependencyGraph } from "@/utils/markdownParser";
-import { KnowledgeResource } from "@/contexts/types";
+import { KnowledgeResource, SetupWizardStep } from "@/contexts/types";
 
 export interface ChatProcessorProps {
   chatRef: React.MutableRefObject<any>;
@@ -20,7 +21,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     clearSuggestions,
     isAgentTyping,
     knowledgeBase,
-    suggestions
+    suggestions,
+    currentWizardStep,
+    setCurrentWizardStep
   } = useChat();
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -53,42 +56,12 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
           setIsAgentTyping(false);
           addMessage({
             type: "agent",
-            content: "Hello! I'm DevManager, your AI project manager. How can I help you today?",
+            content: "Hello! I'm DevManager, your AI project manager. Let's set up your e-commerce project together, following a simple step-by-step process.",
             agentType: AgentType.MANAGER,
           });
           
-          const hasGettingStartedSuggestion = suggestions.some(
-            suggestion => suggestion.title === "Getting Started"
-          );
-          
-          if (!hasGettingStartedSuggestion) {
-            addSuggestion({
-              title: "Getting Started",
-              description: "Here are some ways to get started with your project:",
-              options: [
-                {
-                  label: "Upload requirements document",
-                  message: "I'd like to upload a project requirements document",
-                  description: "Upload a markdown file with your project requirements"
-                },
-                {
-                  label: "Start with example project",
-                  message: "I want to start with an example e-commerce project",
-                  description: "Use a pre-configured e-commerce project template"
-                },
-                {
-                  label: "Create knowledge base",
-                  message: "Let's set up a knowledge base for the project",
-                  description: "Add documentation and resources to inform development"
-                },
-                {
-                  label: "Describe project manually",
-                  message: "I want to describe my project requirements manually",
-                  description: "Explain your project requirements in chat"
-                }
-              ]
-            });
-          }
+          // Set initial wizard step
+          setCurrentWizardStep(SetupWizardStep.INITIAL);
         }
       }, 1500);
     }
@@ -480,18 +453,8 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
                   agentType: AgentType.MANAGER,
                 });
                 
-                const suggestions = generateNextStepSuggestions();
-                addSuggestion({
-                  title: "Next Steps",
-                  description: "Here are some suggested next steps for your project:",
-                  options: suggestions
-                });
-                
-                addMessage({
-                  type: "agent",
-                  content: "Now that I've analyzed your requirements, you can proceed with one of the suggested next steps above, or ask me any specific questions about the project.",
-                  agentType: AgentType.MANAGER,
-                });
+                // Progress to next wizard step after requirements uploaded
+                setCurrentWizardStep(SetupWizardStep.REQUIREMENTS_UPLOADED);
                 
                 setIsProcessing(false);
               }, 2000);
@@ -511,18 +474,125 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
           }
         } else {
           console.log("File type not supported for parsing:", file.type);
-          setIsAgentTyping(false);
-          addMessage({
-            type: "agent",
-            content: `I notice you uploaded a file (${file.name}) but I can only process markdown (.md) files for project requirements.`,
-            agentType: AgentType.MANAGER,
-          });
-          setIsAgentTyping(false);
-          setIsProcessing(false);
-          return;
+          
+          // Handle UI components upload
+          if (currentWizardStep === SetupWizardStep.UI_COMPONENTS_SETUP) {
+            setIsAgentTyping(false);
+            addMessage({
+              type: "agent",
+              content: `I've received your UI components (${file.name}). These will be incorporated into the project design.`,
+              agentType: AgentType.MANAGER,
+            });
+            
+            // Progress to next wizard step for UI components
+            setCurrentWizardStep(SetupWizardStep.UI_COMPONENTS_ADDED);
+            setIsAgentTyping(false);
+            setIsProcessing(false);
+            return;
+          } else {
+            setIsAgentTyping(false);
+            addMessage({
+              type: "agent",
+              content: `I notice you uploaded a file (${file.name}) but I can only process markdown (.md) files for project requirements.`,
+              agentType: AgentType.MANAGER,
+            });
+            setIsAgentTyping(false);
+            setIsProcessing(false);
+            return;
+          }
         }
       }
       
+      // Handle GitHub repository connection
+      if (currentWizardStep === SetupWizardStep.GITHUB_SETUP && 
+          message.toLowerCase().includes("github")) {
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: "I've connected your GitHub repository. This will be used for version control throughout the project.",
+            agentType: AgentType.MANAGER,
+          });
+          
+          // Progress to next wizard step for GitHub
+          setCurrentWizardStep(SetupWizardStep.GITHUB_CONNECTED);
+          setIsProcessing(false);
+        }, 2000);
+        return;
+      }
+      
+      // Handle documentation setup
+      if (currentWizardStep === SetupWizardStep.DOCUMENTATION_SETUP && 
+          message.toLowerCase().includes("documentation")) {
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: "I've indexed the documentation for your technology stack. This will help me provide more relevant suggestions during development.",
+            agentType: AgentType.MANAGER,
+          });
+          
+          // Progress to next wizard step for documentation
+          setCurrentWizardStep(SetupWizardStep.DOCUMENTATION_ADDED);
+          setIsProcessing(false);
+        }, 2000);
+        return;
+      }
+      
+      // Handle project approval
+      if (currentWizardStep === SetupWizardStep.UI_COMPONENTS_ADDED && 
+          message.toLowerCase().includes("approve")) {
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: "Great! I've approved your project plan. I'll now assign tasks to the specialized agents and we'll begin development on your e-commerce website.",
+            agentType: AgentType.MANAGER,
+          });
+          
+          // Progress to project in progress
+          setCurrentWizardStep(SetupWizardStep.PROJECT_IN_PROGRESS);
+          setIsProcessing(false);
+        }, 2000);
+        return;
+      }
+      
+      // Handle adding more resources
+      if (currentWizardStep === SetupWizardStep.UI_COMPONENTS_ADDED && 
+          message.toLowerCase().includes("more resources")) {
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: "You can add more resources to the project. Please upload any additional files or documentation that you'd like to include.",
+            agentType: AgentType.MANAGER,
+          });
+          
+          // Stay in the same step to allow for more resources
+          setIsProcessing(false);
+        }, 2000);
+        return;
+      }
+      
+      // Handle project modification
+      if (currentWizardStep === SetupWizardStep.UI_COMPONENTS_ADDED && 
+          (message.toLowerCase().includes("reject") || message.toLowerCase().includes("modify"))) {
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: "I understand you'd like to modify the project plan. Please let me know what changes you'd like to make, and I'll update the plan accordingly.",
+            agentType: AgentType.MANAGER,
+          });
+          
+          // Go back to review step
+          setCurrentWizardStep(SetupWizardStep.PROJECT_REVIEW);
+          setIsProcessing(false);
+        }, 2000);
+        return;
+      }
+      
+      // Default message handling for other cases
       const agentType = AgentFactory.determineAgentType(enhancedMessage, []);
       console.log("Selected agent type:", agentType);
       
