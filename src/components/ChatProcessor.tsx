@@ -4,6 +4,7 @@ import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
 import * as AgentFactory from "@/agents/AgentFactory";
 import { toast } from "sonner";
+import { ManagerAgent } from "@/agents/ManagerAgent";
 
 // Define the correct interface with chatRef
 export interface ChatProcessorProps {
@@ -15,6 +16,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const isMounted = useRef(true);
   const initialMessageSent = useRef(false);
+  const managerAgent = useRef<ManagerAgent>(AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent);
 
   useEffect(() => {
     isMounted.current = true;
@@ -53,13 +55,15 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   }, [chatRef, addMessage, messages, setIsAgentTyping]);
 
   const processMarkdownFile = async (file: File) => {
+    console.log("Processing markdown file in ChatProcessor:", file.name);
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       
       reader.onload = async (e) => {
         try {
           const content = e.target?.result as string;
-          console.log("File content loaded:", content.substring(0, 200) + "...");
+          console.log("File content loaded, length:", content.length);
+          console.log("File content preview:", content.substring(0, 200) + "...");
           resolve(content);
         } catch (error) {
           console.error("Error processing file content:", error);
@@ -106,6 +110,24 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
               content: "I'm analyzing your requirements document. This may take a moment...",
               agentType: AgentType.MANAGER,
             });
+            
+            // Use the manager agent's specialized markdown processor
+            console.log("Using manager agent's markdown processor");
+            const managerResponse = await managerAgent.current.processMarkdownFile(fileContent);
+            
+            if (isMounted.current) {
+              // Add a slight delay to simulate processing
+              setTimeout(() => {
+                setIsAgentTyping(false);
+                addMessage({
+                  type: "agent",
+                  content: managerResponse,
+                  agentType: AgentType.MANAGER,
+                });
+                setIsProcessing(false);
+              }, 2000);
+            }
+            return;
           } catch (error) {
             console.error("Error processing markdown file:", error);
             setIsAgentTyping(false);
@@ -149,32 +171,12 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         setTimeout(() => {
           setIsAgentTyping(false);
           
-          // For Markdown files, provide a more detailed response
-          if (fileContent) {
-            const detailedResponse = `I've analyzed your requirements document. Here's my understanding:
-
-${generatedResponse}
-
-Would you like me to:
-1. Break this down into specific tasks and milestones?
-2. Suggest a technical stack for implementation?
-3. Estimate timeline and resources needed?
-4. Something else?`;
-            
-            // Add agent response to chat with correct type
-            addMessage({
-              type: "agent",
-              content: detailedResponse,
-              agentType: agentType,
-            });
-          } else {
-            // Add standard agent response to chat
-            addMessage({
-              type: "agent",
-              content: generatedResponse,
-              agentType: agentType,
-            });
-          }
+          // Add agent response to chat with correct type
+          addMessage({
+            type: "agent",
+            content: generatedResponse,
+            agentType: agentType,
+          });
           
           setIsProcessing(false);
         }, typingDelay);

@@ -2,6 +2,7 @@
 import React, { useRef, forwardRef } from "react";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export type FileUploadButtonProps = {
   /**
@@ -29,7 +30,22 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
       
       const files = e.target.files;
       if (files && files.length > 0) {
-        onChange(Array.from(files));
+        const selectedFiles = Array.from(files);
+        
+        // Check if there's a markdown file
+        const markdownFile = selectedFiles.find(file => 
+          file.name.endsWith('.md') || 
+          file.type === 'text/markdown' || 
+          file.type === 'text/plain'
+        );
+        
+        if (markdownFile) {
+          console.log("Markdown file selected:", markdownFile.name);
+          toast.success(`Selected ${markdownFile.name} for processing`);
+          onChange([markdownFile]); // Only pass the markdown file
+        } else {
+          toast.error("Please upload a markdown (.md) file for project requirements");
+        }
       }
       
       // Reset the input so the same file can be uploaded again
@@ -57,7 +73,6 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
-          multiple
           accept=".md,.markdown,.txt,.pdf"
           disabled={disabled}
         />

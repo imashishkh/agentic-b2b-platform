@@ -1,6 +1,7 @@
-
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
+import { createAgent } from "./AgentFactory";
+import { toast } from "sonner";
 
 /**
  * DevManager Agent - Oversees project structure and coordinates between specialized agents
@@ -15,6 +16,11 @@ export class ManagerAgent extends BaseAgent {
   name = "DevManager";
   title = "Development Manager";
   description = "Coordinates project phases and integrates work from all specialized agents";
+  
+  // Track the current project state
+  private projectRequirements: string = "";
+  private parsedTasks: any[] = [];
+  private assignedTasks: Map<AgentType, any[]> = new Map();
   
   /**
    * Areas of expertise for the Development Manager
@@ -47,9 +53,237 @@ export class ManagerAgent extends BaseAgent {
    * @returns boolean indicating whether this agent can handle the message
    */
   canHandle(message: string): boolean {
-    // The manager can handle any message related to project management,
-    // planning, coordination, or technical oversight
-    return message.match(/project|plan|phase|task|milestone|timeline|requirement|specification|team|coordinate|oversee|manage|guide|help|stuck|uncertain|advice|architecture|decision|review|quality|security|performance|knowledge|documentation|resource|reference|github|testing|strategy/i) !== null;
+    // The manager is the default agent and can handle all messages
+    return true;
+  }
+  
+  /**
+   * Process markdown file content and extract project requirements
+   * 
+   * @param markdownContent - The content of the markdown file
+   * @returns Promise with processing result
+   */
+  async processMarkdownFile(markdownContent: string): Promise<string> {
+    console.log("Processing markdown file in ManagerAgent");
+    
+    try {
+      // Store the requirements for future reference
+      this.projectRequirements = markdownContent;
+      
+      // Extract tasks from the markdown
+      const tasks = await this.extractTasksFromMarkdown(markdownContent);
+      this.parsedTasks = tasks;
+      
+      // Assign tasks to different specialist agents
+      await this.assignTasksToSpecialists(tasks);
+      
+      return this.generateTaskSummary();
+    } catch (error) {
+      console.error("Error processing markdown file:", error);
+      return "I encountered an error while processing your requirements document. Please try again or upload a different file.";
+    }
+  }
+  
+  /**
+   * Extract tasks from markdown content
+   * 
+   * @param markdownContent - The markdown content to parse
+   * @returns Array of extracted tasks
+   */
+  private async extractTasksFromMarkdown(markdownContent: string): Promise<any[]> {
+    console.log("Extracting tasks from markdown");
+    
+    try {
+      // Basic parsing of headings as tasks
+      const lines = markdownContent.split('\n');
+      const tasks: any[] = [];
+      
+      let currentTask: any = null;
+      let currentSubtask: any = null;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Parse headings as tasks and subtasks
+        if (line.startsWith('# ')) {
+          // Main sections (epics)
+          const title = line.substring(2).trim();
+          currentTask = {
+            id: `task-${tasks.length + 1}`,
+            title,
+            description: '',
+            subtasks: [],
+            priority: 'medium',
+            category: this.categorizeTask(title)
+          };
+          tasks.push(currentTask);
+          currentSubtask = null;
+        } else if (line.startsWith('## ')) {
+          // Subtasks
+          if (currentTask) {
+            const title = line.substring(3).trim();
+            currentSubtask = {
+              id: `subtask-${currentTask.subtasks.length + 1}`,
+              title,
+              description: '',
+              priority: 'medium',
+              category: this.categorizeTask(title)
+            };
+            currentTask.subtasks.push(currentSubtask);
+          }
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          // List items as requirements or details
+          const detail = line.substring(2).trim();
+          if (currentSubtask) {
+            currentSubtask.description += `• ${detail}\n`;
+          } else if (currentTask) {
+            currentTask.description += `• ${detail}\n`;
+          }
+        } else if (line.length > 0) {
+          // Regular text as description
+          if (currentSubtask) {
+            currentSubtask.description += `${line}\n`;
+          } else if (currentTask) {
+            currentTask.description += `${line}\n`;
+          }
+        }
+      }
+      
+      console.log("Extracted tasks:", tasks);
+      return tasks;
+    } catch (error) {
+      console.error("Error extracting tasks:", error);
+      return [];
+    }
+  }
+  
+  /**
+   * Categorize a task based on its title and description
+   * 
+   * @param text - The text to categorize
+   * @returns The category of the task
+   */
+  private categorizeTask(text: string): AgentType {
+    text = text.toLowerCase();
+    
+    // Frontend tasks
+    if (text.match(/ui|interface|component|screen|page|view|frontend|css|html|style|animation|responsive|mobile|desktop|layout/)) {
+      return AgentType.FRONTEND;
+    }
+    
+    // Backend tasks
+    if (text.match(/api|endpoint|server|backend|auth|authentication|authorization|middleware|service|controller|route|validator/)) {
+      return AgentType.BACKEND;
+    }
+    
+    // Database tasks
+    if (text.match(/database|schema|model|entity|table|column|field|relation|query|sql|nosql|migration|seed/)) {
+      return AgentType.DATABASE;
+    }
+    
+    // DevOps tasks
+    if (text.match(/deploy|ci|cd|pipeline|docker|container|kubernetes|k8s|aws|cloud|hosting|environment|config|monitor|log|performance|scale/)) {
+      return AgentType.DEVOPS;
+    }
+    
+    // UX tasks
+    if (text.match(/ux|user experience|design|wireframe|prototype|usability|accessibility|flow|journey|persona|research|testing/)) {
+      return AgentType.UX;
+    }
+    
+    // Default to manager
+    return AgentType.MANAGER;
+  }
+  
+  /**
+   * Assign tasks to specialist agents
+   * 
+   * @param tasks - The tasks to assign
+   */
+  private async assignTasksToSpecialists(tasks: any[]): Promise<void> {
+    console.log("Assigning tasks to specialists");
+    
+    // Clear previous assignments
+    this.assignedTasks.clear();
+    
+    // Initialize empty task lists for each agent type
+    Object.values(AgentType).forEach(agentType => {
+      this.assignedTasks.set(agentType, []);
+    });
+    
+    // Assign tasks based on their category
+    tasks.forEach(task => {
+      const agentTasks = this.assignedTasks.get(task.category) || [];
+      agentTasks.push(task);
+      this.assignedTasks.set(task.category, agentTasks);
+      
+      // Also assign subtasks
+      task.subtasks.forEach((subtask: any) => {
+        const subtaskAgentType = subtask.category || task.category;
+        const subtaskAgentTasks = this.assignedTasks.get(subtaskAgentType) || [];
+        subtaskAgentTasks.push({
+          ...subtask,
+          parentTaskId: task.id,
+          parentTaskTitle: task.title
+        });
+        this.assignedTasks.set(subtaskAgentType, subtaskAgentTasks);
+      });
+    });
+    
+    console.log("Task assignments:", Object.fromEntries(this.assignedTasks));
+  }
+  
+  /**
+   * Generate a summary of task assignments
+   * 
+   * @returns A formatted summary of task assignments
+   */
+  private generateTaskSummary(): string {
+    const summary = ["# Project Analysis Summary\n"];
+    
+    // Add the total number of tasks
+    const totalTasks = this.parsedTasks.length;
+    const totalSubtasks = this.parsedTasks.reduce((count, task) => count + task.subtasks.length, 0);
+    summary.push(`I've analyzed your requirements document and extracted ${totalTasks} main tasks and ${totalSubtasks} subtasks.\n`);
+    
+    // Add the task assignments for each agent
+    summary.push("## Task Assignments\n");
+    
+    const agentTypes = [
+      { type: AgentType.FRONTEND, name: "Frontend Developer" },
+      { type: AgentType.BACKEND, name: "Backend Developer" },
+      { type: AgentType.DATABASE, name: "Database Engineer" },
+      { type: AgentType.DEVOPS, name: "DevOps Engineer" },
+      { type: AgentType.UX, name: "UX Designer" },
+      { type: AgentType.MANAGER, name: "Development Manager" }
+    ];
+    
+    agentTypes.forEach(({ type, name }) => {
+      const tasks = this.assignedTasks.get(type) || [];
+      if (tasks.length > 0) {
+        summary.push(`### ${name} (${tasks.length} tasks)\n`);
+        tasks.forEach((task: any) => {
+          summary.push(`- ${task.title}\n`);
+        });
+        summary.push("\n");
+      }
+    });
+    
+    // Add next steps
+    summary.push("## Next Steps\n");
+    summary.push("I recommend we take the following steps:\n");
+    summary.push("1. Review the task assignments and make any necessary adjustments\n");
+    summary.push("2. Prioritize tasks and create a project timeline\n");
+    summary.push("3. Set up the initial project architecture\n");
+    summary.push("4. Begin development of the highest priority tasks\n\n");
+    
+    summary.push("Would you like me to:\n");
+    summary.push("1. Provide more details about specific tasks?\n");
+    summary.push("2. Create a technical architecture proposal?\n");
+    summary.push("3. Propose a development timeline?\n");
+    summary.push("4. Something else?\n");
+    
+    return summary.join("");
   }
   
   /**
@@ -93,6 +327,16 @@ export class ManagerAgent extends BaseAgent {
   }
   
   /**
+   * Checks if the message contains a file upload
+   * 
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this message contains a file upload
+   */
+  isFileUploadRequest(message: string): boolean {
+    return message.match(/analyze this file|uploaded|file upload|requirements document|spec document|project spec/i) !== null;
+  }
+  
+  /**
    * Generates a knowledge base request prompt after task assignments
    * 
    * @returns A structured prompt asking for knowledge base resources
@@ -122,6 +366,25 @@ To add a resource, simply share a link with a brief description of what it conta
    * @returns A structured prompt that guides the AI response
    */
   protected createPrompt(userMessage: string, projectPhases: any[]): string {
+    // Check if this is a file upload request
+    if (this.isFileUploadRequest(userMessage)) {
+      return `
+        As the Development Manager for this project, you're analyzing a requirements document that was just uploaded.
+        
+        ${userMessage}
+        
+        Please analyze this document thoroughly and:
+        1. Extract all the project requirements
+        2. Break them down into clear tasks and subtasks
+        3. Categorize each task by specialization (Frontend, Backend, Database, DevOps, UX)
+        4. Assign each task to the appropriate specialist agent
+        5. Provide a summary of your analysis and assignments
+        6. Suggest next steps for the project
+        
+        Remember to be thorough in your analysis but also clear and concise in your response.
+      `;
+    }
+    
     // Handle knowledge base-related messages specifically
     if (this.isKnowledgeBaseRequest(userMessage)) {
       return `
@@ -281,14 +544,17 @@ To add a resource, simply share a link with a brief description of what it conta
       `;
     }
     
+    // Check if there are parsed tasks we can reference
+    const hasParsedTasks = this.parsedTasks.length > 0;
+    
     // Default prompt for general manager tasks
     return `
       As an AI Development Manager specializing in e-commerce projects, please respond to the following:
       
       User: "${userMessage}"
       
-      ${projectPhases.length > 0 
-        ? `Consider the current project phases: ${JSON.stringify(projectPhases)}` 
+      ${hasParsedTasks
+        ? `Consider the current project tasks: ${JSON.stringify(this.parsedTasks)}` 
         : "No project structure has been defined yet. Consider asking for a markdown file or helping the user define project requirements."}
       
       Your role is to:
