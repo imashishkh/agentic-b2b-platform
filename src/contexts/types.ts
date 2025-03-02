@@ -134,9 +134,58 @@ export interface ProjectTimeline {
   phases: ProjectPhase[];
 }
 
-// Chat context interface
+/**
+ * Security review interface
+ */
+export interface SecurityReview {
+  id: string;
+  timestamp: string;
+  codeSnippet?: string;
+  findings: SecurityFinding[];
+  overallStatus: "passed" | "warning" | "failed";
+  reviewer: AgentType;
+}
+
+/**
+ * Security finding interface
+ */
+export interface SecurityFinding {
+  id: string;
+  type: "vulnerability" | "best_practice" | "compliance";
+  severity: "low" | "medium" | "high" | "critical";
+  description: string;
+  recommendation: string;
+  codeLocation?: string;
+}
+
+/**
+ * Compliance check interface
+ */
+export interface ComplianceCheck {
+  id: string;
+  timestamp: string;
+  standard: string;
+  requirements: ComplianceRequirement[];
+  overallStatus: "passed" | "warning" | "failed";
+}
+
+/**
+ * Compliance requirement interface
+ */
+export interface ComplianceRequirement {
+  id: string;
+  name: string;
+  description: string;
+  status: "passed" | "warning" | "failed";
+  evidence?: string;
+  recommendation?: string;
+}
+
+/**
+ * Chat context interface
+ */
 export interface ChatContextType {
-  messages: ChatMessageProps[];
+  messages: any[];
   isAgentTyping: boolean;
   isFetchingResponse: boolean;
   isLoadingExample: boolean;
@@ -150,8 +199,12 @@ export interface ChatContextType {
   gitHubRepository: GitHubRepository | null;
   suggestions: SuggestionProps[];
   lastProcessedSuggestion: string | null;
-  
-  addMessage: (message: ChatMessageProps) => void;
+  securityReviewActive: boolean;
+  securityReviews: SecurityReview[];
+  complianceChecks: ComplianceCheck[];
+  vulnerabilityAssessments: any[];
+  bestPracticesViolations: any[];
+  addMessage: (message: any) => void;
   clearMessages: () => void;
   setIsAgentTyping: (isTyping: boolean) => void;
   setIsFetchingResponse: (isFetching: boolean) => void;
@@ -170,4 +223,11 @@ export interface ChatContextType {
   addSuggestion: (suggestion: SuggestionProps) => void;
   clearSuggestions: () => void;
   setProcessedSuggestion: (message: string) => void;
+  setSecurityReviewActive: (isActive: boolean) => void;
+  addSecurityReview: (review: SecurityReview) => void;
+  updateSecurityReview: (id: string, review: Partial<SecurityReview>) => void;
+  addComplianceCheck: (check: ComplianceCheck) => void;
+  updateComplianceCheck: (id: string, check: Partial<ComplianceCheck>) => void;
+  addVulnerabilityAssessment: (assessment: any) => void;
+  addBestPracticesViolation: (violation: any) => void;
 }

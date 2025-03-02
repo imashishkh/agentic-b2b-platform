@@ -9,9 +9,15 @@ interface ChatMessagesProps {
   messages: any[]; // Use any[] to be more permissive with message types
   isLoadingExample: boolean;  
   isAgentTyping: boolean;
+  securityReviewActive?: boolean;
 }
 
-export function ChatMessages({ messages, isLoadingExample, isAgentTyping }: ChatMessagesProps) {
+export function ChatMessages({ 
+  messages, 
+  isLoadingExample, 
+  isAgentTyping,
+  securityReviewActive
+}: ChatMessagesProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {messages.map((message, index) => (
@@ -20,6 +26,8 @@ export function ChatMessages({ messages, isLoadingExample, isAgentTyping }: Chat
           type={message.type}
           content={message.content}
           agentType={message.agentType || AgentType.MANAGER}
+          isSecurityReview={message.isSecurityReview}
+          complianceStatus={message.complianceStatus}
         />
       ))}
       {isLoadingExample && (
@@ -41,6 +49,14 @@ export function ChatMessages({ messages, isLoadingExample, isAgentTyping }: Chat
           type="agent"
           content="Thinking..."
           agentType={AgentType.MANAGER}
+        />
+      )}
+      {securityReviewActive && (
+        <ChatMessage
+          type="agent"
+          content="Performing security assessment..."
+          agentType={AgentType.DEVOPS}
+          isSecurityReview={true}
         />
       )}
     </div>

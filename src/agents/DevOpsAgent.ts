@@ -12,6 +12,8 @@ import { AgentType } from "./AgentTypes";
  * - Monitoring and performance optimization
  * - Security hardening for production environments
  * - Repository management and GitHub integration
+ * - Security assessments and vulnerability scanning
+ * - Compliance verification for DevOps processes
  */
 export class DevOpsAgent extends BaseAgent {
   type = AgentType.DEVOPS;
@@ -34,7 +36,11 @@ export class DevOpsAgent extends BaseAgent {
     "Security practices",
     "GitHub repository management",
     "Branch and PR strategies",
-    "Workflow automation"
+    "Workflow automation",
+    "Security scanning",
+    "Vulnerability assessment",
+    "Compliance verification",
+    "Security hardening"
   ];
   
   /**
@@ -44,7 +50,7 @@ export class DevOpsAgent extends BaseAgent {
    * @returns boolean indicating whether this agent can handle the message
    */
   canHandle(message: string): boolean {
-    return message.match(/deployment|CI\/CD|Docker|Kubernetes|AWS|Azure|GCP|scaling|monitoring|logging|performance|infrastructure|container|cloud|pipeline|automation|DevOps|GitHub|repository|branch|workflow|pull request|PR|git/i) !== null;
+    return message.match(/deployment|CI\/CD|Docker|Kubernetes|AWS|Azure|GCP|scaling|monitoring|logging|performance|infrastructure|container|cloud|pipeline|automation|DevOps|GitHub|repository|branch|workflow|pull request|PR|git|security|vulnerability|compliance|scanning|assessment|hardening/i) !== null;
   }
   
   /**
@@ -55,6 +61,27 @@ export class DevOpsAgent extends BaseAgent {
    * @returns A structured prompt that guides the AI response
    */
   protected createPrompt(userMessage: string, projectPhases: any[]): string {
+    // Check if this is a security assessment request
+    if (userMessage.match(/security|vulnerability|compliance|scan|assessment|hardening|penetration test|pen test|security review/i)) {
+      return `
+        As an AI DevOps Engineer specializing in security for e-commerce platforms, please respond to the following:
+        
+        User: "${userMessage}"
+        
+        Your expertise is in:
+        - Security scanning and vulnerability assessment
+        - Compliance checking for DevOps practices
+        - Security hardening for infrastructure and deployments
+        - Implementing security in CI/CD pipelines
+        - DevSecOps best practices
+        - Container and cloud security
+        - Network security configurations
+        
+        Provide concrete recommendations for improving security in the e-commerce application's DevOps processes.
+        Focus on practical steps that can be implemented immediately, as well as longer-term security improvements.
+      `;
+    }
+    
     return `
       As an AI DevOps Engineer specializing in e-commerce platforms, please respond to the following:
       
@@ -74,8 +101,214 @@ export class DevOpsAgent extends BaseAgent {
       - GitHub repository management and branch strategies
       - Pull request workflows and code review processes
       - Workflow automation with GitHub Actions
+      - Security scanning and vulnerability assessment
+      - Compliance checking for DevOps practices
       
       Provide concrete configuration examples and architecture recommendations when applicable, focusing on reliability, scalability, and security.
+    `;
+  }
+  
+  /**
+   * Generates a security hardening checklist for infrastructure
+   * 
+   * @returns A security hardening checklist as a string
+   */
+  generateSecurityHardeningChecklist(): string {
+    return `
+# Security Hardening Checklist for E-commerce Infrastructure
+
+## Network Security
+- [ ] Implement Web Application Firewall (WAF)
+- [ ] Configure proper network segmentation
+- [ ] Set up DDoS protection
+- [ ] Use HTTPS for all communications
+- [ ] Implement proper TLS configuration (TLS 1.2+)
+- [ ] Disable unused ports and protocols
+- [ ] Implement network monitoring and logging
+
+## Server Hardening
+- [ ] Keep systems and packages updated
+- [ ] Remove unnecessary services and software
+- [ ] Implement proper user access controls
+- [ ] Use strong authentication mechanisms
+- [ ] Configure secure SSH access (key-based auth, non-standard port)
+- [ ] Implement proper file permissions
+- [ ] Configure host-based firewall
+- [ ] Enable SELinux or AppArmor
+
+## Container Security
+- [ ] Use minimal base images
+- [ ] Scan container images for vulnerabilities
+- [ ] Run containers with non-root users
+- [ ] Implement proper resource limits
+- [ ] Use read-only file systems where possible
+- [ ] Secure container registries
+- [ ] Implement container network policies
+
+## Cloud Security
+- [ ] Follow cloud provider security best practices
+- [ ] Implement least privilege IAM policies
+- [ ] Enable multi-factor authentication for all accounts
+- [ ] Encrypt data at rest and in transit
+- [ ] Configure proper VPC and security groups
+- [ ] Enable logging and monitoring
+- [ ] Implement automated compliance checking
+
+## CI/CD Security
+- [ ] Secure secrets management
+- [ ] Implement vulnerability scanning in pipeline
+- [ ] Perform static code analysis
+- [ ] Deploy through immutable infrastructure
+- [ ] Implement automatic security testing
+- [ ] Verify artifact integrity before deployment
+- [ ] Implement approval gates for production deployments
+
+## Database Security
+- [ ] Implement proper access controls
+- [ ] Encrypt sensitive data
+- [ ] Use parameterized queries to prevent injection
+- [ ] Keep database updated with security patches
+- [ ] Use network isolation for database servers
+- [ ] Implement proper backup and recovery procedures
+
+## Monitoring and Incident Response
+- [ ] Set up centralized logging
+- [ ] Implement intrusion detection
+- [ ] Configure alerting for suspicious activities
+- [ ] Prepare incident response plan
+- [ ] Conduct regular security testing
+- [ ] Implement automated security scanning
+- [ ] Plan for disaster recovery
+    `;
+  }
+  
+  /**
+   * Generates a compliance self-assessment for DevOps practices
+   * 
+   * @returns A compliance self-assessment checklist
+   */
+  generateComplianceAssessment(): string {
+    return `
+# DevOps Compliance Self-Assessment
+
+## PCI DSS Compliance (For E-commerce Payment Processing)
+- [ ] Network segmentation implemented
+- [ ] Encryption for cardholder data in transit and at rest
+- [ ] Regular vulnerability scanning
+- [ ] Strong access controls implemented
+- [ ] Security testing integrated into CI/CD
+- [ ] Regular logging and monitoring
+- [ ] Clearly defined security policies
+
+## GDPR Compliance (For European Customer Data)
+- [ ] Data minimization implemented
+- [ ] Clear data retention policies
+- [ ] Security measures appropriate to risk
+- [ ] Ability to fulfill data subject rights (access, erasure, etc.)
+- [ ] Data breach notification procedures
+- [ ] Privacy by design implemented in CI/CD
+- [ ] Regular privacy impact assessments
+
+## SOC 2 Compliance (For Service Organization Controls)
+- [ ] Access controls properly implemented
+- [ ] Change management procedures defined
+- [ ] Monitoring and incident response established
+- [ ] Risk management processes in place
+- [ ] Vendor management procedures
+- [ ] Business continuity planning
+- [ ] Regular security assessments
+
+## HIPAA Compliance (If Handling Health Information)
+- [ ] PHI identified and classified
+- [ ] Encryption implemented for PHI
+- [ ] Access controls and audit trails
+- [ ] Business associate agreements in place
+- [ ] Incident response procedures
+- [ ] Regular risk assessments
+- [ ] Training for team members
+
+## General Security Compliance
+- [ ] Regular security training for team
+- [ ] Clearly defined security responsibilities
+- [ ] Automated security testing in CI/CD
+- [ ] Vulnerability management program
+- [ ] Patch management procedures
+- [ ] Regular penetration testing
+- [ ] Third-party security assessments
+    `;
+  }
+  
+  /**
+   * Generates a vulnerability assessment report
+   * 
+   * @param environment - The target environment (e.g., 'production', 'staging', 'development')
+   * @returns A vulnerability assessment report
+   */
+  generateVulnerabilityAssessment(environment: string = 'production'): string {
+    return `
+# Vulnerability Assessment for ${environment.charAt(0).toUpperCase() + environment.slice(1)} Environment
+
+## Executive Summary
+This vulnerability assessment identifies potential security issues in the ${environment} environment of the e-commerce application infrastructure. The assessment covers network configuration, server hardening, application security, and DevOps practices.
+
+## Assessment Methodology
+- Automated vulnerability scanning
+- Configuration review
+- DevOps practices review
+- Manual penetration testing
+- Code security review
+
+## Key Findings
+
+### High Priority
+- Ensure all production servers are patched with the latest security updates
+- Review IAM permissions to enforce principle of least privilege
+- Implement WAF protection for public-facing applications
+- Encrypt sensitive data at rest and in transit
+- Review secrets management in CI/CD pipelines
+
+### Medium Priority
+- Implement network segmentation
+- Configure proper logging and monitoring
+- Review container security configurations
+- Implement regular vulnerability scanning
+- Tighten security group configurations
+
+### Low Priority
+- Document security incident response procedures
+- Implement additional security headers
+- Review password policies
+- Consider additional authentication factors
+- Enhance security training for development team
+
+## Recommendations
+
+### Immediate Actions
+1. Patch all systems to latest security updates
+2. Review and restrict IAM permissions
+3. Implement encryption for sensitive data
+4. Configure Web Application Firewall
+5. Implement secrets management solution
+
+### Short-term Actions (1-3 months)
+1. Implement network segmentation
+2. Enhance logging and monitoring
+3. Implement container security
+4. Configure additional security headers
+5. Develop security incident response plan
+
+### Long-term Actions (3-6 months)
+1. Implement regular security assessments
+2. Enhance security training program
+3. Implement continuous security monitoring
+4. Consider advanced threat protection
+5. Implement automated compliance checking
+
+## Next Steps
+1. Prioritize and address high-priority findings
+2. Schedule follow-up assessment to verify remediation
+3. Integrate security testing into CI/CD pipeline
+4. Develop continuous vulnerability management program
     `;
   }
   
@@ -87,6 +320,10 @@ export class DevOpsAgent extends BaseAgent {
    * @returns A search query string focused on DevOps practices
    */
   protected createSearchQuery(message: string, projectPhases: any[]): string {
+    if (message.match(/security|vulnerability|compliance|scan|assessment|hardening/i)) {
+      return `e-commerce ${message} security DevOps vulnerability assessment hardening compliance best practices`;
+    }
+    
     return `e-commerce ${message} DevOps deployment CI/CD cloud infrastructure GitHub best practices`;
   }
   

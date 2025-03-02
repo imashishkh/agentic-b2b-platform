@@ -3,6 +3,7 @@ import { AgentType } from "./AgentTypes";
 import { createAgent } from "./AgentFactory";
 import { toast } from "sonner";
 import { recommendArchitecturalPatterns, recommendTechnologyStack, createArchitectureProposal } from "@/utils/architectureUtils";
+import { SecurityFinding, ComplianceRequirement } from "@/contexts/types";
 
 /**
  * DevManager Agent - Oversees project structure and coordinates between specialized agents
@@ -38,6 +39,14 @@ export class ManagerAgent extends BaseAgent {
     "Architectural decision-making",
     "Quality assurance",
     "Security review",
+    "Security review checkpoints",
+    "Vulnerability assessment",
+    "Compliance checking",
+    "Best practices enforcement",
+    "Security review",
+    "Vulnerability assessment",
+    "Compliance checking",
+    "Best practices enforcement",
     "Performance optimization strategy",
     "E-commerce domain expertise",
     "Knowledge base management",
@@ -507,338 +516,285 @@ To add a resource, simply share a link with a brief description of what it conta
   }
   
   /**
-   * Creates a tailored prompt for the AI model based on the message type
+   * Checks if a message is related to security assessment
    * 
-   * @param userMessage - The original user message
-   * @param projectPhases - Current project phases and tasks
-   * @returns A structured prompt that guides the AI response
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this is a security assessment request
    */
-  protected createPrompt(userMessage: string, projectPhases: any[]): string {
-    // Check if this is a file upload request
-    if (this.isFileUploadRequest(userMessage)) {
-      return `
-        As the Development Manager for this project, you're analyzing a requirements document that was just uploaded.
-        
-        ${userMessage}
-        
-        Please analyze this document thoroughly and:
-        1. Extract all the project requirements
-        2. Break them down into clear tasks and subtasks
-        3. Categorize each task by specialization (Frontend, Backend, Database, DevOps, UX)
-        4. Assign each task to the appropriate specialist agent
-        5. Provide a summary of your analysis and assignments
-        6. Suggest next steps for the project
-        
-        Remember to be thorough in your analysis but also clear and concise in your response.
-      `;
-    }
-    
-    // Handle knowledge base-related messages specifically
-    if (this.isKnowledgeBaseRequest(userMessage)) {
-      return `
-        As the Development Manager for this e-commerce project, you're managing the project knowledge base.
-        
-        ${userMessage}
-        
-        Please provide a response that:
-        1. Acknowledges the resource information shared
-        2. Explains how this will be used to inform development decisions
-        3. If appropriate, requests additional specific resources that would complement what's been shared
-        4. Organizes the knowledge into relevant categories (Tech Stack, Industry Standards, Security, etc.)
-        
-        Make your response helpful and focused on how these resources will improve the project's quality and efficiency.
-      `;
-    }
-    
-    // Handle architecture-related messages with enhanced architecture capabilities
-    if (this.isArchitectureRequest(userMessage)) {
-      return `
-        As the Development Manager and system architect for this e-commerce project, you're being asked about system architecture.
-        
-        ${userMessage}
-        
-        Please provide a response that:
-        1. Outlines a high-level architecture appropriate for an e-commerce system
-        2. Describes key components and their relationships
-        3. Explains technical decisions and trade-offs
-        4. Recommends specific technologies for each component
-        5. Suggests an appropriate architectural pattern (Microservices, Monolithic, Serverless, etc.)
-        6. Includes a visual representation or diagram of the architecture
-        7. Mentions how the architecture supports scalability, maintainability, and security
-        
-        Make your response detailed but accessible, explaining architectural concepts clearly.
-      `;
-    }
-    
-    // Handle testing strategy messages
-    if (this.isTestingStrategyRequest(userMessage)) {
-      return `
-        As the Development Manager and quality assurance lead for this e-commerce project, you're being asked about testing strategies.
-        
-        ${userMessage}
-        
-        Please provide a response that:
-        1. Outlines a comprehensive testing approach for an e-commerce system
-        2. Covers different testing levels (unit, integration, e2e, etc.)
-        3. Recommends testing frameworks and tools
-        4. Explains how testing fits into the development lifecycle
-        5. Mentions that you can create a formal testing strategy the user can view in the Project Features panel
-        
-        Make your response practical and actionable, with concrete examples.
-      `;
-    }
-    
-    // Handle GitHub integration messages
-    if (this.isGitHubRequest(userMessage)) {
-      return `
-        As the Development Manager and DevOps expert for this e-commerce project, you're being asked about GitHub integration.
-        
-        ${userMessage}
-        
-        Please provide a response that:
-        1. Explains the benefits of GitHub integration for an e-commerce project
-        2. Outlines best practices for repository structure and branching strategies
-        3. Suggests CI/CD workflows appropriate for e-commerce
-        4. Directs the user to use the Project Features panel to connect their GitHub repository
-        
-        Make your response practical and focused on the e-commerce context.
-      `;
-    }
-    
-    // Determine the type of request to tailor the prompt appropriately
-    const isConsultation = userMessage.includes("One of your team members") && 
-                          userMessage.includes("needs guidance");
-    
-    const isCoordination = userMessage.includes("synthesize these different specialist inputs");
-    
-    const isTechnicalDecision = userMessage.includes("technical decision") || 
-                               userMessage.includes("architectural choice") ||
-                               userMessage.includes("technology selection");
-    
-    const isCodeReview = userMessage.includes("review this code") || 
-                        userMessage.includes("quality check") ||
-                        userMessage.includes("best practices review");
-    
-    // Create specialized prompts based on request type
-    if (isCodeReview) {
-      return `
-        As the Development Manager and lead architect, you're being asked to review code quality.
-        
-        ${userMessage}
-        
-        Provide a thorough code review that covers:
-        1. Code structure and organization
-        2. Adherence to best practices
-        3. Potential bugs or edge cases
-        4. Performance considerations
-        5. Security implications (especially important for e-commerce)
-        6. Maintainability and scalability
-        
-        Your review should be specific, actionable, and educational. Explain not just what should be changed, but why.
-        Always consider the e-commerce context and how code quality impacts user experience and business outcomes.
-      `;
-    }
-    
-    if (isTechnicalDecision) {
-      return `
-        As the Development Manager and lead architect, you're being asked to make a technical decision.
-        
-        ${userMessage}
-        
-        Provide a clear decision with:
-        1. Analysis of different options
-        2. Pros and cons of each approach
-        3. Your recommendation and reasoning
-        4. Implementation considerations
-        5. Potential risks and mitigation strategies
-        
-        Your decision should balance technical excellence with practicality for the e-commerce context.
-        Consider factors like development speed, future scalability, security requirements, and team expertise.
-      `;
-    }
-    
-    if (isCoordination) {
-      return `
-        As the Development Manager and technical lead, you're being asked to coordinate inputs from multiple specialists.
-        
-        ${userMessage}
-        
-        Your job is to create a clear development plan that:
-        1. Establishes the correct sequence of tasks
-        2. Identifies critical dependencies between different parts of the system
-        3. Highlights integration points that need special attention
-        4. Provides clear technical guidance on how components should work together
-        5. Sets quality standards and testing requirements
-        6. Addresses potential risks and mitigation strategies
-        
-        Remember that you have final decision-making authority on technical approaches.
-      `;
-    }
-    
-    if (isConsultation) {
-      return `
-        As the Development Manager and technical lead for this e-commerce project, you're being consulted by one of your team specialists.
-        
-        ${userMessage}
-        
-        Please provide authoritative guidance that combines your broad technical knowledge with project specifics.
-        Remember you have oversight across all domains including: frontend, backend, database, DevOps, and UX.
-        Your goal is to provide clear, actionable direction that will unblock your team member.
-        
-        Draw on your expertise in:
-        1. E-commerce architecture patterns
-        2. Technical standards and best practices
-        3. Cross-domain integration approaches
-        4. Risk assessment and mitigation
-        5. Performance and security considerations
-      `;
-    }
-    
-    // Check if there are parsed tasks we can reference
-    const hasParsedTasks = this.parsedTasks.length > 0;
-    
-    // Default prompt for general manager tasks
-    return `
-      As an AI Development Manager specializing in e-commerce projects, please respond to the following:
-      
-      User: "${userMessage}"
-      
-      ${hasParsedTasks
-        ? `Consider the current project tasks: ${JSON.stringify(this.parsedTasks)}` 
-        : "No project structure has been defined yet. Consider asking for a markdown file or helping the user define project requirements."}
-      
-      Your role is to:
-      1. Provide high-level architectural guidance
-      2. Help break down complex requirements into manageable tasks
-      3. Suggest workflows and development approaches
-      4. Coordinate between different aspects of the e-commerce development
-      5. Support team members who need technical guidance across specialties
-      6. Make authoritative technical decisions when needed
-      7. Ensure quality, security, and performance standards are met
-      8. Provide strategic direction aligned with e-commerce best practices
-      9. Maintain and leverage the project knowledge base
-      
-      Focus on project structure, dependencies, and integration points between different system components.
-      As the Development Manager, you have the final say on technical decisions and can provide authoritative guidance across all domains.
-    `;
+  isSecurityAssessmentRequest(message: string): boolean {
+    return message.match(/security|vulnerability|compliance|secure coding|best practices|owasp|penetration test|security scan/i) !== null;
   }
   
   /**
-   * Determines if the agent is stuck with a response
+   * Performs code security scanning
    * 
-   * @param response - The generated response to evaluate
-   * @returns boolean indicating whether the agent is stuck
+   * @param code - The code to scan
+   * @returns Security findings
    */
-  protected isAgentStuck(response: string): boolean {
-    // The manager is never "stuck" in the same way as specialists
-    // This prevents infinite loops when consulting the manager
-    return false;
-  }
-  
-  /**
-   * Override detectDependencies for the Manager to prevent circular dependencies
-   * 
-   * @param response - The generated response to analyze
-   * @param userMessage - The original user message
-   * @returns Object with dependency information
-   */
-  protected detectDependencies(response: string, userMessage: string): { 
-    hasDependencies: boolean; 
-    dependentAgents: AgentType[];
-    dependencyDetails: string;
-  } {
-    // The manager doesn't need to coordinate with others as it has final authority
-    return { 
-      hasDependencies: false, 
-      dependentAgents: [], 
-      dependencyDetails: "" 
-    };
-  }
-  
-  /**
-   * Creates a search query tailored for the manager's expertise
-   * 
-   * @param message - The user message to create a search from
-   * @param projectPhases - Current project phases for context
-   * @returns A search query string
-   */
-  protected createSearchQuery(message: string, projectPhases: any[]): string {
-    // For the manager agent, we want broader search results about project management
-    // and technical leadership
-    return `e-commerce project management ${message} best practices methodology leadership architecture`;
-  }
-  
-  /**
-   * Enhanced security checking for code reviews
-   * 
-   * @param message - The user message
-   * @param response - The generated response
-   * @returns boolean indicating whether to perform security checks
-   */
-  protected shouldCheckSecurity(message: string, response: string): boolean {
-    // Manager always checks security when code is present
-    return response.includes("```");
-  }
-  
-  /**
-   * Provides detailed testing guidance with test results
-   * 
-   * @param claudeResponse - The original response
-   * @param testResults - Results from automated tests
-   * @returns Enhanced response with testing recommendations
-   */
-  protected enhanceResponseWithTestResults(claudeResponse: string, testResults: string): string {
-    return `
-${claudeResponse}
-
-## Code Review and Testing Recommendations
-
-${testResults}
-
-As the Development Manager, I recommend that all team members follow these testing practices for our e-commerce platform:
-
-1. Write unit tests for all business logic components
-2. Implement integration tests for API endpoints and data flows
-3. Add end-to-end tests for critical user journeys like checkout
-4. Perform security testing on all code that handles user data or payments
-5. Test all responsive design breakpoints for mobile and desktop
-
-Would you like me to help set up a testing framework or provide specific test cases for this code?
-    `;
-  }
-  
-  /**
-   * Enhanced response generation for knowledge base queries
-   * 
-   * @param response - The original response
-   * @param knowledgeBase - The current knowledge base resources
-   * @returns Enhanced response with knowledge base information
-   */
-  enhanceResponseWithKnowledgeBase(response: string, knowledgeBase: any[]): string {
-    if (knowledgeBase.length === 0) {
-      return response;
-    }
+  async performSecurityScan(code: string): Promise<SecurityFinding[]> {
+    const findings: SecurityFinding[] = [];
     
-    // Group resources by category
-    const categorizedResources: Record<string, any[]> = {};
-    knowledgeBase.forEach(resource => {
-      if (!categorizedResources[resource.category]) {
-        categorizedResources[resource.category] = [];
-      }
-      categorizedResources[resource.category].push(resource);
-    });
+    // Check for common security issues in code
     
-    let knowledgeBaseSection = "\n\n## Relevant Knowledge Base Resources\n\n";
-    
-    // Add resources by category
-    Object.entries(categorizedResources).forEach(([category, resources]) => {
-      knowledgeBaseSection += `### ${category}\n`;
-      resources.forEach(resource => {
-        knowledgeBaseSection += `- [${resource.title}](${resource.url}) - ${resource.description}\n`;
+    // SQL Injection vulnerabilities
+    if (code.match(/SELECT .* FROM .* WHERE .* = .*\$/i) && !code.match(/parameterized|prepared statement/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "vulnerability",
+        severity: "high",
+        description: "Potential SQL Injection vulnerability detected.",
+        recommendation: "Use parameterized queries or prepared statements instead of string concatenation.",
+        codeLocation: "SQL query using string concatenation"
       });
-      knowledgeBaseSection += "\n";
-    });
+    }
     
-    return `${response}${knowledgeBaseSection}`;
+    // XSS vulnerabilities
+    if (code.match(/innerHTML|dangerouslySetInnerHTML/i) && !code.match(/sanitize|DOMPurify/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "vulnerability",
+        severity: "medium",
+        description: "Potential Cross-Site Scripting (XSS) vulnerability detected.",
+        recommendation: "Sanitize user input before inserting into the DOM. Consider using libraries like DOMPurify.",
+        codeLocation: "DOM manipulation using innerHTML or dangerouslySetInnerHTML"
+      });
+    }
+    
+    // Hardcoded credentials
+    if (code.match(/password|apiKey|secret|token|key|credential/i) && code.match(/("|')([a-zA-Z0-9_\-$%^&*!@#]{8,})("|')/)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "vulnerability",
+        severity: "critical",
+        description: "Potential hardcoded credentials detected.",
+        recommendation: "Use environment variables or a secure secrets management solution instead of hardcoding sensitive values.",
+        codeLocation: "Hardcoded credential in code"
+      });
+    }
+    
+    // Insecure direct object references
+    if (code.match(/params.id|req.params|request.params|userId|user_id/i) && !code.match(/authorize|authentication|permission|access control/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "vulnerability",
+        severity: "medium",
+        description: "Potential Insecure Direct Object Reference (IDOR) vulnerability detected.",
+        recommendation: "Implement proper authorization checks before accessing resources based on user input IDs.",
+        codeLocation: "Resource access using parameters without authorization checks"
+      });
+    }
+    
+    // Weak cryptography
+    if (code.match(/md5|sha1|createCipher/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "vulnerability",
+        severity: "high",
+        description: "Use of weak cryptographic algorithms detected.",
+        recommendation: "Use modern cryptographic algorithms (SHA256, SHA3) and libraries like bcrypt for password hashing.",
+        codeLocation: "Weak cryptographic algorithm usage"
+      });
+    }
+    
+    // Best practices violations
+    
+    // Error disclosure
+    if (code.match(/console\.error\(err\)|console\.log\(error\)|res\.status\(500\)\.send\(error\)/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "best_practice",
+        severity: "medium",
+        description: "Potentially sensitive error details may be exposed to users.",
+        recommendation: "Implement proper error handling and logging that doesn't expose sensitive information to end users.",
+        codeLocation: "Error message disclosure"
+      });
+    }
+    
+    // Missing input validation
+    if (code.match(/req\.body|request\.body|event\.body|params/i) && !code.match(/validate|sanitize|schema|zod|yup|joi/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "best_practice",
+        severity: "medium",
+        description: "Missing input validation for user-supplied data.",
+        recommendation: "Implement input validation using libraries like Zod, Yup, or Joi.",
+        codeLocation: "User input without validation"
+      });
+    }
+    
+    // Missing CSRF protection
+    if (code.match(/form|post|put|delete/i) && !code.match(/csrf|csrfToken|X-CSRF-Token/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "best_practice",
+        severity: "medium",
+        description: "Potential missing CSRF protection for state-changing operations.",
+        recommendation: "Implement CSRF tokens for all state-changing operations.",
+        codeLocation: "Form or state-changing request without CSRF protection"
+      });
+    }
+    
+    // Missing Content Security Policy
+    if (code.match(/<script>|script src|fetch|axios|XMLHttpRequest/i) && !code.match(/Content-Security-Policy|CSP/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "best_practice",
+        severity: "low",
+        description: "No Content Security Policy detected.",
+        recommendation: "Implement a Content Security Policy to protect against XSS and data injection attacks.",
+        codeLocation: "Client-side code without CSP"
+      });
+    }
+    
+    // Compliance issues
+    
+    // Missing accessibility attributes
+    if (code.match(/<img/i) && !code.match(/alt=/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "compliance",
+        severity: "low",
+        description: "Image elements without alt attributes may not be WCAG compliant.",
+        recommendation: "Add descriptive alt attributes to all image elements for accessibility.",
+        codeLocation: "Image without alt attribute"
+      });
+    }
+    
+    // Missing GDPR compliance for data collection
+    if (code.match(/cookie|localStorage|sessionStorage|indexedDB/i) && !code.match(/consent|gdpr|privacy/i)) {
+      findings.push({
+        id: `sec-${Date.now()}-${findings.length}`,
+        type: "compliance",
+        severity: "medium",
+        description: "Data storage without explicit user consent may violate GDPR.",
+        recommendation: "Implement proper consent mechanisms before storing user data.",
+        codeLocation: "Data storage without consent mechanism"
+      });
+    }
+    
+    return findings;
   }
-}
+  
+  /**
+   * Perform a compliance check against standard requirements
+   * 
+   * @param code - The code to check
+   * @param standard - The compliance standard to check against
+   * @returns Compliance check results
+   */
+  async performComplianceCheck(code: string, standard: string = "owasp"): Promise<ComplianceRequirement[]> {
+    const requirements: ComplianceRequirement[] = [];
+    
+    if (standard.toLowerCase() === "owasp") {
+      // OWASP Top 10 compliance checks
+      
+      // A1:2017-Injection
+      requirements.push({
+        id: `comp-${Date.now()}-1`,
+        name: "Injection Prevention",
+        description: "Prevent injection flaws (SQL, NoSQL, LDAP, etc.)",
+        status: code.match(/parameterized|prepared statement|sanitize/i) ? "passed" : 
+               (code.match(/SELECT|INSERT|UPDATE|DELETE|exec|eval/i) ? "failed" : "passed"),
+        recommendation: "Use parameterized queries, ORM libraries, or input sanitization."
+      });
+      
+      // A2:2017-Broken Authentication
+      requirements.push({
+        id: `comp-${Date.now()}-2`,
+        name: "Authentication Security",
+        description: "Implement secure authentication practices",
+        status: code.match(/password.{0,10}hash|bcrypt|argon2|pbkdf2/i) ? "passed" : 
+               (code.match(/password|login|auth/i) ? "warning" : "passed"),
+        recommendation: "Use secure password hashing (bcrypt), implement MFA, and session management."
+      });
+      
+      // A3:2017-Sensitive Data Exposure
+      requirements.push({
+        id: `comp-${Date.now()}-3`,
+        name: "Data Protection",
+        description: "Protect sensitive data in transit and at rest",
+        status: code.match(/https|TLS|encrypt|hash/i) ? "passed" : 
+               (code.match(/password|credit|card|ssn|personal/i) ? "warning" : "passed"),
+        recommendation: "Use encryption for sensitive data, HTTPS for all communications."
+      });
+      
+      // A5:2017-Broken Access Control
+      requirements.push({
+        id: `comp-${Date.now()}-5`,
+        name: "Access Control",
+        description: "Implement proper access controls",
+        status: code.match(/authorize|authentication|permission|rbac|acl/i) ? "passed" : 
+               (code.match(/admin|role|permission|restricted/i) ? "warning" : "passed"),
+        recommendation: "Implement role-based access control and verify user permissions."
+      });
+      
+      // A6:2017-Security Misconfiguration
+      requirements.push({
+        id: `comp-${Date.now()}-6`,
+        name: "Secure Configuration",
+        description: "Use secure configuration practices",
+        status: code.match(/helmet|Content-Security-Policy|X-Frame-Options|X-XSS-Protection/i) ? "passed" : "warning",
+        recommendation: "Use security headers, disable directory listings, and remove default accounts."
+      });
+      
+      // A7:2017-Cross-Site Scripting (XSS)
+      requirements.push({
+        id: `comp-${Date.now()}-7`,
+        name: "XSS Prevention",
+        description: "Prevent cross-site scripting attacks",
+        status: code.match(/DOMPurify|sanitize|escape|encodeURI/i) ? "passed" : 
+               (code.match(/innerHTML|dangerouslySetInnerHTML/i) ? "failed" : "passed"),
+        recommendation: "Use context-aware output encoding and input sanitization."
+      });
+    } else if (standard.toLowerCase() === "gdpr") {
+      // GDPR compliance checks
+      
+      // Consent
+      requirements.push({
+        id: `comp-${Date.now()}-1`,
+        name: "User Consent",
+        description: "Obtain explicit consent before processing personal data",
+        status: code.match(/consent|gdpr|opt-in|checkbox.{0,20}checked|accept.{0,20}terms/i) ? "passed" : 
+               (code.match(/personal|data|email|name|address|phone|collect/i) ? "warning" : "passed"),
+        recommendation: "Implement clear consent mechanisms before collecting any personal data."
+      });
+      
+      // Right to Access
+      requirements.push({
+        id: `comp-${Date.now()}-2`,
+        name: "Data Access Rights",
+        description: "Allow users to access their personal data",
+        status: code.match(/download.{0,20}data|export.{0,20}data|access.{0,20}data/i) ? "passed" : "warning",
+        recommendation: "Implement functionality allowing users to export their personal data."
+      });
+      
+      // Right to be Forgotten
+      requirements.push({
+        id: `comp-${Date.now()}-3`,
+        name: "Data Deletion Rights",
+        description: "Allow users to request deletion of their data",
+        status: code.match(/delete.{0,20}account|remove.{0,20}data|forget.{0,20}me/i) ? "passed" : "warning",
+        recommendation: "Implement functionality allowing users to delete their accounts and data."
+      });
+      
+      // Data Breach Notification
+      requirements.push({
+        id: `comp-${Date.now()}-4`,
+        name: "Breach Notification",
+        description: "Capability to notify users of data breaches",
+        status: code.match(/notification|alert|email.{0,20}users|notify/i) ? "passed" : "warning",
+        recommendation: "Implement systems to detect and notify users of potential data breaches."
+      });
+    }
+    
+    return requirements;
+  }
+  
+  /**
+   * Generate a comprehensive security report based on findings
+   * 
+   * @param findings - The security findings
+   * @param complianceRequirements - The compliance requirements
+   * @returns A formatted security report
+   */
+  generateSecurityReport(findings: SecurityFinding[], complianceRequirements: ComplianceRequirement[]

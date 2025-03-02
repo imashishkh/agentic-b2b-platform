@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -14,7 +14,8 @@ export default function ChatView() {
     isAgentTyping, 
     isLoadingExample, 
     suggestions,
-    addMessage 
+    addMessage,
+    securityReviewActive
   } = useChat();
   
   const chatProcessorRef = useRef<any>(null);
@@ -38,7 +39,8 @@ export default function ChatView() {
           <ChatMessages 
             messages={messages}
             isLoadingExample={isLoadingExample} 
-            isAgentTyping={isAgentTyping} 
+            isAgentTyping={isAgentTyping}
+            securityReviewActive={securityReviewActive}
           />
           
           {suggestions.length > 0 && (

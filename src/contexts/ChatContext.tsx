@@ -8,7 +8,9 @@ import {
   TestingStrategy, 
   GitHubRepository, 
   ChatContextType,
-  SuggestionProps
+  SuggestionProps,
+  SecurityReview,
+  ComplianceCheck
 } from "./types";
 import { initialMessages, initialState } from "./initialState";
 
@@ -40,6 +42,13 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [gitHubRepository, setGitHubRepo] = useState<GitHubRepository | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestionProps[]>([]);
   const [lastProcessedSuggestion, setLastProcessedSuggestion] = useState<string | null>(null);
+  
+  // Security and compliance states
+  const [securityReviewActive, setSecurityReviewActive] = useState(false);
+  const [securityReviews, setSecurityReviews] = useState<SecurityReview[]>([]);
+  const [complianceChecks, setComplianceChecks] = useState<ComplianceCheck[]>([]);
+  const [vulnerabilityAssessments, setVulnerabilityAssessments] = useState<any[]>([]);
+  const [bestPracticesViolations, setBestPracticesViolations] = useState<any[]>([]);
 
   /**
    * Add a new message to the chat history
@@ -151,6 +160,66 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     setGitHubRepo(repo);
   };
 
+  /**
+   * Add a new security review
+   * 
+   * @param review - The security review object to add
+   */
+  const addSecurityReview = (review: SecurityReview) => {
+    setSecurityReviews(prev => [...prev, review]);
+  };
+
+  /**
+   * Update an existing security review
+   * 
+   * @param id - The ID of the review to update
+   * @param review - Partial review object with updates
+   */
+  const updateSecurityReview = (id: string, review: Partial<SecurityReview>) => {
+    setSecurityReviews(prev => 
+      prev.map(r => r.id === id ? { ...r, ...review } : r)
+    );
+  };
+
+  /**
+   * Add a new compliance check
+   * 
+   * @param check - The compliance check object to add
+   */
+  const addComplianceCheck = (check: ComplianceCheck) => {
+    setComplianceChecks(prev => [...prev, check]);
+  };
+
+  /**
+   * Update an existing compliance check
+   * 
+   * @param id - The ID of the check to update
+   * @param check - Partial check object with updates
+   */
+  const updateComplianceCheck = (id: string, check: Partial<ComplianceCheck>) => {
+    setComplianceChecks(prev => 
+      prev.map(c => c.id === id ? { ...c, ...check } : c)
+    );
+  };
+
+  /**
+   * Add a new vulnerability assessment
+   * 
+   * @param assessment - The vulnerability assessment object to add
+   */
+  const addVulnerabilityAssessment = (assessment: any) => {
+    setVulnerabilityAssessments(prev => [...prev, assessment]);
+  };
+
+  /**
+   * Add a new best practices violation
+   * 
+   * @param violation - The best practices violation object to add
+   */
+  const addBestPracticesViolation = (violation: any) => {
+    setBestPracticesViolations(prev => [...prev, violation]);
+  };
+
   // Provide the chat state and functions to all child components
   return (
     <ChatContext.Provider value={{
@@ -168,6 +237,11 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       gitHubRepository,
       suggestions,
       lastProcessedSuggestion,
+      securityReviewActive,
+      securityReviews,
+      complianceChecks,
+      vulnerabilityAssessments,
+      bestPracticesViolations,
       addMessage,
       clearMessages,
       setIsAgentTyping,
@@ -186,7 +260,14 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       setGitHubRepository,
       addSuggestion,
       clearSuggestions,
-      setProcessedSuggestion
+      setProcessedSuggestion,
+      setSecurityReviewActive,
+      addSecurityReview,
+      updateSecurityReview,
+      addComplianceCheck,
+      updateComplianceCheck,
+      addVulnerabilityAssessment,
+      addBestPracticesViolation
     }}>
       {children}
     </ChatContext.Provider>
