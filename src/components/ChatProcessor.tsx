@@ -5,10 +5,25 @@ import { parseMarkdownToTasks } from "@/utils/projectParser";
 import { createAgent, determineAgentType } from "@/agents/AgentFactory";
 import { AgentType } from "@/agents/AgentTypes";
 
+/**
+ * Props interface for the ChatProcessor component
+ */
 interface ChatProcessorProps {
-  chatRef: React.MutableRefObject<any>;
+  chatRef: React.MutableRefObject<any>;  // Reference to expose methods to parent
 }
 
+/**
+ * ChatProcessor - Core component that processes user messages and generates agent responses
+ * 
+ * This component handles:
+ * - Processing user text inputs and file uploads
+ * - Determining which agent should respond
+ * - Managing the conversation flow
+ * - Parsing project requirements
+ * - Assigning tasks to specialized agents
+ * 
+ * @param chatRef - Reference that exposes the processUserMessage method to parent components
+ */
 export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   const {
     addMessage,
@@ -21,7 +36,13 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     setCurrentAgentType
   } = useChat();
 
-  // Process the user's message and generate an agent response
+  /**
+   * Process the user's message and generate an agent response
+   * This is the main method for handling user inputs
+   * 
+   * @param userMessage - The text message from the user
+   * @param files - Optional array of uploaded files
+   */
   const processUserMessage = async (userMessage: string, files?: File[]) => {
     // Add user message to chat
     addMessage({ type: "user", content: userMessage });
@@ -125,7 +146,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         return;
       }
       
-      // Check if this is a markdown parsing request
+      // Check if this is a markdown parsing request (inline markdown)
       if (userMessage.includes("```markdown") || 
           userMessage.includes("```md") || 
           userMessage.toLowerCase().includes(".md")) {
@@ -235,6 +256,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
 
   /**
    * Analyzes project phases and assigns tasks to appropriate agent types
+   * This helps organize which specialist should handle each task
+   * 
+   * @param phases - Array of project phases with tasks
+   * @returns Record mapping agent types to their assigned tasks
    */
   const assignTasksToAgents = (phases: any[]): Record<AgentType, string[]> => {
     const assignments: Record<AgentType, string[]> = {
@@ -276,6 +301,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
 
   /**
    * Generates a formatted message with task assignments for each agent
+   * This creates a visual breakdown of which agent is responsible for which tasks
+   * 
+   * @param assignments - Record mapping agent types to their assigned tasks
+   * @returns Formatted markdown message with task assignments
    */
   const generateTaskAssignmentMessage = (assignments: Record<AgentType, string[]>): string => {
     const agentNames = {
@@ -302,7 +331,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     return message;
   };
 
-  // Expose the processUserMessage method to the parent component via the ref
+  /**
+   * Expose the processUserMessage method to the parent component via the ref
+   * This allows the Chat component to trigger message processing
+   */
   useEffect(() => {
     if (chatRef) {
       chatRef.current = {
@@ -311,5 +343,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     }
   }, [chatRef, projectPhases, hasRequestedFile]);
 
+  // This component doesn't render anything visible
   return null;
 }

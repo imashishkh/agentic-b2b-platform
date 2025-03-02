@@ -4,12 +4,22 @@ import { AgentType } from "./AgentTypes";
 
 /**
  * DevManager Agent - Oversees project structure and coordinates between specialized agents
+ * 
+ * This agent serves as the primary coordinator for the entire e-commerce development project.
+ * It handles high-level planning, task allocation, and cross-functional coordination.
+ * The manager has final authority on technical decisions and can resolve conflicts between
+ * specialist recommendations.
  */
 export class ManagerAgent extends BaseAgent {
   type = AgentType.MANAGER;
   name = "DevManager";
   title = "Development Manager";
   description = "Coordinates project phases and integrates work from all specialized agents";
+  
+  /**
+   * Areas of expertise for the Development Manager
+   * These inform the agent's capabilities and response generation
+   */
   expertise = [
     "Project planning",
     "Task breakdown",
@@ -25,30 +35,41 @@ export class ManagerAgent extends BaseAgent {
     "E-commerce domain expertise"
   ];
   
+  /**
+   * Determines if this agent can handle the given message
+   * 
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this agent can handle the message
+   */
   canHandle(message: string): boolean {
-    // The manager can handle any message, but specializes in project planning
-    // and coordinating between different specialist domains
+    // The manager can handle any message related to project management,
+    // planning, coordination, or technical oversight
     return message.match(/project|plan|phase|task|milestone|timeline|requirement|specification|team|coordinate|oversee|manage|guide|help|stuck|uncertain|advice|architecture|decision|review|quality|security|performance/i) !== null;
   }
   
+  /**
+   * Creates a tailored prompt for the AI model based on the message type
+   * 
+   * @param userMessage - The original user message
+   * @param projectPhases - Current project phases and tasks
+   * @returns A structured prompt that guides the AI response
+   */
   protected createPrompt(userMessage: string, projectPhases: any[]): string {
-    // Check if this is a consultation from another specialist
+    // Determine the type of request to tailor the prompt appropriately
     const isConsultation = userMessage.includes("One of your team members") && 
                           userMessage.includes("needs guidance");
     
-    // Check if this is a coordination request
     const isCoordination = userMessage.includes("synthesize these different specialist inputs");
     
-    // Check if this is a technical decision request
     const isTechnicalDecision = userMessage.includes("technical decision") || 
                                userMessage.includes("architectural choice") ||
                                userMessage.includes("technology selection");
     
-    // Check if this is a code review or quality check
     const isCodeReview = userMessage.includes("review this code") || 
                         userMessage.includes("quality check") ||
                         userMessage.includes("best practices review");
     
+    // Create specialized prompts based on request type
     if (isCodeReview) {
       return `
         As the Development Manager and lead architect, you're being asked to review code quality.
@@ -123,6 +144,7 @@ export class ManagerAgent extends BaseAgent {
       `;
     }
     
+    // Default prompt for general manager tasks
     return `
       As an AI Development Manager specializing in e-commerce projects, please respond to the following:
       
@@ -147,6 +169,12 @@ export class ManagerAgent extends BaseAgent {
     `;
   }
   
+  /**
+   * Determines if the agent is stuck with a response
+   * 
+   * @param response - The generated response to evaluate
+   * @returns boolean indicating whether the agent is stuck
+   */
   protected isAgentStuck(response: string): boolean {
     // The manager is never "stuck" in the same way as specialists
     // This prevents infinite loops when consulting the manager
@@ -154,8 +182,11 @@ export class ManagerAgent extends BaseAgent {
   }
   
   /**
-   * Override detectDependencies for the Manager to return no dependencies
-   * This prevents infinite loops in coordination
+   * Override detectDependencies for the Manager to prevent circular dependencies
+   * 
+   * @param response - The generated response to analyze
+   * @param userMessage - The original user message
+   * @returns Object with dependency information
    */
   protected detectDependencies(response: string, userMessage: string): { 
     hasDependencies: boolean; 
@@ -170,6 +201,13 @@ export class ManagerAgent extends BaseAgent {
     };
   }
   
+  /**
+   * Creates a search query tailored for the manager's expertise
+   * 
+   * @param message - The user message to create a search from
+   * @param projectPhases - Current project phases for context
+   * @returns A search query string
+   */
   protected createSearchQuery(message: string, projectPhases: any[]): string {
     // For the manager agent, we want broader search results about project management
     // and technical leadership
@@ -177,7 +215,11 @@ export class ManagerAgent extends BaseAgent {
   }
   
   /**
-   * Override for Manager to provide more comprehensive code reviews
+   * Enhanced security checking for code reviews
+   * 
+   * @param message - The user message
+   * @param response - The generated response
+   * @returns boolean indicating whether to perform security checks
    */
   protected shouldCheckSecurity(message: string, response: string): boolean {
     // Manager always checks security when code is present
@@ -185,7 +227,11 @@ export class ManagerAgent extends BaseAgent {
   }
   
   /**
-   * Override for Manager to provide more detailed testing guidance
+   * Provides detailed testing guidance with test results
+   * 
+   * @param claudeResponse - The original response
+   * @param testResults - Results from automated tests
+   * @returns Enhanced response with testing recommendations
    */
   protected enhanceResponseWithTestResults(claudeResponse: string, testResults: string): string {
     return `
