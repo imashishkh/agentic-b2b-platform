@@ -93,6 +93,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       // Get API key from local storage
       const apiKey = localStorage.getItem("claude_api_key");
       if (!apiKey) {
+        toast.warning("Claude API key is not set", {
+          description: "Using simulated responses. Set your API key in settings for enhanced responses.",
+          duration: 5000
+        });
         return null;
       }
 
@@ -149,7 +153,21 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       if (!response.ok) {
         const error = await response.json();
         console.error("Claude API error:", error);
-        toast.error(`API Error: ${error.error?.message || "Unknown error occurred"}`);
+        
+        let errorMessage = error.error?.message || "Unknown error occurred";
+        let specificMsg = "";
+        
+        // Check for common error types
+        if (errorMessage.includes("authentication")) {
+          specificMsg = "Please check if your API key is valid";
+        } else if (errorMessage.includes("rate limit")) {
+          specificMsg = "You've reached your rate limit. Try again later";
+        }
+        
+        toast.error(`Claude API Error: ${errorMessage}`, {
+          description: specificMsg,
+          duration: 8000
+        });
         return null;
       }
 
@@ -157,7 +175,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       return data.content[0].text;
     } catch (error) {
       console.error("Error sending message to Claude API:", error);
-      toast.error("Failed to connect to Claude API. Using simulated response instead.");
+      toast.error("Failed to connect to Claude API", {
+        description: "Using simulated response instead. Please check your internet connection or API key.",
+        duration: 5000
+      });
       return null;
     }
   };
