@@ -11,10 +11,10 @@ export interface ChatProcessorProps {
 }
 
 export function ChatProcessor({ chatRef }: ChatProcessorProps) {
-  const { addMessage, setIsAgentTyping } = useChat();
+  const { addMessage, setIsAgentTyping, messages } = useChat();
   const [isProcessing, setIsProcessing] = useState(false);
   const isMounted = useRef(true);
-  const hasInitialMessage = useRef(false); // Add a flag to track initial message
+  const initialMessageSent = useRef(false);
 
   useEffect(() => {
     isMounted.current = true;
@@ -24,7 +24,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     };
   }, []);
 
-  // Expose the message processing method through the ref
+  // Only send welcome message if no messages exist
   useEffect(() => {
     if (chatRef) {
       chatRef.current = {
@@ -32,10 +32,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       };
     }
     
-    // Add a single welcome message only if no messages exist
-    if (!hasInitialMessage.current) {
-      hasInitialMessage.current = true;
-      // Add a welcome message
+    // Check if there are no messages and we haven't sent an initial message yet
+    if (messages.length === 0 && !initialMessageSent.current) {
+      initialMessageSent.current = true;
+      
       setTimeout(() => {
         if (isMounted.current) {
           addMessage({
@@ -46,7 +46,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         }
       }, 500);
     }
-  }, [chatRef, addMessage]);
+  }, [chatRef, addMessage, messages]);
 
   const processMessage = async (message: string, files?: File[]) => {
     if (isProcessing || !message.trim()) return;

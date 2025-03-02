@@ -7,20 +7,20 @@ import { AgentType } from "@/agents/AgentTypes";
 import { FileUploadButton } from "./chat-input/FileUploadButton";
 import { ApiSettingsDialog } from "@/components/ApiSettingsDialog";
 import { ChatProcessor } from "./ChatProcessor";
-import { Settings } from "lucide-react";
+import { Settings, PanelLeft, Trash2, Download, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
+import { Tooltip } from "./ui/tooltip";
 
 export function ChatView() {
   const { messages, addMessage, clearMessages, isAgentTyping } = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isLoadingExample, setIsLoadingExample] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(false); // Changed to false to prevent auto-loading
-  const chatRef = useRef<any>(null); // Ref for ChatProcessor methods
-  
-  // Remove the automatic loading of initial messages that was causing the loop
-  
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const [showProjectPanel, setShowProjectPanel] = useState(false);
+  const chatRef = useRef<any>(null);
+
+  // Scroll to bottom when messages change
   useEffect(() => {
-    // Scroll to bottom when messages change
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
@@ -125,6 +125,12 @@ Let me know if you'd like to proceed with this example!
     
     reader.readAsText(file);
   };
+
+  const handleClearChat = () => {
+    if (confirm("Are you sure you want to clear all messages?")) {
+      clearMessages();
+    }
+  };
   
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -133,13 +139,28 @@ Let me know if you'd like to proceed with this example!
           <h1 className="text-xl font-semibold">DevManager AI</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
-            <Settings className="h-4 w-4" />
-            <span>API Settings</span>
-          </Button>
-          <Button variant="outline" size="sm">
-            Show Project Panel
-          </Button>
+          <Tooltip content="API Settings">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => setShowApiSettings(true)}
+            >
+              <Settings className="h-4 w-4" />
+              <span>API Settings</span>
+            </Button>
+          </Tooltip>
+          <Tooltip content="Toggle Project Panel">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowProjectPanel(!showProjectPanel)}
+              className={showProjectPanel ? "bg-blue-100" : ""}
+            >
+              <PanelLeft className="h-4 w-4 mr-1" />
+              <span>Show Project Panel</span>
+            </Button>
+          </Tooltip>
         </div>
       </header>
       
@@ -147,36 +168,85 @@ Let me know if you'd like to proceed with this example!
         ref={chatContainerRef} 
         className="flex-1 overflow-y-auto p-4 bg-blue-50/50"
       >
-        {isInitialLoading ? (
-          <div className="text-center text-gray-500">Loading initial messages...</div>
-        ) : (
-          messages.map((message, index) => (
-            <ChatMessage key={index} {...message} />
-          ))
-        )}
+        {messages.map((message, index) => (
+          <ChatMessage key={index} {...message} />
+        ))}
         {isLoadingExample && (
-          <div className="text-center text-gray-500">Loading example project...</div>
+          <div className="text-center text-gray-500 my-4">
+            <div className="animate-pulse">Loading example project...</div>
+          </div>
+        )}
+        {isAgentTyping && (
+          <div className="flex items-start gap-3 mb-4 animate-pulse">
+            <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
+            <div className="flex flex-col gap-1 max-w-[80%]">
+              <div className="h-4 w-24 bg-gray-300 rounded"></div>
+              <div className="h-20 w-64 bg-gray-200 rounded-md"></div>
+            </div>
+          </div>
         )}
       </div>
       
       <div className="p-4 bg-background border-t">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <FileUploadButton onChange={handleFileUpload} />
-          <ChatInput 
-            onSendMessage={handleSendMessage} 
-            isLoading={isLoadingExample}
-            isDisabled={isLoadingExample}
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleStartWithExample}
-            disabled={isLoadingExample}
-          >
-            {isLoadingExample ? "Loading..." : "Example"}
-          </Button>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <Tooltip content="Clear all messages">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={handleClearChat}
+                  className="text-gray-500 hover:text-red-500"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Download chat history">
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  className="text-gray-500 hover:text-blue-500"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Help">
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  className="text-gray-500 hover:text-blue-500"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <FileUploadButton onChange={handleFileUpload} />
+            <ChatInput 
+              onSendMessage={handleSendMessage} 
+              isLoading={isLoadingExample || isAgentTyping}
+              isDisabled={isLoadingExample || isAgentTyping}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleStartWithExample}
+              disabled={isLoadingExample || isAgentTyping}
+            >
+              {isLoadingExample ? "Loading..." : "Example"}
+            </Button>
+          </div>
         </div>
       </div>
+      
+      {/* API Settings Dialog */}
+      {showApiSettings && (
+        <ApiSettingsDialog 
+          open={showApiSettings} 
+          onOpenChange={setShowApiSettings} 
+        />
+      )}
       
       {/* Hidden ChatProcessor component */}
       <div style={{ display: 'none' }}>
