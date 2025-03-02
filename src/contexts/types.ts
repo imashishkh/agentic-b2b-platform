@@ -1,259 +1,79 @@
-
 import { AgentType } from "@/agents/AgentTypes";
-import { ChatMessageProps } from "@/components/ChatMessage";
 
-// Architecture proposal interface
-export interface ArchitectureProposal {
-  id: string;
-  name: string;
+export interface ChatMessageProps {
   type: string;
-  description: string;
-  technologies: string[];
-  approved?: boolean;
-  diagram?: string;
-  dependencies?: string[];
-  title?: string;
-  components?: any[];
-  relationships?: any[];
-  dateCreated?: string;
-  status?: string;
-  pattern?: string;
-  patternDescription?: string;
-  appType?: string;  // Type of application (e-commerce, content, business, social)
-  techRecommendations?: {
-    frontend?: string[];
-    backend?: string[];
-    database?: string[];
-    devops?: string[];
-  };
+  content: React.ReactNode;
+  agentType?: AgentType;
+  isSecurityReview?: boolean;
+  complianceStatus?: "passed" | "warning" | "failed";
+  collaborators?: AgentType[];
+  projectContext?: string;
+  className?: string;
 }
 
-// Testing strategy interface
-export interface TestingStrategy {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  approved?: boolean;
-  approaches?: string[];
-  title?: string;
-  testingLevels?: any[];
-  automationStrategy?: string;
-  cicdIntegration?: string;
-  coverageTargets?: string;
-  tooling?: string[];
-}
-
-// Knowledge base resource interface
-export interface KnowledgeBaseResource {
-  id: string;
-  title: string;
-  url: string;
-  description: string;
-  category: string;
-  dateAdded: string;
-  tags?: string[];
-  content?: string;            // Stored content from the URL
-  relevanceScore?: number;     // Relevance score (0.0-1.0)
-  lastAccessed?: string;       // Last time the resource was accessed/used
-  accessCount?: number;        // Number of times the resource was accessed
-  aiSummary?: string;          // AI-generated summary
-}
-
-// GitHub repository interface
-export interface GitHubRepository {
-  owner: string;
-  name: string;
-  url: string;
-  branch: string;
-  lastUpdated: string | Date;
-  commitCount?: number;
-}
-
-// Suggestion option interface
 export interface SuggestionOption {
-  id?: string;
   label: string;
   message: string;
-  icon?: string;
+}
+
+export interface Suggestion {
+  title: string;
   description?: string;
+  options: string[] | SuggestionOption[];
 }
 
-// Suggestion props interface
-export interface SuggestionProps {
-  title: string;
-  description: string;
-  options: SuggestionOption[];
-}
-
-// Task interface
-export interface Task {
+export interface KnowledgeResource {
   id: string;
   title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'pending' | 'in-progress' | 'completed' | 'approved' | 'rejected';
-  assignedTo: AgentType;
-  dependencies?: string[];
-  startDate?: string;
-  endDate?: string;
-  subtasks?: Task[];
-  duration?: number; // Duration in days
-  progress?: number; // Progress percentage (0-100)
-  milestone?: boolean; // Flag for milestone tasks
+  content: string;
 }
 
-// Project phase interface
-export interface ProjectPhase {
-  id: string;
-  name: string;
-  description: string;
-  tasks: Task[];
-  startDate?: string;
-  endDate?: string;
-  status: 'planned' | 'in-progress' | 'completed';
-}
-
-// Timeline milestone interface
-export interface Milestone {
+export interface ProjectTask {
   id: string;
   title: string;
-  date: string;
   description: string;
-  completed: boolean;
-  relatedTasks: string[]; // References to task IDs
+  status: "open" | "in progress" | "completed";
+  assignee?: string;
+  dueDate?: Date;
 }
 
-// Project timeline interface
-export interface ProjectTimeline {
+export interface TaskDependency {
   id: string;
-  name: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  milestones: Milestone[];
-  phases: ProjectPhase[];
+  sourceTaskId: string;
+  targetTaskId: string;
+  type: "finish-to-start" | "start-to-start" | "finish-to-finish" | "start-to-finish";
 }
 
-/**
- * Security review interface
- */
-export interface SecurityReview {
+export interface TaskAssignment {
   id: string;
-  timestamp: string;
-  codeSnippet?: string;
-  findings: SecurityFinding[];
-  overallStatus: "passed" | "warning" | "failed";
-  reviewer: AgentType;
+  taskId: string;
+  agentType: AgentType;
 }
 
-/**
- * Security finding interface
- */
-export interface SecurityFinding {
-  id: string;
-  type: "vulnerability" | "best_practice" | "compliance";
-  severity: "low" | "medium" | "high" | "critical";
-  description: string;
-  recommendation: string;
-  codeLocation?: string;
-}
-
-/**
- * Compliance check interface
- */
-export interface ComplianceCheck {
-  id: string;
-  timestamp: string;
-  standard: string;
-  requirements: ComplianceRequirement[];
-  overallStatus: "passed" | "warning" | "failed";
-}
-
-/**
- * Compliance requirement interface
- */
-export interface ComplianceRequirement {
-  id: string;
-  name: string;
-  description: string;
-  status: "passed" | "warning" | "failed";
-  evidence?: string;
-  recommendation?: string;
-}
-
-/**
- * Performance metric interface
- */
-export interface PerformanceMetric {
-  id: string;
-  name: string;
-  category: 'frontend' | 'backend' | 'network' | 'database' | 'memory';
-  description: string;
-  unit: string;
-  threshold: {
-    warning: number;
-    critical: number;
-  };
-  currentValue?: number;
-  benchmarkValue?: number;
-  trending?: 'improving' | 'stable' | 'degrading';
-  lastUpdated?: string;
-  priority?: 'low' | 'medium' | 'high';
-  target?: number;
-  measurementMethod?: string;
-}
-
-/**
- * Optimization recommendation interface
- */
-export interface OptimizationRecommendation {
-  id: string;
-  metricId: string;
-  title: string;
-  description: string;
-  impact: 'low' | 'medium' | 'high';
-  effort: 'low' | 'medium' | 'high';
-  codeSnippet?: string;
-  resources?: string[];
-  priority?: 'low' | 'medium' | 'high';
-  estimatedImpact?: string;
-}
-
-/**
- * Monitoring tool interface
- */
-export interface MonitoringTool {
-  name: string;
-  description: string;
-  purpose: string;
-  features: string[];
-  implementationComplexity: string;
-  setupInstructions: string;
-  metricsMapping: Record<string, string>;
-}
-
-/**
- * Chat context interface
- */
 export interface ChatContextType {
-  messages: any[];
+  messages: ChatMessageProps[];
   isAgentTyping: boolean;
   isFetchingResponse: boolean;
   isLoadingExample: boolean;
   projectPhases: any[];
   hasRequestedFile: boolean;
   currentAgentType: AgentType;
-  knowledgeBase: KnowledgeBaseResource[];
-  isRequestingKnowledge: boolean;
-  architectureProposals: ArchitectureProposal[];
-  testingStrategies: TestingStrategy[];
-  gitHubRepository: GitHubRepository | null;
-  suggestions: SuggestionProps[];
-  lastProcessedSuggestion: string | null;
+  setCurrentAgentType: (agentType: AgentType) => void;
+  suggestions: Suggestion[];
+  searchEnabled: boolean;
+  searchResults: any[];
   securityReviewActive: boolean;
-  securityReviews: SecurityReview[];
-  complianceChecks: ComplianceCheck[];
+  securityAssessments: any[];
+  complianceStatus: {
+    [key: string]: "passed" | "warning" | "failed";
+  };
+  knowledgeBase: {
+    [category: string]: KnowledgeResource[];
+  };
+  projectTasks: ProjectTask[];
+  projectMilestones: any[];
+  taskDependencies: TaskDependency[];
+  taskAssignments: TaskAssignment[];
   vulnerabilityAssessments: any[];
   bestPracticesViolations: any[];
   collaborationActive: boolean;
@@ -267,25 +87,24 @@ export interface ChatContextType {
   setIsAgentTyping: (isTyping: boolean) => void;
   setIsFetchingResponse: (isFetching: boolean) => void;
   setIsLoadingExample: (isLoading: boolean) => void;
-  setProjectPhases: (phases: any[]) => void;
+  addProjectPhase: (phase: any) => void;
   setHasRequestedFile: (hasRequested: boolean) => void;
-  setCurrentAgentType: (agentType: AgentType) => void;
-  addKnowledgeResource: (resource: KnowledgeBaseResource) => void;
-  removeKnowledgeResource: (id: string) => void;
-  setIsRequestingKnowledge: (isRequesting: boolean) => void;
-  addArchitectureProposal: (proposal: ArchitectureProposal) => void;
-  updateArchitectureProposal: (id: string, proposal: Partial<ArchitectureProposal>) => void;
-  addTestingStrategy: (strategy: TestingStrategy) => void;
-  updateTestingStrategy: (id: string, strategy: Partial<TestingStrategy>) => void;
-  setGitHubRepository: (repo: GitHubRepository | null) => void;
-  addSuggestion: (suggestion: SuggestionProps) => void;
+  addSuggestion: (suggestion: Suggestion) => void;
+  removeSuggestion: (title: string) => void;
   clearSuggestions: () => void;
-  setProcessedSuggestion: (message: string) => void;
+  setSearchEnabled: (enabled: boolean) => void;
+  addSearchResult: (result: any) => void;
+  clearSearchResults: () => void;
   setSecurityReviewActive: (isActive: boolean) => void;
-  addSecurityReview: (review: SecurityReview) => void;
-  updateSecurityReview: (id: string, review: Partial<SecurityReview>) => void;
-  addComplianceCheck: (check: ComplianceCheck) => void;
-  updateComplianceCheck: (id: string, check: Partial<ComplianceCheck>) => void;
+  addSecurityAssessment: (assessment: any) => void;
+  updateComplianceStatus: (key: string, status: "passed" | "warning" | "failed") => void;
+  addKnowledgeResource: (category: string, resource: KnowledgeResource) => void;
+  removeKnowledgeResource: (category: string, id: string) => void;
+  addProjectTask: (task: ProjectTask) => void;
+  updateProjectTask: (id: string, task: Partial<ProjectTask>) => void;
+  addProjectMilestone: (milestone: any) => void;
+  addTaskDependency: (dependency: TaskDependency) => void;
+  addTaskAssignment: (assignment: TaskAssignment) => void;
   addVulnerabilityAssessment: (assessment: any) => void;
   addBestPracticesViolation: (violation: any) => void;
   setCollaborationActive: (isActive: boolean) => void;

@@ -9,23 +9,30 @@ interface SendButtonProps {
 }
 
 /**
- * Button component for sending messages
- * Changes appearance based on disabled state
+ * SendButton component
+ * 
+ * A visually distinctive button for sending messages with:
+ * - Dynamic styling based on disabled state
+ * - Animated icon rotation for visual interest
+ * - Accessible labeling for screen readers
  */
 export const SendButton: React.FC<SendButtonProps> = ({ disabled, onClick }) => {
   return (
     <button 
       className={cn(
-        "p-2.5 rounded-full flex items-center justify-center transition-all duration-200",
+        "p-2 rounded-full flex items-center justify-center transition-all duration-200",
         disabled
           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-          : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+          : "bg-blue-500 text-white hover:bg-blue-600"
       )}
       onClick={onClick}
       disabled={disabled}
       aria-label="Send message"
     >
-      <Send size={18} className={disabled ? "" : "transform rotate-45"} />
+      <Send size={16} className={cn(
+        "transition-transform", 
+        disabled ? "" : "transform rotate-45"
+      )} />
     </button>
   );
 };

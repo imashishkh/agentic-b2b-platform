@@ -17,6 +17,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/**
+ * ChatView Component
+ * 
+ * The main chat interface that displays messages and provides interaction options.
+ * This component orchestrates the chat experience with the following features:
+ * 
+ * - Message display area showing the conversation history
+ * - Suggestion boxes for common user actions
+ * - Access to documentation and performance monitoring tools
+ * - Integration with the chat processor for handling messages
+ */
 export default function ChatView() {
   const { chatId } = useParams<{ chatId: string }>();
   const { 
@@ -43,6 +54,10 @@ export default function ChatView() {
     }).slice(0, 2); // Limit to 2 suggestions at a time to prevent UI clutter
   }, [suggestions]);
   
+  /**
+   * Handle user selection from suggestion boxes
+   * @param message - The selected suggestion text
+   */
   const handleSuggestionSelect = (message: string) => {
     if (chatProcessorRef.current) {
       addMessage({
@@ -54,6 +69,10 @@ export default function ChatView() {
     }
   };
 
+  /**
+   * Handle document generation requests
+   * @param docType - The type of documentation to generate
+   */
   const handleDocumentRequest = (docType: string) => {
     if (chatProcessorRef.current) {
       const message = `Generate ${docType} documentation for our project`;
@@ -66,6 +85,10 @@ export default function ChatView() {
     }
   };
   
+  /**
+   * Handle performance-related requests
+   * @param requestType - The type of performance request
+   */
   const handlePerformanceRequest = (requestType: string) => {
     if (chatProcessorRef.current) {
       let message = "";
@@ -101,32 +124,33 @@ export default function ChatView() {
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader />
         
+        {/* Dropdown menus for documentation and performance tools */}
         <div className="absolute top-16 right-4 z-20 flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm bg-white">
-                <BarChart className="h-4 w-4 text-blue-600" />
-                <span className="hidden sm:inline text-gray-700">Performance</span>
-                <ChevronDown className="h-4 w-4 opacity-60" />
+              <Button variant="outline" size="sm" className="flex items-center gap-1.5 shadow-sm bg-white">
+                <BarChart className="h-3.5 w-3.5 text-blue-600" />
+                <span className="hidden sm:inline text-xs text-gray-700">Performance</span>
+                <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Performance Monitoring</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuLabel className="text-xs">Performance Monitoring</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("metrics")} className="gap-2">
-                <Gauge className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("metrics")} className="gap-2 text-xs">
+                <Gauge className="h-3.5 w-3.5 text-blue-600" />
                 <span>Define Performance Metrics</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("monitoring")} className="gap-2">
-                <LineChart className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("monitoring")} className="gap-2 text-xs">
+                <LineChart className="h-3.5 w-3.5 text-blue-600" />
                 <span>Monitoring Tool Setup</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("benchmarks")} className="gap-2">
-                <BarChart className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("benchmarks")} className="gap-2 text-xs">
+                <BarChart className="h-3.5 w-3.5 text-blue-600" />
                 <span>Create Performance Benchmarks</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("optimizations")} className="gap-2">
-                <Zap className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("optimizations")} className="gap-2 text-xs">
+                <Zap className="h-3.5 w-3.5 text-blue-600" />
                 <span>Optimization Recommendations</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -134,37 +158,38 @@ export default function ChatView() {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm bg-white">
-                <FileText className="h-4 w-4 text-blue-600" />
-                <span className="hidden sm:inline text-gray-700">Documentation</span>
-                <ChevronDown className="h-4 w-4 opacity-60" />
+              <Button variant="outline" size="sm" className="flex items-center gap-1.5 shadow-sm bg-white">
+                <FileText className="h-3.5 w-3.5 text-blue-600" />
+                <span className="hidden sm:inline text-xs text-gray-700">Documentation</span>
+                <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Generate Documentation</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuLabel className="text-xs">Generate Documentation</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleDocumentRequest("API")} className="gap-2">
-                <Code className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handleDocumentRequest("API")} className="gap-2 text-xs">
+                <Code className="h-3.5 w-3.5 text-blue-600" />
                 <span>API Documentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDocumentRequest("user")} className="gap-2">
-                <BookOpen className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handleDocumentRequest("user")} className="gap-2 text-xs">
+                <BookOpen className="h-3.5 w-3.5 text-blue-600" />
                 <span>User Guide</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDocumentRequest("technical")} className="gap-2">
-                <Code className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handleDocumentRequest("technical")} className="gap-2 text-xs">
+                <Code className="h-3.5 w-3.5 text-blue-600" />
                 <span>Technical Documentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDocumentRequest("maintenance")} className="gap-2">
-                <Settings className="h-4 w-4 text-blue-600" />
+              <DropdownMenuItem onClick={() => handleDocumentRequest("maintenance")} className="gap-2 text-xs">
+                <Settings className="h-3.5 w-3.5 text-blue-600" />
                 <span>Maintenance Guide</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         
+        {/* Main chat message area */}
         <div className="relative flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto">
+          <div className="h-full overflow-y-auto p-4">
             <ChatMessages 
               messages={messages}
               isLoadingExample={isLoadingExample} 
@@ -174,9 +199,10 @@ export default function ChatView() {
             />
           </div>
           
+          {/* Suggestion boxes - displayed above the chat input but not overlapping messages */}
           {uniqueSuggestions.length > 0 && (
-            <div className="fixed bottom-[5.5rem] left-0 right-0 z-10 px-4 pointer-events-none">
-              <div className="max-w-2xl mx-auto space-y-2 pointer-events-auto">
+            <div className="fixed bottom-[4.5rem] left-0 right-0 z-10 px-4 pointer-events-none">
+              <div className="max-w-2xl mx-auto space-y-1.5 pointer-events-auto">
                 {uniqueSuggestions.map((suggestion, index) => (
                   <SuggestionBox
                     key={index}
@@ -191,7 +217,8 @@ export default function ChatView() {
           )}
         </div>
         
-        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background/95 to-background/75 border-t py-2">
+        {/* Chat input area with gradient background */}
+        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-6 pb-1">
           <ChatProcessor chatRef={chatProcessorRef} />
         </div>
       </div>
