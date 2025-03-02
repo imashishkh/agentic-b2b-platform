@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import ChatView from "@/components/ChatView";
 import { useChat } from "@/contexts/ChatContext";
@@ -7,6 +8,16 @@ import { AgentType } from "@/agents/AgentTypes";
 import { ChatInput } from "@/components/chat-input";
 import { Trash2, Download, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+/**
+ * ChatContainer Component
+ * 
+ * The main container for the chat interface that manages:
+ * - Message handling and processing
+ * - File uploads with progress tracking
+ * - Example project generation
+ * - Chat history management (clear, download)
+ */
 export function ChatContainer() {
   const {
     messages,
@@ -23,6 +34,11 @@ export function ChatContainer() {
   const chatRef = useRef<{
     processUserMessage: (message: string, files?: File[]) => void;
   }>(null);
+
+  /**
+   * Handles sending a user message to be processed
+   * @param message - The text message from the user
+   */
   const handleSendMessage = async (message: string) => {
     try {
       if (message.trim() === "") return;
@@ -58,9 +74,18 @@ export function ChatContainer() {
       setIsAgentTyping(false);
     }
   };
+
+  /**
+   * Clears all selected files
+   */
   const handleClearFiles = () => {
     setFiles([]);
   };
+
+  /**
+   * Handles file input changes and prepares them for upload
+   * @param selectedFiles - Array of files selected by the user
+   */
   const handleFileInputChange = (selectedFiles: File[]) => {
     if (selectedFiles.length > 0) {
       setFiles(selectedFiles);
@@ -90,6 +115,11 @@ export function ChatContainer() {
       }, 200);
     }
   };
+
+  /**
+   * Handles file uploads directly from the UI
+   * @param selectedFiles - Array of files selected by the user
+   */
   const handleFileUpload = (selectedFiles: File[]) => {
     if (selectedFiles.length > 0) {
       setFiles(selectedFiles);
@@ -134,6 +164,10 @@ export function ChatContainer() {
       }, 200);
     }
   };
+
+  /**
+   * Starts with an example project for demonstration purposes
+   */
   const handleStartWithExample = () => {
     toast.info("Starting with example project");
     // Add example project message
@@ -156,6 +190,10 @@ export function ChatContainer() {
       }, 2500);
     }
   };
+
+  /**
+   * Clears the chat history and resets to initial state
+   */
   const handleClearChat = () => {
     clearMessages();
     toast.success("Chat cleared");
@@ -169,6 +207,10 @@ export function ChatContainer() {
       });
     }, 300);
   };
+
+  /**
+   * Downloads the chat history as a text file
+   */
   const handleDownload = () => {
     toast.info("Downloading chat history");
 
@@ -186,17 +228,70 @@ export function ChatContainer() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  /**
+   * Opens the help documentation
+   */
   const handleHelp = () => {
     toast.info("Opening help dialog", {
       description: "This feature is still in development."
     });
   };
-  return <div className="flex flex-col h-full relative">
+
+  return (
+    <div className="flex flex-col h-full relative">
       <div className="flex-1 overflow-hidden">
         <ChatView />
       </div>
       
+      <div className="border-t border-border/50 bg-background">
+        <ChatInput
+          onSendMessage={handleSendMessage}
+          files={files}
+          onClearFiles={handleClearFiles}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          handleFileUpload={handleFileUpload}
+          isDisabled={isAgentTyping || isLoadingExample}
+          onExampleClick={handleStartWithExample}
+        />
+        
+        <div className="flex justify-between px-4 py-2 border-t border-border/30">
+          <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClearChat}
+              className="text-xs text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" />
+              Clear Chat
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleDownload}
+              className="text-xs text-muted-foreground"
+            >
+              <Download className="h-3.5 w-3.5 mr-1" />
+              Export
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleHelp}
+              className="text-xs text-muted-foreground"
+            >
+              <HelpCircle className="h-3.5 w-3.5 mr-1" />
+              Help
+            </Button>
+          </div>
+        </div>
+      </div>
       
       <ChatProcessor chatRef={chatRef} />
-    </div>;
+    </div>
+  );
 }
