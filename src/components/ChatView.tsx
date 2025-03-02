@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { ChatInput } from "./chat-input";
 import { ChatMessage } from "./ChatMessage";
@@ -9,6 +10,7 @@ import { ChatProcessor } from "./ChatProcessor";
 import { Settings, PanelLeft, Trash2, Download, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tooltip } from "./ui/tooltip";
+import { ProjectFeaturesPanel } from "./project/ProjectFeaturesPanel";
 import { toast } from "sonner";
 
 export function ChatView() {
@@ -132,7 +134,7 @@ Let me know if you'd like to proceed with this example!
           <h1 className="text-xl font-semibold">DevManager AI</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Tooltip content="API Settings">
+          <Tooltip tooltip="API Settings">
             <Button 
               variant="outline" 
               size="sm" 
@@ -143,7 +145,7 @@ Let me know if you'd like to proceed with this example!
               <span>API Settings</span>
             </Button>
           </Tooltip>
-          <Tooltip content="Toggle Project Panel">
+          <Tooltip tooltip="Toggle Project Panel">
             <Button 
               variant="outline" 
               size="sm"
@@ -157,25 +159,33 @@ Let me know if you'd like to proceed with this example!
         </div>
       </header>
       
-      <div 
-        ref={chatContainerRef} 
-        className="flex-1 overflow-y-auto p-4 bg-blue-50/50"
-      >
-        {messages.map((message, index) => (
-          <ChatMessage key={index} {...message} />
-        ))}
-        {isLoadingExample && (
-          <div className="text-center text-gray-500 my-4">
-            <div className="animate-pulse">Loading example project...</div>
-          </div>
-        )}
-        {isAgentTyping && (
-          <div className="flex items-start gap-3 mb-4 animate-pulse">
-            <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
-            <div className="flex flex-col gap-1 max-w-[80%]">
-              <div className="h-4 w-24 bg-gray-300 rounded"></div>
-              <div className="h-20 w-64 bg-gray-200 rounded-md"></div>
+      <div className="flex flex-1 overflow-hidden">
+        <div 
+          ref={chatContainerRef} 
+          className="flex-1 overflow-y-auto p-4 bg-blue-50/50"
+        >
+          {messages.map((message, index) => (
+            <ChatMessage key={index} {...message} />
+          ))}
+          {isLoadingExample && (
+            <div className="text-center text-gray-500 my-4">
+              <div className="animate-pulse">Loading example project...</div>
             </div>
+          )}
+          {isAgentTyping && (
+            <div className="flex items-start gap-3 mb-4 animate-pulse">
+              <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
+              <div className="flex flex-col gap-1 max-w-[80%]">
+                <div className="h-4 w-24 bg-gray-300 rounded"></div>
+                <div className="h-20 w-64 bg-gray-200 rounded-md"></div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {showProjectPanel && (
+          <div className="w-80 border-l bg-background overflow-y-auto">
+            <ProjectFeaturesPanel />
           </div>
         )}
       </div>
@@ -184,7 +194,7 @@ Let me know if you'd like to proceed with this example!
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between mb-2">
             <div className="flex items-center gap-1">
-              <Tooltip content="Clear all messages">
+              <Tooltip tooltip="Clear all messages">
                 <Button 
                   size="sm" 
                   variant="ghost" 
@@ -194,7 +204,7 @@ Let me know if you'd like to proceed with this example!
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </Tooltip>
-              <Tooltip content="Download chat history">
+              <Tooltip tooltip="Download chat history">
                 <Button 
                   size="sm" 
                   variant="ghost"
@@ -203,7 +213,7 @@ Let me know if you'd like to proceed with this example!
                   <Download className="h-4 w-4" />
                 </Button>
               </Tooltip>
-              <Tooltip content="Help">
+              <Tooltip tooltip="Help">
                 <Button 
                   size="sm" 
                   variant="ghost"
@@ -234,10 +244,7 @@ Let me know if you'd like to proceed with this example!
       </div>
       
       {showApiSettings && (
-        <ApiSettingsDialog 
-          open={showApiSettings} 
-          onOpenChange={setShowApiSettings} 
-        />
+        <ApiSettingsDialog onClose={() => setShowApiSettings(false)} />
       )}
       
       <div style={{ display: 'none' }}>

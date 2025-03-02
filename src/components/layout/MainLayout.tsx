@@ -23,8 +23,6 @@ export function MainLayout({
   showApiSettings,
   setShowApiSettings
 }: MainLayoutProps) {
-  const [showProjectPanel, setShowProjectPanel] = useState(false);
-  
   return (
     <div className="flex w-full h-screen overflow-hidden">
       {/* Sidebar */}
@@ -38,13 +36,6 @@ export function MainLayout({
       <div className="flex-1 flex flex-col h-full">
         {children}
       </div>
-      
-      {/* Project Panel (optional) */}
-      {showProjectPanel && (
-        <div className="w-80 border-l bg-background overflow-y-auto">
-          <ProjectFeaturesPanel />
-        </div>
-      )}
       
       {/* API Settings Modal */}
       {showApiSettings && (

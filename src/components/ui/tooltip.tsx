@@ -1,13 +1,13 @@
 
 import React from "react";
-import { 
+import {
   Tooltip as TooltipPrimitive,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from "@radix-ui/react-tooltip";
 
-interface TooltipProps {
+export interface TooltipProps {
   children: React.ReactNode;
   tooltip: string;
   className?: string;
@@ -29,3 +29,6 @@ export function Tooltip({ children, tooltip, className }: TooltipProps) {
     </TooltipProvider>
   );
 }
+
+// Export all the components needed for custom sidebar
+export { TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
