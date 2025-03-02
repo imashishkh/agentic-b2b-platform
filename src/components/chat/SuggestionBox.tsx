@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { SuggestionOption } from "@/contexts/types";
@@ -16,7 +17,11 @@ import {
   Database,
   Milestone,
   Calendar,
-  GitBranch
+  GitBranch,
+  Network,
+  FileText,
+  AlertTriangle,
+  Tag
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,6 +51,10 @@ const IconComponent = ({ name }: { name: string }) => {
     case "gantt": return <BarChart className="h-4 w-4" />;
     case "calendar": return <Calendar className="h-4 w-4" />;
     case "git-branch": return <GitBranch className="h-4 w-4" />;
+    case "network": return <Network className="h-4 w-4" />;
+    case "file-text": return <FileText className="h-4 w-4" />;
+    case "alert-triangle": return <AlertTriangle className="h-4 w-4" />;
+    case "tag": return <Tag className="h-4 w-4" />;
     default: return <ArrowRight className="h-4 w-4" />;
   }
 };

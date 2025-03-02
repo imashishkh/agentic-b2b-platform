@@ -5,6 +5,7 @@ import { AgentType } from "@/agents/AgentTypes";
 import * as AgentFactory from "@/agents/AgentFactory";
 import { toast } from "sonner";
 import { ManagerAgent } from "@/agents/ManagerAgent";
+import { extractTasksWithDependencies, generateDependencyGraph } from "@/utils/markdownParser";
 
 // Define the correct interface with chatRef
 export interface ChatProcessorProps {

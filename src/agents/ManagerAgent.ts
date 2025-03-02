@@ -70,6 +70,28 @@ export class ManagerAgent extends BaseAgent {
       // Store the requirements for future reference
       this.projectRequirements = markdownContent;
       
+      // Use enhanced markdown parsing if available
+      try {
+        const { extractTasksWithDependencies, generateDependencyGraph } = await import('@/utils/markdownParser');
+        
+        // Use enhanced task extraction with dependencies and priority detection
+        const extractedTasks = extractTasksWithDependencies(markdownContent);
+        this.parsedTasks = extractedTasks;
+        
+        // Generate dependency graph
+        const dependencyGraph = generateDependencyGraph(extractedTasks);
+        console.log("Generated dependency graph:", dependencyGraph);
+        
+        // Assign tasks to different specialist agents
+        await this.assignTasksToSpecialists(extractedTasks);
+        
+        return this.generateEnhancedTaskSummary(extractedTasks, dependencyGraph);
+      } catch (error) {
+        console.error("Error using enhanced markdown parsing, falling back to basic:", error);
+        // Fall back to basic parsing if enhanced parsing fails
+      }
+      
+      // Fall back to original method if enhanced method fails
       // Extract tasks from the markdown
       const tasks = await this.extractTasksFromMarkdown(markdownContent);
       this.parsedTasks = tasks;
@@ -82,6 +104,111 @@ export class ManagerAgent extends BaseAgent {
       console.error("Error processing markdown file:", error);
       return "I encountered an error while processing your requirements document. Please try again or upload a different file.";
     }
+  }
+  
+  /**
+   * Generate an enhanced task summary with dependency information
+   */
+  private generateEnhancedTaskSummary(extractedTasks: any[], dependencyGraph: any): string {
+    const summary = ["# Enhanced Project Analysis Summary\n"];
+    
+    // Add the total number of tasks
+    const totalTasks = extractedTasks.length;
+    const totalSubtasks = extractedTasks.reduce((count, task) => count + task.subtasks.length, 0);
+    
+    summary.push(`I've analyzed your requirements document and extracted ${totalTasks} main tasks and ${totalSubtasks} subtasks with dependencies and priority information.\n`);
+    
+    // Add dependency information
+    summary.push("## Task Dependencies\n");
+    summary.push(`I've identified dependencies between tasks. The dependency graph has ${dependencyGraph.nodes.length} nodes and ${dependencyGraph.edges.length} connections.\n`);
+    
+    // Add critical path information if there are enough dependencies
+    if (dependencyGraph.edges.length > 3) {
+      summary.push("### Critical Path\n");
+      summary.push("Tasks on the critical path that should be prioritized:\n");
+      
+      // Find tasks with the most dependents (most blocking)
+      const dependentCounts = new Map<string, number>();
+      for (const edge of dependencyGraph.edges) {
+        if (edge.type === 'dependency') {
+          dependentCounts.set(edge.source, (dependentCounts.get(edge.source) || 0) + 1);
+        }
+      }
+      
+      // Get the top 3 most critical tasks
+      const criticalTasks = Array.from(dependentCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      
+      if (criticalTasks.length > 0) {
+        for (const [taskId, dependentCount] of criticalTasks) {
+          const task = extractedTasks.find(t => t.id === taskId) || 
+                     extractedTasks.flatMap(t => t.subtasks).find(st => st.id === taskId);
+          
+          if (task) {
+            summary.push(`- **${task.title}** - Blocks ${dependentCount} other task(s)\n`);
+          }
+        }
+      } else {
+        summary.push("- No critical blocking tasks identified yet\n");
+      }
+    }
+    
+    // Add priority breakdown
+    const highPriorityTasks = extractedTasks.filter(t => t.priority === 'high');
+    const mediumPriorityTasks = extractedTasks.filter(t => t.priority === 'medium');
+    const lowPriorityTasks = extractedTasks.filter(t => t.priority === 'low');
+    
+    summary.push("\n## Priority Breakdown\n");
+    summary.push(`- **High Priority:** ${highPriorityTasks.length} tasks\n`);
+    summary.push(`- **Medium Priority:** ${mediumPriorityTasks.length} tasks\n`);
+    summary.push(`- **Low Priority:** ${lowPriorityTasks.length} tasks\n`);
+    
+    // Add task categorization
+    summary.push("\n## Task Categories\n");
+    
+    // Group tasks by category
+    const categorizedTasks = extractedTasks.reduce((acc: {[key: string]: any[]}, task) => {
+      const category = task.category || 'other';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(task);
+      return acc;
+    }, {});
+    
+    // Add tasks by category
+    for (const [category, tasks] of Object.entries(categorizedTasks)) {
+      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+      summary.push(`### ${categoryName} (${tasks.length} tasks)\n`);
+      
+      // List up to 3 tasks per category
+      for (const task of tasks.slice(0, 3)) {
+        summary.push(`- ${task.title}\n`);
+      }
+      
+      if (tasks.length > 3) {
+        summary.push(`- ... and ${tasks.length - 3} more ${categoryName} tasks\n`);
+      }
+      
+      summary.push("\n");
+    }
+    
+    // Add next steps
+    summary.push("## Next Steps\n");
+    summary.push("I recommend we take the following steps:\n");
+    summary.push("1. Review the identified tasks and dependencies\n");
+    summary.push("2. Adjust priorities if needed\n");
+    summary.push("3. Begin implementation planning for high-priority tasks\n");
+    summary.push("4. Set up technical architecture based on requirements\n\n");
+    
+    summary.push("Would you like me to:\n");
+    summary.push("1. Show you the detailed dependency graph?\n");
+    summary.push("2. Create a technical architecture proposal?\n");
+    summary.push("3. Suggest a development timeline based on task dependencies?\n");
+    summary.push("4. Something else?\n");
+    
+    return summary.join("");
   }
   
   /**
