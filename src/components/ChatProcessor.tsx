@@ -1,17 +1,17 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
-import { AgentFactory } from "@/agents/AgentFactory";
+import * as AgentFactory from "@/agents/AgentFactory";
 import { toast } from "sonner";
 
+// Define the correct interface with chatRef
 export interface ChatProcessorProps {
-  message: string;
-  onResponse: (response: string) => void;
-  agentType: AgentType;
+  chatRef: React.MutableRefObject<any>;
 }
 
-export function ChatProcessor({ message, onResponse, agentType }: ChatProcessorProps) {
-  const { conversationContext, updateConversationContext } = useChat();
+export function ChatProcessor({ chatRef }: ChatProcessorProps) {
+  const { messages, addMessage, setIsAgentTyping } = useChat();
   const [isProcessing, setIsProcessing] = useState(false);
   const isMounted = useRef(true);
 
@@ -22,36 +22,76 @@ export function ChatProcessor({ message, onResponse, agentType }: ChatProcessorP
     };
   }, []);
 
+  // Expose the message processing method through the ref
   useEffect(() => {
-    if (message && !isProcessing) {
-      processMessage();
+    if (chatRef) {
+      chatRef.current = {
+        processUserMessage: processMessage
+      };
     }
-  }, [message]);
+  }, [chatRef]);
 
-  const processMessage = async () => {
-    if (isProcessing) return;
+  const processMessage = async (message: string, files?: File[]) => {
+    if (isProcessing || !message.trim()) return;
     
+    // Add user message to chat
+    addMessage({
+      id: Date.now().toString(),
+      content: message,
+      sender: "user",
+      timestamp: new Date(),
+    });
+    
+    setIsAgentTyping(true);
     setIsProcessing(true);
+    
     try {
+      // Determine which agent should handle the message
+      const agentType = AgentFactory.determineAgentType(message, []);
+      
       // Try to use Claude API first
       const claudeResponse = await sendMessageToClaudeAPI(message, agentType);
       
       if (claudeResponse && isMounted.current) {
-        onResponse(claudeResponse);
+        // Add agent response to chat
+        addMessage({
+          id: (Date.now() + 1).toString(),
+          content: claudeResponse,
+          sender: "agent",
+          agentType: agentType,
+          timestamp: new Date(),
+        });
       } else if (isMounted.current) {
         // Fallback to simulated response if Claude API fails
-        const simulatedResponse = simulateResponse(message, agentType);
-        onResponse(simulatedResponse);
+        const agent = AgentFactory.createAgent(agentType);
+        const simulatedResponse = agent.simulateResponse(message, []);
+        
+        addMessage({
+          id: (Date.now() + 1).toString(),
+          content: simulatedResponse,
+          sender: "agent",
+          agentType: agentType,
+          timestamp: new Date(),
+        });
       }
     } catch (error) {
       console.error("Error processing message:", error);
+      toast.error("Failed to process message. Please try again.");
+      
       if (isMounted.current) {
-        const simulatedResponse = simulateResponse(message, agentType);
-        onResponse(simulatedResponse);
+        // Add error message
+        addMessage({
+          id: (Date.now() + 1).toString(),
+          content: "I'm sorry, I encountered an error while processing your message. Please try again.",
+          sender: "agent",
+          agentType: AgentType.MANAGER,
+          timestamp: new Date(),
+        });
       }
     } finally {
       if (isMounted.current) {
         setIsProcessing(false);
+        setIsAgentTyping(false);
       }
     }
   };
@@ -61,20 +101,37 @@ export function ChatProcessor({ message, onResponse, agentType }: ChatProcessorP
       // Get API key from local storage
       const apiKey = localStorage.getItem("claude_api_key");
       if (!apiKey) {
-        toast.error("Claude API key not found. Please add your API key in settings.");
         return null;
       }
 
       const agent = AgentFactory.createAgent(agentType);
       
-      // Use the appropriate method for creating prompts based on agent type
+      // Generate a prompt based on agent type
       let prompt = "";
       if (agentType === AgentType.MANAGER) {
-        // Manager agent has its own specific prompt format
-        prompt = agent.generatePrompt(message, conversationContext);
+        prompt = `You are DevManager, an AI-powered project manager specialized in software development.
+        
+        Current message from user: "${message}"
+        
+        Respond in a clear, well-formatted style with:
+        - Proper markdown formatting
+        - Well-spaced paragraphs
+        - Bullet points where appropriate
+        - Headings for different sections
+        
+        Keep your response helpful, detailed, and professionally formatted.`;
       } else {
-        // Other agents use a standardized prompt format
-        prompt = agent.generateSpecializedPrompt(message, conversationContext);
+        prompt = `You are a specialized ${agentType} agent helping with software development.
+        
+        Current message from user: "${message}"
+        
+        Respond in a clear, well-formatted style with:
+        - Proper markdown formatting
+        - Well-spaced paragraphs
+        - Bullet points where appropriate
+        - Headings for different sections
+        
+        Keep your response helpful, detailed, and professionally formatted.`;
       }
 
       // Make API request to Claude
@@ -111,11 +168,6 @@ export function ChatProcessor({ message, onResponse, agentType }: ChatProcessorP
       toast.error("Failed to connect to Claude API. Using simulated response instead.");
       return null;
     }
-  };
-
-  const simulateResponse = (message: string, agentType: AgentType): string => {
-    const agent = AgentFactory.createAgent(agentType);
-    return agent.simulateResponse(message, conversationContext);
   };
 
   return null; // This component doesn't render anything
