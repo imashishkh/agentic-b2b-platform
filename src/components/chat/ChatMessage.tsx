@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ShieldAlert, ShieldX, Users, Lightbulb, Cpu } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, Users, Lightbulb, Cpu, MessageSquare, Bot } from "lucide-react";
 
 export interface ChatMessageProps {
   type: "user" | "agent" | "system";
@@ -15,6 +15,7 @@ export interface ChatMessageProps {
   complianceStatus?: "passed" | "warning" | "failed" | null;
   collaborators?: AgentType[];
   projectContext?: string;
+  className?: string;
 }
 
 export function ChatMessage({ 
@@ -24,7 +25,8 @@ export function ChatMessage({
   isSecurityReview = false,
   complianceStatus = null,
   collaborators = [],
-  projectContext
+  projectContext,
+  className = ""
 }: ChatMessageProps) {
   const isUser = type === "user";
   
@@ -32,18 +34,18 @@ export function ChatMessage({
   const getAgentInfo = () => {
     switch (agentType) {
       case AgentType.FRONTEND:
-        return { name: "Frontend", avatar: "FE" };
+        return { name: "Frontend", avatar: "FE", icon: <MessageSquare size={14} /> };
       case AgentType.BACKEND:
-        return { name: "Backend", avatar: "BE" };
+        return { name: "Backend", avatar: "BE", icon: <MessageSquare size={14} /> };
       case AgentType.DATABASE:
-        return { name: "Database", avatar: "DB" };
+        return { name: "Database", avatar: "DB", icon: <MessageSquare size={14} /> };
       case AgentType.DEVOPS:
-        return { name: "DevOps", avatar: "DO" };
+        return { name: "DevOps", avatar: "DO", icon: <MessageSquare size={14} /> };
       case AgentType.UX:
-        return { name: "UX", avatar: "UX" };
+        return { name: "UX", avatar: "UX", icon: <MessageSquare size={14} /> };
       case AgentType.MANAGER:
       default:
-        return { name: "DevManager", avatar: "DM" };
+        return { name: "DevManager", avatar: "DM", icon: <Bot size={14} /> };
     }
   };
   
@@ -104,64 +106,57 @@ export function ChatMessage({
     );
   };
   
-  // Render Claude API badge if applicable
-  const renderAPIBadge = () => {
-    if (isUser) return null;
-    
-    return (
-      <Badge variant="outline" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100 ml-2">
-        <Cpu className="h-3 w-3 mr-1" />
-        Claude 3.7
-      </Badge>
-    );
-  };
-  
   return (
     <div
       className={cn(
-        "flex w-full items-start gap-4 p-4",
+        "group w-full flex items-start gap-3 transition-opacity animate-fade-in",
         isUser ? "justify-end" : "justify-start",
-        isUser ? "bg-background" : (isSecurityReview ? "bg-amber-50 dark:bg-amber-950/20" : "bg-muted/30")
+        isSecurityReview ? "bg-amber-50/40 p-3 rounded-lg border border-amber-100" : "",
+        className
       )}
     >
       {!isUser && (
-        <Avatar className={cn("h-8 w-8 rounded text-primary-foreground", 
-          isSecurityReview ? "bg-amber-500" : "bg-primary")}>
+        <Avatar className={cn(
+          "h-8 w-8 rounded-md shadow-sm text-primary-foreground flex-shrink-0", 
+          isSecurityReview ? "bg-amber-500" : "bg-blue-600"
+        )}>
           <div className="text-xs font-semibold">{agentInfo.avatar}</div>
         </Avatar>
       )}
       
-      <div
-        className={cn(
-          "flex max-w-[80%] flex-col gap-2",
-          isUser ? "items-end" : "items-start"
-        )}
-      >
-        <div className="text-sm font-medium flex items-center flex-wrap gap-1">
-          {isUser ? "You" : agentInfo.name}
+      <div className={cn(
+        "flex max-w-[85%] md:max-w-[75%] flex-col gap-1",
+        isUser ? "items-end" : "items-start"
+      )}>
+        <div className="flex items-center flex-wrap gap-1">
+          <div className="text-sm font-medium flex items-center">
+            {isUser ? "You" : (
+              <span className="flex items-center gap-1">
+                {agentInfo.icon} {agentInfo.name}
+              </span>
+            )}
+          </div>
+          
           {!isUser && isSecurityReview && (
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 ml-2">
+            <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 ml-1 text-xs">
               Security Review
             </Badge>
           )}
           {!isUser && renderComplianceBadge()}
           {!isUser && renderCollaborationBadge()}
           {!isUser && renderContextAwareBadge()}
-          {!isUser && renderAPIBadge()}
         </div>
         
-        <div
-          className={cn(
-            "rounded-lg px-4 py-2.5",
-            isUser
-              ? "bg-primary text-primary-foreground"
-              : (isSecurityReview 
-                ? "bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100" 
-                : "bg-muted text-muted-foreground")
-          )}
-        >
+        <div className={cn(
+          "rounded-2xl px-4 py-3 text-sm",
+          isUser
+            ? "bg-blue-600 text-white shadow-sm" 
+            : (isSecurityReview 
+              ? "bg-amber-100 text-amber-900 shadow-sm border border-amber-200" 
+              : "bg-gray-100 text-gray-800 shadow-sm dark:bg-gray-800 dark:text-gray-100")
+        )}>
           {typeof content === "string" ? (
-            <ReactMarkdown className="prose prose-sm dark:prose-invert break-words">
+            <ReactMarkdown className="prose prose-sm dark:prose-invert break-words prose-p:leading-relaxed prose-pre:bg-gray-800/80 prose-pre:text-gray-100 prose-pre:shadow-inner prose-pre:rounded-md">
               {content}
             </ReactMarkdown>
           ) : (
@@ -170,9 +165,9 @@ export function ChatMessage({
         </div>
         
         {collaborators && collaborators.length > 0 && !isUser && (
-          <div className="text-xs text-muted-foreground mt-1">
-            <span className="font-medium">Contributors:</span>{" "}
-            {collaborators.map(type => {
+          <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-1 items-center">
+            <span className="font-medium">Contributors:</span>
+            {collaborators.map((type, idx) => {
               const info = (() => {
                 switch (type) {
                   case AgentType.FRONTEND: return "Frontend";
@@ -183,14 +178,19 @@ export function ChatMessage({
                   default: return "";
                 }
               })();
-              return info ? info + " " : "";
-            }).join("• ")}
+              
+              return info ? (
+                <Badge variant="outline" key={idx} className="bg-gray-100 text-gray-600 text-xs font-normal">
+                  {info}
+                </Badge>
+              ) : null;
+            })}
           </div>
         )}
       </div>
       
       {isUser && (
-        <Avatar className="h-8 w-8 rounded bg-primary text-primary-foreground">
+        <Avatar className="h-8 w-8 rounded-md bg-gray-700 text-white shadow-sm flex-shrink-0">
           <div className="text-xs font-semibold">You</div>
         </Avatar>
       )}

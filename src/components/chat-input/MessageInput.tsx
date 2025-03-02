@@ -1,5 +1,6 @@
 
 import React from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Props for the MessageInput component
@@ -38,7 +39,13 @@ export function MessageInput({ value, onChange, onKeyDown, disabled }: MessageIn
       onKeyDown={onKeyDown}
       disabled={disabled}
       placeholder={disabled ? "DevManager is thinking..." : "Type a message or upload a project requirements file..."}
-      className="flex-1 border border-gray-200 bg-white rounded-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 min-w-0 transition-all shadow-sm"
+      className={cn(
+        "flex-1 border border-gray-200 bg-white rounded-full py-3.5 px-5",
+        "focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent",
+        "text-gray-700 min-w-0 transition-all shadow-sm",
+        "placeholder:text-gray-400 placeholder:font-light",
+        disabled ? "bg-gray-50" : "hover:border-gray-300"
+      )}
       aria-label="Message input"
     />
   );

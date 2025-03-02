@@ -40,7 +40,7 @@ export default function ChatView() {
         return true;
       }
       return false;
-    });
+    }).slice(0, 2); // Limit to 2 suggestions at a time to prevent UI clutter
   }, [suggestions]);
   
   const handleSuggestionSelect = (message: string) => {
@@ -101,80 +101,82 @@ export default function ChatView() {
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader />
         
-        <div className="fixed top-16 right-4 z-20 flex gap-2">
+        <div className="absolute top-16 right-4 z-20 flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm">
-                <BarChart className="h-4 w-4" />
-                <span className="hidden sm:inline">Performance</span>
-                <ChevronDown className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm bg-white">
+                <BarChart className="h-4 w-4 text-blue-600" />
+                <span className="hidden sm:inline text-gray-700">Performance</span>
+                <ChevronDown className="h-4 w-4 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Performance Monitoring</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("metrics")}>
-                <Gauge className="h-4 w-4 mr-2" />
-                Define Performance Metrics
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("metrics")} className="gap-2">
+                <Gauge className="h-4 w-4 text-blue-600" />
+                <span>Define Performance Metrics</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("monitoring")}>
-                <LineChart className="h-4 w-4 mr-2" />
-                Monitoring Tool Setup
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("monitoring")} className="gap-2">
+                <LineChart className="h-4 w-4 text-blue-600" />
+                <span>Monitoring Tool Setup</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("benchmarks")}>
-                <BarChart className="h-4 w-4 mr-2" />
-                Create Performance Benchmarks
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("benchmarks")} className="gap-2">
+                <BarChart className="h-4 w-4 text-blue-600" />
+                <span>Create Performance Benchmarks</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePerformanceRequest("optimizations")}>
-                <Zap className="h-4 w-4 mr-2" />
-                Optimization Recommendations
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("optimizations")} className="gap-2">
+                <Zap className="h-4 w-4 text-blue-600" />
+                <span>Optimization Recommendations</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Documentation</span>
-                <ChevronDown className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm bg-white">
+                <FileText className="h-4 w-4 text-blue-600" />
+                <span className="hidden sm:inline text-gray-700">Documentation</span>
+                <ChevronDown className="h-4 w-4 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Generate Documentation</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleDocumentRequest("API")}>
-                <Code className="h-4 w-4 mr-2" />
-                API Documentation
+              <DropdownMenuItem onClick={() => handleDocumentRequest("API")} className="gap-2">
+                <Code className="h-4 w-4 text-blue-600" />
+                <span>API Documentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDocumentRequest("user")}>
-                <BookOpen className="h-4 w-4 mr-2" />
-                User Guide
+              <DropdownMenuItem onClick={() => handleDocumentRequest("user")} className="gap-2">
+                <BookOpen className="h-4 w-4 text-blue-600" />
+                <span>User Guide</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDocumentRequest("technical")}>
-                <Code className="h-4 w-4 mr-2" />
-                Technical Documentation
+              <DropdownMenuItem onClick={() => handleDocumentRequest("technical")} className="gap-2">
+                <Code className="h-4 w-4 text-blue-600" />
+                <span>Technical Documentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDocumentRequest("maintenance")}>
-                <Settings className="h-4 w-4 mr-2" />
-                Maintenance Guide
+              <DropdownMenuItem onClick={() => handleDocumentRequest("maintenance")} className="gap-2">
+                <Settings className="h-4 w-4 text-blue-600" />
+                <span>Maintenance Guide</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         
-        <div className="flex-1 overflow-auto relative">
-          <ChatMessages 
-            messages={messages}
-            isLoadingExample={isLoadingExample} 
-            isAgentTyping={isAgentTyping}
-            securityReviewActive={securityReviewActive}
-            collaborationActive={collaborationActive || false}
-          />
+        <div className="relative flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            <ChatMessages 
+              messages={messages}
+              isLoadingExample={isLoadingExample} 
+              isAgentTyping={isAgentTyping}
+              securityReviewActive={securityReviewActive}
+              collaborationActive={collaborationActive || false}
+            />
+          </div>
           
           {uniqueSuggestions.length > 0 && (
-            <div className="fixed bottom-24 left-0 right-0 z-10 px-4">
-              <div className="max-w-3xl mx-auto space-y-3">
+            <div className="fixed bottom-[5.5rem] left-0 right-0 z-10 px-4 pointer-events-none">
+              <div className="max-w-2xl mx-auto space-y-2 pointer-events-auto">
                 {uniqueSuggestions.map((suggestion, index) => (
                   <SuggestionBox
                     key={index}
@@ -189,7 +191,7 @@ export default function ChatView() {
           )}
         </div>
         
-        <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur-sm border-t">
+        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background/95 to-background/75 border-t py-2">
           <ChatProcessor chatRef={chatProcessorRef} />
         </div>
       </div>

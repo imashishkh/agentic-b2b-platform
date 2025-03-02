@@ -18,6 +18,7 @@ body, html {
   padding: 0;
   min-height: 100vh;
   overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Glassmorphism effect with higher transparency */
@@ -37,13 +38,153 @@ body, html {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
+/* Dark glass effect */
+.glass-dark {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Pill-shaped input styling */
 .pill-input {
   border-radius: 9999px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.pill-input:focus {
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Gradient background matching the design requirements */
 .gradient-bg {
   background: linear-gradient(135deg, #f0f0fa 0%, #e6e6ff 100%);
+}
+
+/* Animated loading dots */
+.loading-dots span {
+  animation: loadingDot 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loadingDot {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Message styling */
+.message-bubble-user {
+  border-radius: 18px 18px 4px 18px;
+  background: linear-gradient(135deg, #4f46e5, #3b82f6);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+.message-bubble-agent {
+  border-radius: 18px 18px 18px 4px;
+  background: #fff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Documentation message styling */
+.documentation-message {
+  background-color: rgba(239, 246, 255, 0.6);
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.8);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Improve code block readability */
+pre {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  background-color: rgba(226, 232, 240, 0.5);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Enhance focus states for accessibility */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Animation for new messages */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Improve responsive layouts */
+@media (max-width: 640px) {
+  .pill-input {
+    font-size: 16px; /* Prevent iOS zoom on input focus */
+  }
 }
