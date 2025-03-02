@@ -1,12 +1,12 @@
 
 import React from 'react';
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Trash2 } from "lucide-react";
+import { KnowledgeBaseResource } from "@/contexts/types";
 
-export interface KnowledgeResource {
+// Update interface to use the KnowledgeBaseResource type from contexts/types
+export interface KnowledgeResource extends Omit<KnowledgeBaseResource, 'id' | 'dateAdded' | 'tags' | 'priority' | 'isIndexed'> {
   id: string;
-  title: string;
-  url: string;
-  description: string;
-  category: string;
 }
 
 export interface KnowledgeResourcesListProps {
@@ -48,13 +48,14 @@ export function KnowledgeResourcesList({ resources, onRemove }: KnowledgeResourc
                     </a>
                     <p className="text-gray-600 text-xs mt-1">{resource.description}</p>
                   </div>
-                  <button 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onRemove(resource.id)}
-                    className="text-red-500 hover:text-red-700 text-xs"
-                    aria-label="Remove resource"
+                    className="h-8 w-8 text-gray-500 hover:text-red-500"
                   >
-                    Remove
-                  </button>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </li>
             ))}
