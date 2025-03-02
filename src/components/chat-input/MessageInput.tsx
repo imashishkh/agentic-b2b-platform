@@ -38,7 +38,7 @@ export function MessageInput({ value, onChange, onKeyDown, disabled }: MessageIn
       onKeyDown={onKeyDown}
       disabled={disabled}
       placeholder={disabled ? "DevManager is thinking..." : "Type a message or upload a project requirements file..."}
-      className="flex-1 border rounded-full py-3 px-4 focus:ring-1 focus:ring-blue-500 focus:outline-none text-gray-900 min-w-0"
+      className="flex-1 border rounded-full py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-900 min-w-0 transition-all"
       aria-label="Message input"
     />
   );

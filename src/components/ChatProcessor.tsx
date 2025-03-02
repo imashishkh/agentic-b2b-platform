@@ -59,13 +59,16 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       reader.onload = async (e) => {
         try {
           const content = e.target?.result as string;
+          console.log("File content loaded:", content.substring(0, 200) + "...");
           resolve(content);
         } catch (error) {
+          console.error("Error processing file content:", error);
           reject(error);
         }
       };
       
       reader.onerror = (error) => {
+        console.error("FileReader error:", error);
         reject(error);
       };
       
@@ -74,7 +77,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   };
 
   const processMessage = async (message: string, files?: File[]) => {
-    if (isProcessing || !message.trim()) return;
+    if (isProcessing || !message.trim() && (!files || files.length === 0)) return;
     
     setIsAgentTyping(true);
     setIsProcessing(true);
@@ -86,7 +89,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       
       if (files && files.length > 0) {
         const file = files[0];
-        if (file.name.endsWith('.md') || file.type === 'text/markdown') {
+        console.log("Processing file:", file.name, "type:", file.type);
+        
+        if (file.name.endsWith('.md') || file.type === 'text/markdown' || file.type === 'text/plain') {
           try {
             // Show typing indicator before processing
             setIsAgentTyping(true);
@@ -113,17 +118,29 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             setIsProcessing(false);
             return;
           }
+        } else {
+          console.log("File type not supported for parsing:", file.type);
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `I notice you uploaded a file (${file.name}) but I can only process markdown (.md) files for project requirements.`,
+            agentType: AgentType.MANAGER,
+          });
+          setIsAgentTyping(false);
+          setIsProcessing(false);
+          return;
         }
       }
       
       // Determine which agent should handle the message
-      const agentType = AgentFactory.determineAgentType(enhancedMessage, files || []);
+      const agentType = AgentFactory.determineAgentType(enhancedMessage, []);
+      console.log("Selected agent type:", agentType);
       
       // Generate a response using the agent
       const agent = AgentFactory.createAgent(agentType);
       
       // If we have file content, provide it to the agent for processing
-      const generatedResponse = await agent.generateResponse(enhancedMessage, files || []);
+      const generatedResponse = await agent.generateResponse(enhancedMessage, []);
       
       if (isMounted.current) {
         // Simulate typing delay for more natural interaction

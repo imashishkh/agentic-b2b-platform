@@ -1,83 +1,89 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { KnowledgeResourcesList } from "@/components/knowledge/KnowledgeResourcesList";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
 import { useChat } from "@/contexts/ChatContext";
-import { KnowledgeBaseResource } from "@/contexts/types";
+import { KnowledgeResourcesList } from "@/components/knowledge/KnowledgeResourcesList";
+
+interface KnowledgeResource {
+  id: string;
+  title: string;
+  url: string;
+  description: string;
+  category: string;
+  dateAdded: string; // Using string instead of Date for now
+}
 
 export function KnowledgeBasePanel() {
-  const { knowledgeBase, addKnowledgeResource, removeKnowledgeResource } = useChat();
-  const [newResource, setNewResource] = useState({
-    title: "",
-    url: "",
-  });
-  const [isAdding, setIsAdding] = useState(false);
+  const { toast } = useToast();
+  const [resources, setResources] = useState<KnowledgeResource[]>([
+    {
+      id: "1",
+      title: "E-commerce Best Practices",
+      url: "https://example.com/ecommerce-best-practices",
+      description: "A guide to best practices for e-commerce development",
+      category: "Industry Standards",
+      dateAdded: new Date().toISOString()
+    },
+    {
+      id: "2",
+      title: "React Documentation",
+      url: "https://reactjs.org/docs/getting-started.html",
+      description: "Official React documentation",
+      category: "Technology Documentation",
+      dateAdded: new Date().toISOString()
+    }
+  ]);
 
   const handleAddResource = () => {
-    if (newResource.title && newResource.url) {
-      addKnowledgeResource({
-        id: Date.now().toString(),
-        title: newResource.title,
-        url: newResource.url,
-        type: "url",
-        dateAdded: new Date().toISOString(),
-      });
-      
-      setNewResource({
-        title: "",
-        url: "",
-      });
-      
-      setIsAdding(false);
-    }
+    toast({
+      title: "Feature in development",
+      description: "Adding custom knowledge resources will be available soon.",
+    });
   };
 
   const handleRemoveResource = (id: string) => {
-    removeKnowledgeResource(id);
+    setResources(resources.filter(resource => resource.id !== id));
+    
+    toast({
+      title: "Resource removed",
+      description: "The knowledge resource has been removed successfully.",
+    });
   };
 
   return (
-    <div className="h-full flex flex-col bg-background p-4 overflow-y-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Knowledge Base</h2>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setIsAdding(!isAdding)}
-        >
-          {isAdding ? "Cancel" : "Add Resource"}
-        </Button>
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold mb-1">Knowledge Base</h2>
+        <p className="text-sm text-muted-foreground">
+          Resources and documentation related to your project
+        </p>
       </div>
       
-      {isAdding && (
-        <div className="bg-muted/30 p-3 rounded-md mb-4 space-y-3">
-          <Input
-            placeholder="Resource Title"
-            value={newResource.title}
-            onChange={(e) => setNewResource(prev => ({ ...prev, title: e.target.value }))}
-          />
-          <Input
-            placeholder="URL or Reference"
-            value={newResource.url}
-            onChange={(e) => setNewResource(prev => ({ ...prev, url: e.target.value }))}
-          />
-          <div className="flex justify-end">
-            <Button size="sm" onClick={handleAddResource} disabled={!newResource.title || !newResource.url}>
-              Add
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-medium">Project Resources</h3>
+            <Button size="sm" variant="outline" onClick={handleAddResource}>
+              Add Resource
             </Button>
           </div>
+          
+          {resources.length > 0 ? (
+            <KnowledgeResourcesList 
+              resources={resources}
+              onRemove={handleRemoveResource}
+            />
+          ) : (
+            <div className="text-center p-4 border rounded-md bg-muted/50">
+              <p className="text-sm text-muted-foreground">
+                No resources have been added yet.
+              </p>
+            </div>
+          )}
         </div>
-      )}
-      
-      {knowledgeBase.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <p className="mb-2">No resources added yet</p>
-          <p className="text-sm">Add documentation links or reference materials to enhance the AI's knowledge</p>
-        </div>
-      ) : (
-        <KnowledgeResourcesList resources={knowledgeBase} onRemove={handleRemoveResource} />
-      )}
+      </ScrollArea>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatProcessor } from "@/components/ChatProcessor";
 import { useChat } from "@/contexts/ChatContext";
+import { AgentType } from "@/agents/AgentTypes";
 
 export default function ChatView() {
   const isMobile = useIsMobile();
@@ -33,23 +34,28 @@ export default function ChatView() {
         content: message,
       });
       
-      setIsAgentTyping(true);
-      // Simulate agent typing time after sending message
-      setTimeout(() => {
-        // Add a response from DevManager
-        addMessage({
-          type: "agent",
-          agentType: "manager",
-          content: "I've received your message. How can I assist you further with your project?",
-        });
-        setIsAgentTyping(false);
-      }, 2000);
+      // Use ChatProcessor to generate a response
+      if (chatProcessorRef.current) {
+        chatProcessorRef.current.processUserMessage(message);
+      } else {
+        // Fallback if ChatProcessor isn't ready
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          addMessage({
+            type: "agent",
+            agentType: AgentType.MANAGER,
+            content: "I've received your message. How can I assist you further with your project?",
+          });
+          setIsAgentTyping(false);
+        }, 2000);
+      }
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFiles(Array.from(e.target.files));
+      const selectedFiles = Array.from(e.target.files);
+      setFiles(selectedFiles);
       setIsUploading(true);
       
       // Simulate file upload progress
@@ -63,24 +69,32 @@ export default function ChatView() {
           setTimeout(() => {
             addMessage({
               type: "user",
-              content: `Uploaded ${Array.from(e.target.files!).map(f => f.name).join(", ")}`,
+              content: `Uploaded ${selectedFiles.map(f => f.name).join(", ")}`,
             });
             
-            setIsAgentTyping(true);
+            // Use ChatProcessor to process the file
+            if (chatProcessorRef.current) {
+              chatProcessorRef.current.processUserMessage("Please analyze this file.", selectedFiles);
+            } else {
+              // Fallback if ChatProcessor isn't ready
+              setIsAgentTyping(true);
+              setTimeout(() => {
+                addMessage({
+                  type: "agent",
+                  agentType: AgentType.MANAGER,
+                  content: "I've received your file. I'll analyze it and get back to you with my findings shortly.",
+                });
+                
+                setIsAgentTyping(false);
+                setIsUploading(false);
+                setUploadProgress(0);
+                setFiles([]);
+              }, 3000);
+            }
             
-            // Simulate agent processing time after file upload
-            setTimeout(() => {
-              addMessage({
-                type: "agent",
-                agentType: "manager",
-                content: "I've received your file. I'll analyze it and get back to you with my findings shortly.",
-              });
-              
-              setIsAgentTyping(false);
-              setIsUploading(false);
-              setUploadProgress(0);
-              setFiles([]);
-            }, 3000);
+            setIsUploading(false);
+            setUploadProgress(0);
+            setFiles([]);
           }, 500);
         }
       }, 200);
@@ -120,6 +134,7 @@ export default function ChatView() {
           isUploading={isUploading}
           uploadProgress={uploadProgress}
           handleFileUpload={handleFileUpload}
+          isDisabled={isAgentTyping || isLoadingExample}
         />
         <input
           type="file"
@@ -127,6 +142,7 @@ export default function ChatView() {
           onChange={handleFileChange}
           className="hidden"
           multiple
+          accept=".md,.markdown,.txt,.pdf"
         />
       </div>
       <ChatProcessor chatRef={chatProcessorRef} />
