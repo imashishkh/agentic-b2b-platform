@@ -28,7 +28,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
 
   // Only send welcome message if no messages exist
   useEffect(() => {
-    if (chatRef) {
+    if (chatRef && chatRef.current) {
       chatRef.current = {
         processUserMessage: processMessage
       };
@@ -117,7 +117,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   };
 
   const processMessage = async (message: string, files?: File[]) => {
-    if (isProcessing || !message.trim() && (!files || files.length === 0)) return;
+    if (isProcessing || (!message.trim() && (!files || files.length === 0))) return;
     
     setIsAgentTyping(true);
     setIsProcessing(true);

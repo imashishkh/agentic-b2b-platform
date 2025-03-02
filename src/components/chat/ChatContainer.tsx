@@ -81,9 +81,17 @@ export function ChatContainer() {
         if (progress >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            handleFileUpload(selectedFiles);
+            if (chatRef.current) {
+              chatRef.current.processUserMessage("Please analyze this file.", selectedFiles);
+            }
             setIsUploading(false);
             setUploadProgress(0);
+            
+            // Add message about upload
+            addMessage({
+              type: "user",
+              content: `Uploaded ${selectedFiles.map(f => f.name).join(", ")}`,
+            });
           }, 500);
         }
       }, 200);

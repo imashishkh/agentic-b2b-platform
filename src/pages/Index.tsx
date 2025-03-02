@@ -1,14 +1,12 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { useChat } from "@/contexts/ChatContext";
 import { ChatProvider } from "@/contexts/ChatContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const IndexContent = () => {
-  // State to toggle API settings modal
-  const [showApiSettings, setShowApiSettings] = useState(false);
-  
   // Get current agent type from chat context
   const { currentAgentType, setCurrentAgentType } = useChat();
   
@@ -16,8 +14,6 @@ const IndexContent = () => {
     <MainLayout
       currentAgentType={currentAgentType}
       setCurrentAgentType={setCurrentAgentType}
-      showApiSettings={showApiSettings}
-      setShowApiSettings={setShowApiSettings}
     >
       <ChatContainer />
     </MainLayout>
@@ -26,9 +22,11 @@ const IndexContent = () => {
 
 const Index = () => {
   return (
-    <ChatProvider>
-      <IndexContent />
-    </ChatProvider>
+    <ErrorBoundary>
+      <ChatProvider>
+        <IndexContent />
+      </ChatProvider>
+    </ErrorBoundary>
   );
 };
 

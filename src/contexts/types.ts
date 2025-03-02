@@ -1,78 +1,78 @@
 
-import { ChatMessageProps } from "@/components/ChatMessage";
 import { AgentType } from "@/agents/AgentTypes";
+import { ChatMessageProps } from "@/components/ChatMessage";
 
+// Architecture proposal interface
+export interface ArchitectureProposal {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  technologies: string[];
+  approved?: boolean;
+  diagram?: string;
+  dependencies?: string[];
+  title?: string;
+  components?: any[];
+  relationships?: any[];
+  dateCreated?: string;
+  status?: string;
+}
+
+// Testing strategy interface
+export interface TestingStrategy {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  approved?: boolean;
+  approaches?: string[];
+  title?: string;
+  testingLevels?: any[];
+  automationStrategy?: string;
+  cicdIntegration?: string;
+  coverageTargets?: string;
+  tooling?: string[];
+}
+
+// Knowledge base resource interface
 export interface KnowledgeBaseResource {
   id: string;
   title: string;
   url: string;
+  description: string;
   category: string;
-  description: string;
   dateAdded: string;
-  source?: string;
+  tags?: string[];
 }
 
-export interface ArchitectureProposal {
-  id: string;
-  title: string;
-  description: string;
-  components: Array<{
-    id: string;
-    name: string;
-    type: string;
-    description: string;
-    technologies: string[];
-  }>;
-  relationships: Array<{
-    source: string;
-    target: string;
-    type: string;
-    description: string;
-  }>;
-  dateCreated: string;
-  status: "draft" | "proposed" | "approved" | "rejected";
-}
-
-export interface TestingStrategy {
-  id: string;
-  title: string;
-  description: string;
-  testingLevels: Array<{
-    id: string;
-    name: string;
-    description: string;
-    tools: string[];
-    coverage: number;
-  }>;
-  automationStrategy: string;
-  cicdIntegration: string;
-  dateCreated: string;
-  status: "draft" | "proposed" | "approved" | "rejected";
-}
-
+// GitHub repository interface
 export interface GitHubRepository {
   owner: string;
   name: string;
   url: string;
   branch: string;
-  connected: boolean;
-  lastSynced?: string;
+  lastUpdated: string | Date;
+  commitCount?: number;
 }
 
+// Suggestion option interface
 export interface SuggestionOption {
-  id: string;
-  label: string;
+  id?: string;
+  label?: string;
   message: string;
-  icon: string;
-  description: string;
+  icon?: string;
+  description?: string;
 }
 
+// Suggestion props interface
 export interface SuggestionProps {
   title: string;
   description: string;
   options: SuggestionOption[];
 }
 
+// Chat context interface
 export interface ChatContextType {
   messages: ChatMessageProps[];
   isAgentTyping: boolean;

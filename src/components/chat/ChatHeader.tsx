@@ -3,18 +3,12 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Settings, PanelLeft } from "lucide-react";
 import { ApiSettings } from "@/components/ApiSettings";
+import { ProjectFeaturesPanel } from "@/components/project/ProjectFeaturesPanel";
 
-interface ChatHeaderProps {
-  setShowApiSettings: React.Dispatch<React.SetStateAction<boolean>>;
-  showProjectPanel: boolean;
-  setShowProjectPanel: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export function ChatHeader({ 
-  setShowApiSettings, 
-  showProjectPanel, 
-  setShowProjectPanel 
-}: ChatHeaderProps) {
+export function ChatHeader() {
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const [showProjectPanel, setShowProjectPanel] = useState(false);
+  
   return (
     <header className="border-b p-4 flex items-center justify-between bg-background">
       <div className="flex items-center">
@@ -41,6 +35,20 @@ export function ChatHeader({
           <span>Show Project Panel</span>
         </Button>
       </div>
+      
+      {/* API Settings Modal */}
+      {showApiSettings && (
+        <ApiSettings onClose={() => setShowApiSettings(false)} />
+      )}
+      
+      {/* Project Features Panel */}
+      {showProjectPanel && (
+        <div className="absolute top-16 left-0 right-0 bottom-0 z-50">
+          <div className="bg-background border shadow-lg w-80 h-full overflow-auto">
+            <ProjectFeaturesPanel />
+          </div>
+        </div>
+      )}
     </header>
   );
 }

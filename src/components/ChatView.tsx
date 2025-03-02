@@ -1,11 +1,10 @@
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatProcessor } from "@/components/ChatProcessor";
 import { useChat } from "@/contexts/ChatContext";
-import { AgentType } from "@/agents/AgentTypes";
 import { SuggestionBox } from "@/components/chat/SuggestionBox";
 import { ApiSettings } from "@/components/ApiSettings";
 import { ProjectFeaturesPanel } from "@/components/project/ProjectFeaturesPanel";
@@ -22,9 +21,6 @@ export default function ChatView() {
   
   const chatProcessorRef = useRef<any>(null);
   
-  const [showApiSettings, setShowApiSettings] = useState(false);
-  const [showProjectPanel, setShowProjectPanel] = useState(false);
-
   const handleSuggestionSelect = (message: string) => {
     if (chatProcessorRef.current) {
       addMessage({
@@ -38,20 +34,8 @@ export default function ChatView() {
 
   return (
     <div className="flex h-full overflow-hidden bg-background relative">
-      {/* Project Features Panel */}
-      {showProjectPanel && (
-        <div className="w-80 border-r overflow-auto h-full">
-          <ProjectFeaturesPanel />
-        </div>
-      )}
-      
-      {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <ChatHeader 
-          setShowApiSettings={setShowApiSettings}
-          showProjectPanel={showProjectPanel}
-          setShowProjectPanel={setShowProjectPanel}
-        />
+        <ChatHeader />
         <div className="flex-1 overflow-hidden relative">
           <ChatMessages 
             messages={messages} 
@@ -75,11 +59,6 @@ export default function ChatView() {
         </div>
         <ChatProcessor chatRef={chatProcessorRef} />
       </div>
-      
-      {/* API Settings Modal */}
-      {showApiSettings && (
-        <ApiSettings onClose={() => setShowApiSettings(false)} />
-      )}
     </div>
   );
 }

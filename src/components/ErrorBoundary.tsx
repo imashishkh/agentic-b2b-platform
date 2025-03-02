@@ -31,7 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // You can log the error to an error reporting service
+    // Log the error to console for debugging
     console.error("Uncaught error:", error, errorInfo);
   }
 
@@ -43,9 +43,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // You can render any custom fallback UI
+      // Custom fallback UI
       return (
-        <div className="flex items-center justify-center min-h-screen bg-lavender-light p-4">
+        <div className="flex items-center justify-center min-h-screen bg-background p-4">
           <div className="max-w-md w-full">
             <Alert variant="destructive" className="mb-4">
               <AlertTitle className="text-xl mb-2">Something went wrong</AlertTitle>
