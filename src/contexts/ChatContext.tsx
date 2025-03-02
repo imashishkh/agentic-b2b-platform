@@ -124,7 +124,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const [isFetchingResponse, setIsFetchingResponse] = useState(false);
   const [projectPhases, setProjectPhases] = useState<any[]>([]);
-  const [hasRequestedFile, setHasRequestedFile] = useState(true);
+  const [hasRequestedFile, setHasRequestedFile] = useState(false); // Changed from true to false
   const [currentAgentType, setCurrentAgentType] = useState<AgentType>(AgentType.MANAGER);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseResource[]>([]);
   const [isRequestingKnowledge, setIsRequestingKnowledge] = useState(false);

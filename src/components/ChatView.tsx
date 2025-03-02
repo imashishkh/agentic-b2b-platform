@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { ChatInput } from "./chat-input";
-import { ChatMessage, ChatMessageProps } from "./ChatMessage";
+import { ChatMessage } from "./ChatMessage";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
 import { FileUploadButton } from "./chat-input/FileUploadButton";
@@ -10,38 +10,14 @@ import { ChatProcessor } from "./ChatProcessor";
 import { Settings } from "lucide-react";
 import { Button } from "./ui/button";
 
-// Create initial messages template
-const initialMessages: ChatMessageProps[] = [
-  {
-    type: "agent",
-    content: "Hello! I'm DevManager, your AI project manager. How can I help you today?",
-    agentType: AgentType.MANAGER
-  }
-];
-
 export function ChatView() {
-  const { messages, addMessage, clearMessages } = useChat();
+  const { messages, addMessage, clearMessages, isAgentTyping } = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isLoadingExample, setIsLoadingExample] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(false); // Changed to false to prevent auto-loading
   const chatRef = useRef<any>(null); // Ref for ChatProcessor methods
   
-  useEffect(() => {
-    // Simulate loading initial messages
-    const loadInitialMessages = async () => {
-      // Wait for 0.5 second
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      // Add initial messages
-      initialMessages.forEach((message) => {
-        addMessage(message);
-      });
-      
-      setIsInitialLoading(false);
-    };
-    
-    loadInitialMessages();
-  }, [addMessage]);
+  // Remove the automatic loading of initial messages that was causing the loop
   
   useEffect(() => {
     // Scroll to bottom when messages change
