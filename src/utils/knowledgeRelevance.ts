@@ -18,7 +18,7 @@ export const findRelevantResources = (
       title: resource.title || "",
       description: resource.description || "",
       tags: resource.tags,
-      content: resource.content
+      content: resource.content || ""
     }, query);
     return { ...resource, calculatedScore: score };
   });
@@ -53,11 +53,11 @@ export const generateKnowledgeContext = (
   
   return relevantResources.map(resource => {
     return `
-## ${resource.title}
-Category: ${resource.category}
+## ${resource.title || "Untitled Resource"}
+Category: ${resource.category || "Uncategorized"}
 ${resource.tags?.length ? `Tags: ${resource.tags.join(', ')}` : ''}
 ${resource.description || ''}
-Reference: ${resource.url}
+Reference: ${resource.url || "No URL provided"}
     `.trim();
   }).join('\n\n');
 };

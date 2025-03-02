@@ -24,10 +24,20 @@ export type FileUploadButtonProps = {
    * Current wizard step context - helps determine file validation
    */
   wizardContext?: string;
+  
+  /**
+   * Custom class name for styling
+   */
+  className?: string;
+  
+  /**
+   * Custom button text (optional)
+   */
+  buttonText?: string;
 };
 
 export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonProps>(
-  ({ onChange, disabled, markdownOnly = true, wizardContext }, ref) => {
+  ({ onChange, disabled, markdownOnly = true, wizardContext, className, buttonText }, ref) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const handleButtonClick = () => {
@@ -87,6 +97,26 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
           toast.success(`Added ${selectedFiles.length} files to knowledge base`);
           onChange(selectedFiles);
         }
+        // For tech-stack resources
+        else if (wizardContext === "tech-stack") {
+          // Accept tech stack related files
+          const validFiles = selectedFiles.filter(file => 
+            file.name.endsWith('.json') || 
+            file.name.endsWith('.md') || 
+            file.name.endsWith('.txt') || 
+            file.name.endsWith('.yml') || 
+            file.name.endsWith('.yaml') || 
+            file.type.includes('text/')
+          );
+          
+          if (validFiles.length > 0) {
+            console.log(`${validFiles.length} tech stack files selected`);
+            toast.success(`Selected ${validFiles.length} tech stack files`);
+            onChange(validFiles);
+          } else {
+            toast.error("Please upload valid tech stack documentation files");
+          }
+        }
         // For any other context, accept any file type
         else {
           const file = selectedFiles[0];
@@ -108,6 +138,8 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
         return ".md,.markdown,.txt";
       } else if (wizardContext === "ui-components") {
         return "image/*,.sketch,.fig,.xd,.pdf,.ai,.psd,.zip";
+      } else if (wizardContext === "tech-stack") {
+        return ".json,.md,.txt,.yml,.yaml,text/*";
       } else if (wizardContext === "documentation" || wizardContext === "knowledge-base") {
         return "*";
       } else {
@@ -115,22 +147,48 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
       }
     };
     
+    // Determine if multiple files should be allowed
+    const allowMultiple = wizardContext === "ui-components" || 
+                         wizardContext === "documentation" || 
+                         wizardContext === "knowledge-base" ||
+                         wizardContext === "tech-stack";
+    
     return (
       <>
-        <button 
-          type="button"
-          onClick={handleButtonClick}
-          ref={ref}
-          className={cn(
-            "p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
-            disabled && "cursor-not-allowed opacity-60 hover:bg-gray-100"
-          )}
-          disabled={disabled}
-          aria-label={markdownOnly ? "Upload Requirements File" : "Upload File"}
-          title={markdownOnly ? "Upload Requirements File (.md)" : "Upload File"}
-        >
-          <Upload className="h-5 w-5" />
-        </button>
+        {buttonText ? (
+          <button 
+            type="button"
+            onClick={handleButtonClick}
+            ref={ref}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500",
+              disabled && "cursor-not-allowed opacity-60 hover:bg-blue-50",
+              className
+            )}
+            disabled={disabled}
+            aria-label={markdownOnly ? "Upload Requirements File" : "Upload File"}
+            title={markdownOnly ? "Upload Requirements File (.md)" : "Upload File"}
+          >
+            <Upload className="h-4 w-4" />
+            <span>{buttonText}</span>
+          </button>
+        ) : (
+          <button 
+            type="button"
+            onClick={handleButtonClick}
+            ref={ref}
+            className={cn(
+              "p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
+              disabled && "cursor-not-allowed opacity-60 hover:bg-gray-100",
+              className
+            )}
+            disabled={disabled}
+            aria-label={markdownOnly ? "Upload Requirements File" : "Upload File"}
+            title={markdownOnly ? "Upload Requirements File (.md)" : "Upload File"}
+          >
+            <Upload className="h-5 w-5" />
+          </button>
+        )}
         <input
           type="file"
           ref={fileInputRef}
@@ -138,7 +196,7 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
           className="hidden"
           accept={getAcceptTypes()}
           disabled={disabled}
-          multiple={wizardContext === "ui-components" || wizardContext === "documentation" || wizardContext === "knowledge-base"}
+          multiple={allowMultiple}
         />
       </>
     );
