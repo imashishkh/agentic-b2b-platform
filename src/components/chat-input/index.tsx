@@ -1,10 +1,12 @@
 
 import React, { useState, KeyboardEvent } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
-  isDisabled?: boolean; // Added isDisabled prop
+  isDisabled?: boolean;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({ 
@@ -29,23 +31,23 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="flex-1 flex items-center">
-      <input
+    <div className="flex items-center gap-2 w-full">
+      <Input
         type="text"
         placeholder="Type your message here..."
-        className="input input-bordered w-full"
+        className="flex-1"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={isLoading || isDisabled}
       />
-      <button
-        className="btn btn-primary ml-2"
+      <Button
+        type="submit"
         onClick={handleSubmit}
         disabled={!message.trim() || isLoading || isDisabled}
       >
         {isLoading ? 'Loading...' : 'Send'}
-      </button>
+      </Button>
     </div>
   );
 };

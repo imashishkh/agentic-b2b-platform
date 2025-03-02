@@ -9,7 +9,7 @@ interface ChatProps {
 
 export function Chat({ chatRef }: ChatProps) {
   return (
-    <div className="h-full flex flex-col bg-lavender-light">
+    <div className="h-full flex flex-col">
       <div className="hidden">
         <ChatProcessor chatRef={chatRef} />
       </div>

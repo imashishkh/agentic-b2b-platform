@@ -7,6 +7,8 @@ import { AgentType } from "@/agents/AgentTypes";
 import { FileUploadButton } from "./chat-input/FileUploadButton";
 import { ApiSettingsDialog } from "@/components/ApiSettingsDialog";
 import { ChatProcessor } from "./ChatProcessor";
+import { Settings } from "lucide-react";
+import { Button } from "./ui/button";
 
 // Create initial messages template
 const initialMessages: ChatMessageProps[] = [
@@ -149,21 +151,26 @@ Let me know if you'd like to proceed with this example!
   };
   
   return (
-    <div className="flex flex-col h-screen">
-      <div className="navbar bg-base-100 border-b-2">
-        <div className="navbar-start">
-          <div className="btn btn-ghost">🌙 / ☀️</div>
+    <div className="flex flex-col h-screen bg-background">
+      <header className="border-b p-4 flex items-center justify-between bg-background">
+        <div className="flex items-center">
+          <h1 className="text-xl font-semibold">DevManager AI</h1>
         </div>
-        <div className="navbar-center">
-          <a className="btn btn-ghost normal-case text-xl" href="/">
-            DevManager
-          </a>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <Settings className="h-4 w-4" />
+            <span>API Settings</span>
+          </Button>
+          <Button variant="outline" size="sm">
+            Show Project Panel
+          </Button>
         </div>
-        <div className="navbar-end">
-          <ApiSettingsDialog />
-        </div>
-      </div>
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
+      </header>
+      
+      <div 
+        ref={chatContainerRef} 
+        className="flex-1 overflow-y-auto p-4 bg-blue-50/50"
+      >
         {isInitialLoading ? (
           <div className="text-center text-gray-500">Loading initial messages...</div>
         ) : (
@@ -175,20 +182,26 @@ Let me know if you'd like to proceed with this example!
           <div className="text-center text-gray-500">Loading example project...</div>
         )}
       </div>
-      <div className="p-4 bg-base-200 border-t-2">
-        <div className="flex items-center space-x-4">
+      
+      <div className="p-4 bg-background border-t">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
           <FileUploadButton onChange={handleFileUpload} />
-          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoadingExample} />
-          <button
-            className="btn btn-sm btn-primary"
+          <ChatInput 
+            onSendMessage={handleSendMessage} 
+            isLoading={isLoadingExample}
+            isDisabled={isLoadingExample}
+          />
+          <Button
+            size="sm"
+            variant="outline"
             onClick={handleStartWithExample}
             disabled={isLoadingExample}
           >
-            {isLoadingExample ? "Loading..." : "Start with Example"}
-          </button>
+            {isLoadingExample ? "Loading..." : "Example"}
+          </Button>
         </div>
       </div>
-    
+      
       {/* Hidden ChatProcessor component */}
       <div style={{ display: 'none' }}>
         <ChatProcessor chatRef={chatRef} />
