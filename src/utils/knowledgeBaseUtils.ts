@@ -40,6 +40,27 @@ export function suggestResourceCategory(url: string, description: string = ""): 
     return "Industry Standards";
   }
   
+  // E-commerce specific categories
+  if (combinedText.match(/product|catalog|inventory|item|sku|collection|merchandise|goods/i)) {
+    return "Product Catalog";
+  }
+  
+  if (combinedText.match(/payment|stripe|paypal|checkout|credit card|apple pay|google pay|transaction|gateway|braintree|adyen|authorize\.net/i)) {
+    return "Payment Solutions";
+  }
+  
+  if (combinedText.match(/order|fulfillment|shipping|delivery|logistics|tracking|invoice|receipt|confirmation/i)) {
+    return "Order Management";
+  }
+  
+  if (combinedText.match(/customer|account|profile|wishlist|loyalty|rewards|personalization|preferences|user experience/i)) {
+    return "Customer Experience";
+  }
+  
+  if (combinedText.match(/logistics|warehouse|inventory management|shipping|carriers|3pl|supply chain|stock levels|pick-pack/i)) {
+    return "Logistics & Fulfillment";
+  }
+  
   if (combinedText.match(/amazon|shopify|etsy|ebay|competitor|market|commerce|retail|shop|store/i)) {
     return "Competitor Analysis";
   }

@@ -6,6 +6,7 @@ import { DatabaseAgent } from "./DatabaseAgent";
 import { DevOpsAgent } from "./DevOpsAgent";
 import { UXAgent } from "./UXAgent";
 import { ManagerAgent } from "./ManagerAgent";
+import { EcommerceAgent } from "./EcommerceAgent";
 
 /**
  * Factory to create the appropriate AI agent based on type
@@ -22,6 +23,8 @@ export const createAgent = (type: AgentType) => {
       return new DevOpsAgent(AgentType.DEVOPS);
     case AgentType.UX:
       return new UXAgent(AgentType.UX);
+    case AgentType.ECOMMERCE:
+      return new EcommerceAgent();
     case AgentType.MANAGER:
     default:
       return new ManagerAgent(AgentType.MANAGER);
@@ -33,6 +36,11 @@ export const createAgent = (type: AgentType) => {
  */
 export const determineAgentType = (message: string, projectPhases: any[]): AgentType => {
   // Analyze the message content to determine which agent should handle it
+  
+  // Check for e-commerce related keywords
+  if (message.match(/e-commerce|ecommerce|shopping cart|checkout|payment|product|order|catalog|shop|store|customer|inventory|pricing|discount|coupon|shipping|tax|cart|wishlist/i)) {
+    return AgentType.ECOMMERCE;
+  }
   
   // Check for DevOps and GitHub repository related keywords
   if (message.match(/github|repository|repo|branch|commit|pull request|PR|merge|CI\/CD|pipeline|workflow|git|deployment|docker|kubernetes|infrastructure|DevOps/i)) {
@@ -57,6 +65,25 @@ export const determineAgentType = (message: string, projectPhases: any[]): Agent
   // Check for UX-related keywords
   if (message.match(/user experience|UX|usability|accessibility|user flow|information architecture|wireframe|prototype/i)) {
     return AgentType.UX;
+  }
+  
+  // Check for code generation specifically
+  if (message.match(/generate|create|code|component|function|class|schema|implement|develop|build/i)) {
+    // If related to e-commerce, use e-commerce agent for code generation
+    if (message.match(/e-commerce|ecommerce|shop|store|product|cart|checkout|payment/i)) {
+      return AgentType.ECOMMERCE;
+    }
+    
+    // Otherwise, select the most appropriate agent for the code type
+    if (message.match(/react|component|ui|interface/i)) {
+      return AgentType.FRONTEND;
+    }
+    if (message.match(/api|endpoint|server|route/i)) {
+      return AgentType.BACKEND;
+    }
+    if (message.match(/database|schema|model/i)) {
+      return AgentType.DATABASE;
+    }
   }
   
   // Default to the Manager Agent if no specific domain is detected

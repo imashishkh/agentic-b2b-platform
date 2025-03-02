@@ -1,6 +1,7 @@
 
 import { KnowledgeResource } from "@/contexts/types";
 import { calculateRelevanceScore } from "./resourceExtractor";
+import { calculateProductAffinityScore } from "./ecommerceKnowledgeUtils";
 
 /**
  * Find the most relevant resources for a given query or context
@@ -63,6 +64,22 @@ Category: ${resource.category || "Uncategorized"}
 ${resource.tags?.length ? `Tags: ${resource.tags.join(', ')}` : ''}
 ${resource.description || ''}
 Type: Folder Structure
+      `.trim();
+    }
+    
+    // Check if it's an e-commerce product resource
+    if (resource.productRelated) {
+      return `
+## ${resource.title || "Product Resource"}
+Category: ${resource.category || "Uncategorized"}
+${resource.tags?.length ? `Tags: ${resource.tags.join(', ')}` : ''}
+${resource.description || ''}
+Price Point: ${resource.pricePoint || "Not specified"}
+Market Segment: ${resource.marketSegment || "Not specified"}
+Catalog Type: ${resource.catalogType || "Not specified"}
+${resource.paymentGateway ? `Payment Gateway: ${resource.paymentGateway}` : ''}
+${resource.shippingOption ? `Shipping Option: ${resource.shippingOption}` : ''}
+Reference: ${resource.url || "No URL provided"}
       `.trim();
     }
     
@@ -242,4 +259,73 @@ export const groupResourcesByFolder = (
   });
   
   return folders;
+};
+
+/**
+ * Find e-commerce related resources in the knowledge base
+ * 
+ * @param knowledgeBase - The knowledge base to search in
+ * @returns E-commerce resources sorted by relevance
+ */
+export const findEcommerceResources = (
+  knowledgeBase: KnowledgeResource[]
+): KnowledgeResource[] => {
+  if (!knowledgeBase.length) return [];
+  
+  // Keywords related to e-commerce
+  const ecommerceKeywords = [
+    'product', 'catalog', 'cart', 'checkout', 'payment', 'store', 'shop',
+    'ecommerce', 'e-commerce', 'retail', 'merchant', 'inventory', 'order',
+    'shipping', 'fulfillment', 'customer', 'shopper', 'marketplace'
+  ];
+  
+  // Filter resources that match e-commerce keywords
+  const ecommerceResources = knowledgeBase.filter(resource => {
+    const content = (resource.content || resource.description || '').toLowerCase();
+    const title = (resource.title || '').toLowerCase();
+    const category = (resource.category || '').toLowerCase();
+    const tags = (resource.tags || []).map(tag => tag.toLowerCase());
+    
+    // Check if resource contains e-commerce keywords
+    return ecommerceKeywords.some(keyword => 
+      content.includes(keyword) || 
+      title.includes(keyword) || 
+      category.includes(keyword) ||
+      tags.includes(keyword)
+    ) || resource.productRelated === true;
+  });
+  
+  // Sort by category to group similar resources
+  return ecommerceResources.sort((a, b) => {
+    const catA = a.category || '';
+    const catB = b.category || '';
+    return catA.localeCompare(catB);
+  });
+};
+
+/**
+ * Group e-commerce resources by market segment
+ * 
+ * @param resources - The resources to group
+ * @returns Resources grouped by market segment
+ */
+export const groupByMarketSegment = (
+  resources: KnowledgeResource[]
+): Record<string, KnowledgeResource[]> => {
+  const segments: Record<string, KnowledgeResource[]> = {
+    "Other": []
+  };
+  
+  resources.forEach(resource => {
+    if (resource.marketSegment) {
+      if (!segments[resource.marketSegment]) {
+        segments[resource.marketSegment] = [];
+      }
+      segments[resource.marketSegment].push(resource);
+    } else {
+      segments["Other"].push(resource);
+    }
+  });
+  
+  return segments;
 };

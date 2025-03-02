@@ -10,7 +10,7 @@ export const askClaude = async (prompt: string): Promise<string> => {
   console.log("Asking Claude:", prompt);
   
   // Get the API key from localStorage if available
-  const apiKey = localStorage.getItem('claude_api_key');
+  const apiKey = localStorage.getItem('claudeApiKey');
   
   // If we have an API key, use it to make a real API call
   if (apiKey) {
@@ -45,14 +45,18 @@ export const askClaude = async (prompt: string): Promise<string> => {
       return data.content[0].text;
     } catch (error) {
       console.error("Error calling Claude API:", error);
-      // Fallback to simulated response if API call fails
-      return simulateClaudeResponse(prompt);
+      // Provide more specific error message based on error type
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error("Network error: Unable to reach Claude API. Please check your internet connection.");
+      } else if (error instanceof Error) {
+        throw new Error(`Error calling Claude API: ${error.message}`);
+      } else {
+        throw new Error("Unknown error occurred while calling Claude API");
+      }
     }
   } else {
-    // If no API key, return a simulated response
-    console.log("No Claude API key found, using simulated response");
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return simulateClaudeResponse(prompt);
+    // If no API key, throw a helpful error message
+    throw new Error("Claude API key not found. Please add your API key in the API Settings.");
   }
 };
 
@@ -61,7 +65,7 @@ export const searchInternet = async (query: string): Promise<string> => {
   console.log("Searching internet for:", query);
   
   // Get the API key from localStorage if available
-  const apiKey = localStorage.getItem('search_api_key');
+  const apiKey = localStorage.getItem('searchApiKey');
   
   // If we have an API key, use it to make a real API call
   if (apiKey) {
@@ -76,13 +80,15 @@ export const searchInternet = async (query: string): Promise<string> => {
       return simulateSearchResults(query);
     } catch (error) {
       console.error("Error calling Search API:", error);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`Search API error: ${error.message}`);
+      } else {
+        throw new Error("Unknown error occurred while searching");
+      }
     }
   } else {
-    // If no API key, return a simulated response
-    console.log("No Search API key found, using simulated response");
-    await new Promise(resolve => setTimeout(resolve, 700));
-    return simulateSearchResults(query);
+    // If no API key, throw helpful error
+    throw new Error("Search API key not found. Please add your API key in the API Settings.");
   }
 };
 
@@ -107,6 +113,49 @@ export const testCode = async (code: string, testType: string): Promise<string> 
   return simulateCodeTesting(code, testType);
 };
 
+// Generate code using Claude API
+export const generateCode = async (
+  prompt: string, 
+  language: string, 
+  codeType: string, 
+  context?: string
+): Promise<string> => {
+  console.log(`Generating ${language} code for ${codeType}`);
+  
+  // Create a detailed prompt for code generation
+  const codePrompt = `
+You are an expert ${language} developer specializing in e-commerce applications.
+Please generate high-quality, production-ready ${language} code for the following task:
+
+${prompt}
+
+Code Type: ${codeType} (e.g., component, utility, API endpoint)
+${context ? `Context: ${context}` : ''}
+
+Requirements:
+- The code should follow best practices for ${language}
+- Include appropriate error handling
+- Be well-documented with comments
+- Be secure and performant
+- Follow modern coding standards
+
+Return ONLY the code without any explanation or markdown formatting.
+`;
+
+  try {
+    // Use the Claude API to generate the code
+    const generatedCode = await askClaude(codePrompt);
+    return generatedCode;
+  } catch (error) {
+    console.error("Error generating code:", error);
+    if (error instanceof Error) {
+      throw new Error(`Code generation failed: ${error.message}`);
+    } else {
+      throw new Error("Unknown error occurred during code generation");
+    }
+  }
+};
+
 // Search for troubleshooting information
 export const troubleshootCode = async (errorMessage: string): Promise<string> => {
   console.log("Troubleshooting error:", errorMessage);
@@ -119,6 +168,82 @@ export const checkSecurity = async (code: string): Promise<string> => {
   console.log("Running security check on code");
   await new Promise(resolve => setTimeout(resolve, 700));
   return simulateSecurityCheck(code);
+};
+
+// Specialized code generators for e-commerce
+export const generateEcommerceComponent = async (
+  componentType: string,
+  requirements: string,
+  frameworkPreference?: string
+): Promise<string> => {
+  const framework = frameworkPreference || "React with Tailwind CSS";
+  const language = framework.includes("React") ? "TypeScript/React" : "JavaScript";
+  
+  console.log(`Generating ${componentType} e-commerce component with ${framework}`);
+  
+  const componentPrompt = `
+Generate a complete, production-ready ${componentType} component for an e-commerce application using ${framework}.
+
+Requirements:
+${requirements}
+
+The component should:
+- Be fully functional and ready to use
+- Include proper typing (if using TypeScript)
+- Follow e-commerce best practices
+- Be responsive and accessible
+- Include error handling and loading states
+- Be properly commented
+
+Return ONLY the component code without explanations or markdown formatting.
+`;
+
+  try {
+    return await generateCode(componentPrompt, language, "e-commerce component");
+  } catch (error) {
+    console.error(`Error generating ${componentType} component:`, error);
+    if (error instanceof Error) {
+      throw new Error(`Component generation failed: ${error.message}`);
+    } else {
+      throw new Error("Unknown error occurred during component generation");
+    }
+  }
+};
+
+// Generate database schema for e-commerce
+export const generateDatabaseSchema = async (
+  entityType: string,
+  requirements: string,
+  databaseType: string = "PostgreSQL"
+): Promise<string> => {
+  console.log(`Generating ${entityType} database schema for ${databaseType}`);
+  
+  const schemaPrompt = `
+Generate a complete database schema for ${entityType} in an e-commerce application using ${databaseType}.
+
+Requirements:
+${requirements}
+
+The schema should:
+- Follow database best practices
+- Include proper data types and constraints
+- Consider performance for e-commerce scale
+- Include indexes where appropriate
+- Consider relationships with other e-commerce entities
+
+Return ONLY the schema definition code without explanations or markdown formatting.
+`;
+
+  try {
+    return await generateCode(schemaPrompt, databaseType, "database schema");
+  } catch (error) {
+    console.error(`Error generating ${entityType} schema:`, error);
+    if (error instanceof Error) {
+      throw new Error(`Schema generation failed: ${error.message}`);
+    } else {
+      throw new Error("Unknown error occurred during schema generation");
+    }
+  }
 };
 
 // Simulate Claude AI responses based on the prompt

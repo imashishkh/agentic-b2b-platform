@@ -8,7 +8,8 @@ export enum AgentType {
   BACKEND = "backend",
   DATABASE = "database",
   DEVOPS = "devops",
-  UX = "ux"
+  UX = "ux",
+  ECOMMERCE = "ecommerce"
 }
 
 /**
@@ -23,6 +24,38 @@ export interface Agent {
   canHandle: (message: string) => boolean;
   generateResponse: (message: string, projectPhases?: any[]) => Promise<string>;
   icon?: React.ComponentType<{ size?: number }>;
+}
+
+/**
+ * Interface for code generation capabilities
+ */
+export interface CodeGenerationCapabilities {
+  generateCode: (prompt: string, language: string, type: string, context?: string) => Promise<string>;
+  generateComponentCode: (componentType: string, requirements: string, framework?: string) => Promise<string>;
+  generateSchemaCode: (entityType: string, requirements: string, databaseType?: string) => Promise<string>;
+  evaluateCode: (code: string, language: string) => Promise<CodeEvaluation>;
+}
+
+/**
+ * Interface for code evaluation results
+ */
+export interface CodeEvaluation {
+  isValid: boolean;
+  issues: CodeIssue[];
+  suggestions: string[];
+  securityConcerns: string[];
+  performanceNotes: string[];
+}
+
+/**
+ * Interface for a code issue
+ */
+export interface CodeIssue {
+  line?: number;
+  column?: number;
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+  code?: string;
 }
 
 /**

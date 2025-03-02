@@ -40,6 +40,13 @@ export interface KnowledgeResource {
   accessCount?: number;
   calculatedScore?: number;
   dateAdded?: string;
+  // E-commerce specific properties
+  productRelated?: boolean;
+  pricePoint?: string;
+  marketSegment?: string;
+  catalogType?: string;
+  paymentGateway?: string;
+  shippingOption?: string;
 }
 
 // Alias KnowledgeBaseResource to KnowledgeResource for backward compatibility
