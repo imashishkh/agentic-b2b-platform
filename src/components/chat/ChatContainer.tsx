@@ -2,13 +2,11 @@
 import React, { useRef } from "react";
 import { Chat } from "@/components/Chat";
 import { ChatInput } from "@/components/chat-input";
+import { useChat } from "@/contexts/ChatContext";
 
-interface ChatContainerProps {
-  onSendMessage: (message: string, files?: File[]) => void;
-}
-
-export function ChatContainer({ onSendMessage }: ChatContainerProps) {
+export function ChatContainer() {
   const chatRef = useRef<{ processUserMessage: (message: string, files?: File[]) => void }>(null);
+  const { isAgentTyping } = useChat();
   
   // Forward the message handling to the Chat component
   const handleSendMessage = (message: string, files?: File[]) => {
@@ -23,7 +21,7 @@ export function ChatContainer({ onSendMessage }: ChatContainerProps) {
         <Chat chatRef={chatRef} />
       </div>
       <div className="p-4 bg-white border-t border-gray-200">
-        <ChatInput onSendMessage={handleSendMessage} />
+        <ChatInput onSendMessage={handleSendMessage} isDisabled={isAgentTyping} />
       </div>
     </>
   );

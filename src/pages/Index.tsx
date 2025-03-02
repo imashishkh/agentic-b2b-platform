@@ -19,9 +19,7 @@ const IndexContent = () => {
       showApiSettings={showApiSettings}
       setShowApiSettings={setShowApiSettings}
     >
-      <ChatContainer
-        onSendMessage={() => {}} // This prop is not used as the ChatContainer manages message handling internally
-      />
+      <ChatContainer />
     </MainLayout>
   );
 };
