@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MessageInput } from "./MessageInput";
 import { SendButton } from "./SendButton";
 import { FileUploadButton } from "./FileUploadButton";
 import { FilePreview } from "./FilePreview";
 import { FileUploadProgress } from "./FileUploadProgress";
+import { Button } from "@/components/ui/button";
 
 export interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -79,13 +80,29 @@ export function ChatInput({
         />
         
         <div className="flex gap-2">
-          <FileUploadButton onChange={(files) => {
-            if (handleFileUpload) {
-              handleFileUpload();
-            }
-          }} disabled={isDisabled || isUploading} />
+          <FileUploadButton 
+            onChange={() => {
+              if (handleFileUpload) {
+                handleFileUpload();
+              }
+            }} 
+            disabled={isDisabled || isUploading} 
+          />
           <SendButton onClick={handleSendMessage} disabled={!message.trim() || isDisabled || isUploading} />
         </div>
+      </div>
+      
+      {/* Add Example button within the chat input component */}
+      <div className="flex justify-end mt-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {/* Example button clicked */}}
+          disabled={isDisabled || isUploading}
+          className="text-xs"
+        >
+          Example
+        </Button>
       </div>
     </div>
   );
