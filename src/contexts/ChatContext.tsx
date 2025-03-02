@@ -79,6 +79,7 @@ interface ChatContextType {
   messages: ChatMessageProps[];             // All chat messages (user and agent)
   isAgentTyping: boolean;                   // Whether an agent is currently typing
   isFetchingResponse: boolean;              // Whether we're waiting for an API response
+  isLoadingExample: boolean;                // Whether example project is being loaded
   projectPhases: any[];                     // Structured project data
   hasRequestedFile: boolean;                // Whether we've asked for a requirements file
   currentAgentType: AgentType;              // Which agent is currently active
@@ -93,6 +94,7 @@ interface ChatContextType {
   clearMessages: () => void;                  // Clear all messages
   setIsAgentTyping: (isTyping: boolean) => void;    // Update typing indicator
   setIsFetchingResponse: (isFetching: boolean) => void;  // Update fetching status
+  setIsLoadingExample: (isLoading: boolean) => void; // Update example loading status
   setProjectPhases: (phases: any[]) => void;        // Update project structure
   setHasRequestedFile: (hasRequested: boolean) => void;  // Update file request status
   setCurrentAgentType: (agentType: AgentType) => void;   // Change the active agent
@@ -123,6 +125,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessageProps[]>(initialMessages);
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const [isFetchingResponse, setIsFetchingResponse] = useState(false);
+  const [isLoadingExample, setIsLoadingExample] = useState(false);
   const [projectPhases, setProjectPhases] = useState<any[]>([]);
   const [hasRequestedFile, setHasRequestedFile] = useState(false); // Changed from true to false
   const [currentAgentType, setCurrentAgentType] = useState<AgentType>(AgentType.MANAGER);
@@ -223,6 +226,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       messages,
       isAgentTyping,
       isFetchingResponse,
+      isLoadingExample,
       projectPhases,
       hasRequestedFile,
       currentAgentType,
@@ -235,6 +239,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       clearMessages,
       setIsAgentTyping,
       setIsFetchingResponse,
+      setIsLoadingExample,
       setProjectPhases,
       setHasRequestedFile,
       setCurrentAgentType,
