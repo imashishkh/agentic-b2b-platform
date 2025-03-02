@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +41,7 @@ export const AddResourceDialog: React.FC<AddResourceDialogProps> = ({ onAddResou
       url: formState.url,
       category: formState.category,
       description: formState.description || `Resource from ${new URL(formState.url).hostname}`,
-      dateAdded: new Date(),
+      dateAdded: new Date().toISOString(),
       tags: formState.tags ? formState.tags.split(',').map(tag => tag.trim()) : undefined,
       isIndexed: false
     };

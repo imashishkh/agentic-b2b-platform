@@ -9,16 +9,16 @@ interface MainLayoutProps {
   children: React.ReactNode;
   currentAgentType: AgentType;
   setCurrentAgentType: (agentType: AgentType) => void;
-  showApiSettings: boolean;
-  setShowApiSettings: (show: boolean) => void;
+  showApiSettings?: boolean;
+  setShowApiSettings?: (show: boolean) => void;
 }
 
 export function MainLayout({
   children,
   currentAgentType,
   setCurrentAgentType,
-  showApiSettings,
-  setShowApiSettings
+  showApiSettings = false,
+  setShowApiSettings = () => {}
 }: MainLayoutProps) {
   return (
     <div className="flex w-full h-screen overflow-hidden">

@@ -1,107 +1,111 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { TestingStrategy } from "@/contexts/types";
-import { CheckCircle, FileDown, FileText } from "lucide-react";
+import { Check, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+
+// Define extended type for TestingStrategy
+interface ExtendedTestingStrategy {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  approved?: boolean;
+  dateCreated?: string | Date;
+  approaches?: Array<{
+    name: string;
+    type?: string;
+    framework?: string;
+    description?: string;
+    coverageGoal?: string;
+    tools: string[];
+  }>;
+}
 
 interface TestingStrategyCardProps {
-  strategy: TestingStrategy;
+  strategy: ExtendedTestingStrategy;
   onApprove: (id: string) => void;
 }
 
 export const TestingStrategyCard: React.FC<TestingStrategyCardProps> = ({ 
-  strategy,
-  onApprove
+  strategy, 
+  onApprove 
 }) => {
+  // Format date if it exists
+  const formattedDate = strategy.dateCreated 
+    ? typeof strategy.dateCreated === 'string' 
+      ? strategy.dateCreated 
+      : format(new Date(strategy.dateCreated), 'MMM d, yyyy')
+    : 'N/A';
+  
   return (
-    <Card className="mb-4">
-      <CardHeader>
+    <Card className={`transition-all duration-200 ${strategy.approved ? 'border-green-200 bg-green-50/40' : ''}`}>
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg">{strategy.title}</CardTitle>
+          <div>
+            <CardTitle className="text-lg">{strategy.name}</CardTitle>
+            <CardDescription className="mt-1">
+              {strategy.description}
+            </CardDescription>
+          </div>
           {strategy.approved && (
-            <span className="flex items-center text-sm text-green-600">
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Approved
-            </span>
+            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+              <Check className="h-3 w-3 mr-1" /> Approved
+            </Badge>
           )}
         </div>
-        <CardDescription>
-          {new Date(strategy.dateCreated).toLocaleDateString()}
-        </CardDescription>
+        <div className="flex items-center text-xs text-gray-500 mt-2">
+          <Clock className="h-3 w-3 mr-1" />
+          <span>Created: {formattedDate}</span>
+        </div>
       </CardHeader>
+      
       <CardContent>
-        <p className="text-sm mb-3">{strategy.description}</p>
-        <h4 className="text-sm font-medium mb-2">Testing Approaches:</h4>
-        <ul className="text-sm space-y-1">
-          {strategy.approaches.slice(0, 3).map((approach, index) => (
-            <li key={index} className="flex items-start">
-              <span className="mr-2">•</span>
-              <span><span className="font-medium">{approach.type}</span> using {approach.framework}</span>
-            </li>
-          ))}
-          {strategy.approaches.length > 3 && (
-            <li className="text-xs text-muted-foreground">+ {strategy.approaches.length - 3} more approaches</li>
-          )}
-        </ul>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center">
-              <FileText className="h-4 w-4 mr-2" />
-              View Details
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>{strategy.title}</DialogTitle>
-              <DialogDescription>
-                Created on {new Date(strategy.dateCreated).toLocaleDateString()}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4 space-y-4">
-              <div>
-                <h4 className="text-sm font-medium mb-2">Description</h4>
-                <p className="text-sm">{strategy.description}</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium mb-2">Testing Approaches</h4>
-                <div className="space-y-3">
-                  {strategy.approaches.map((approach, index) => (
-                    <div key={index} className="p-3 border rounded-md">
-                      <h5 className="font-medium text-sm">{approach.type} <span className="font-normal text-xs text-gray-500">({approach.framework})</span></h5>
-                      <p className="text-sm mt-1">{approach.description}</p>
-                      {approach.coverageGoal && (
-                        <div className="mt-2">
-                          <span className="text-xs text-gray-500">Coverage Goal: </span>
-                          <span className="text-xs">{approach.coverageGoal}%</span>
-                        </div>
-                      )}
-                    </div>
+        {strategy.approaches && strategy.approaches.length > 0 ? (
+          <div className="space-y-3">
+            {strategy.approaches.map((approach, index) => (
+              <div key={index} className="bg-gray-50 p-3 rounded-md">
+                <div className="flex items-center mb-2">
+                  <h4 className="font-medium text-sm">{approach.name || 'Approach'}</h4>
+                  {approach.type && approach.framework && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {approach.type}: {approach.framework}
+                    </Badge>
+                  )}
+                </div>
+                {approach.description && (
+                  <p className="text-sm text-gray-600 mb-2">{approach.description}</p>
+                )}
+                {approach.coverageGoal && (
+                  <div className="flex items-center text-xs text-gray-500 mb-2">
+                    <span>Coverage Goal: {approach.coverageGoal}</span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {approach.tools.map((tool, toolIndex) => (
+                    <Badge key={toolIndex} variant="outline" className="text-xs">
+                      {tool}
+                    </Badge>
                   ))}
                 </div>
               </div>
-            </div>
-            <div className="flex justify-end mt-4">
-              {!strategy.approved && (
-                <Button onClick={() => onApprove(strategy.id)} className="mr-2">
-                  Approve Strategy
-                </Button>
-              )}
-              <Button variant="outline">
-                <FileDown className="h-4 w-4 mr-2" />
-                Export as PDF
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-        
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No specific testing approaches defined.</p>
+        )}
+      </CardContent>
+      
+      <CardFooter className="pt-2">
         {!strategy.approved && (
-          <Button onClick={() => onApprove(strategy.id)}>
-            Approve
+          <Button 
+            size="sm" 
+            onClick={() => onApprove(strategy.id)}
+            className="w-full bg-purple-600 hover:bg-purple-700"
+          >
+            Approve Strategy
           </Button>
         )}
       </CardFooter>

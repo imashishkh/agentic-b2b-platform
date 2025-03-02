@@ -9,7 +9,6 @@ import { useChat } from "@/contexts/ChatContext";
 import { toast } from "sonner";
 import { Book, Code, FileCode, Github } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
 // Extending the types as needed for the UI to work properly
 interface ExtendedArchitectureProposal {
@@ -27,6 +26,7 @@ interface ExtendedTestingStrategy {
   id: string;
   name: string;
   description: string;
+  type: string; // Added to fix type error
   approved?: boolean;
   approaches?: Array<{
     name: string;
@@ -133,7 +133,7 @@ export const ProjectFeaturesPanel: React.FC = () => {
                       {testingStrategies.map(strategy => (
                         <TestingStrategyCard 
                           key={strategy.id}
-                          strategy={strategy as unknown as ExtendedTestingStrategy}
+                          strategy={{...strategy, type: "Unit Testing"} as unknown as ExtendedTestingStrategy}
                           onApprove={handleApproveStrategy}
                         />
                       ))}

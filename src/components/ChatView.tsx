@@ -6,8 +6,6 @@ import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatProcessor } from "@/components/ChatProcessor";
 import { useChat } from "@/contexts/ChatContext";
 import { SuggestionBox } from "@/components/chat/SuggestionBox";
-import { ApiSettings } from "@/components/ApiSettings";
-import { ProjectFeaturesPanel } from "@/components/project/ProjectFeaturesPanel";
 
 export default function ChatView() {
   const { chatId } = useParams<{ chatId: string }>();
@@ -36,7 +34,7 @@ export default function ChatView() {
     <div className="flex h-full overflow-hidden bg-background relative">
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader />
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-auto relative pb-40">
           <ChatMessages 
             messages={messages} 
             isLoadingExample={isLoadingExample} 
