@@ -47,3 +47,26 @@ export function createSearchQuery(message: string, projectPhases: any[], type: A
 export function createCodeSearchQuery(message: string, type: AgentType): string {
   return `${type.toLowerCase()} ${message.replace(/can you (show|provide|give) (me )?(an |some )?(example|code|implementation)/i, "")} e-commerce`;
 }
+
+/**
+ * Generates a prompt to request knowledge base resources
+ */
+export function generateKnowledgeBasePrompt(): string {
+  return `
+## Knowledge Base Resources Needed
+
+To provide you with the most accurate and relevant guidance for your e-commerce project, I'd like to gather some key resources for our knowledge base:
+
+1. **Technology Stack Documentation**: Please share links to documentation for your preferred frontend framework, backend technology, and database system.
+
+2. **Industry Standards**: Any relevant e-commerce best practices, security standards, or compliance requirements specific to your industry.
+
+3. **Competitor Analysis**: Links to similar e-commerce platforms that you admire or wish to compete with.
+
+4. **Design Guidelines**: Any brand guidelines, design systems, or UX principles you want to follow.
+
+5. **API Documentation**: If you're integrating with any third-party services (payment processors, shipping calculators, etc.), please share their API documentation.
+
+Please share any links you have available. You can provide them now or as we progress through the project. These resources will help all specialists provide more tailored and effective solutions for your specific needs.
+  `;
+}
