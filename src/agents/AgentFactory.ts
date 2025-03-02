@@ -34,6 +34,11 @@ export const createAgent = (type: AgentType) => {
 export const determineAgentType = (message: string, projectPhases: any[]): AgentType => {
   // Analyze the message content to determine which agent should handle it
   
+  // Check for DevOps and GitHub repository related keywords
+  if (message.match(/github|repository|repo|branch|commit|pull request|PR|merge|CI\/CD|pipeline|workflow|git|deployment|docker|kubernetes|infrastructure|DevOps/i)) {
+    return AgentType.DEVOPS;
+  }
+  
   // Check for frontend-related keywords
   if (message.match(/frontend|UI|component|react|design|css|tailwind|style|layout|responsiv|mobile|desktop/i)) {
     return AgentType.FRONTEND;
@@ -47,11 +52,6 @@ export const determineAgentType = (message: string, projectPhases: any[]): Agent
   // Check for database-related keywords
   if (message.match(/database|schema|table|query|SQL|noSQL|MongoDB|PostgreSQL|data model|migration|seeding/i)) {
     return AgentType.DATABASE;
-  }
-  
-  // Check for DevOps-related keywords
-  if (message.match(/deployment|CI\/CD|Docker|Kubernetes|AWS|Azure|GCP|scaling|monitoring|logging|performance/i)) {
-    return AgentType.DEVOPS;
   }
   
   // Check for UX-related keywords

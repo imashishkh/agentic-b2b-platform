@@ -268,6 +268,54 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
+    if (message.toLowerCase().includes("github") && 
+        (message.toLowerCase().includes("repository") || message.toLowerCase().includes("repo"))) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `# GitHub Repository Management\n\nI'll help you set up and manage GitHub repositories for your project. You can:\n\n- Connect to your GitHub account\n- Create new repositories with best-practice templates\n- Set up branch protection rules\n- Configure CI/CD workflows\n- Manage pull requests\n\nYou can access these features in the GitHub Integration panel. Would you like me to explain any specific aspect of repository management?`,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("ci/cd") || 
+        (message.toLowerCase().includes("pipeline") && message.toLowerCase().includes("workflow"))) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `# CI/CD Pipeline Configuration\n\nI'll help you set up continuous integration and deployment pipelines for your project. Our recommended workflow includes:\n\n## For Development\n- Automated testing on every push\n- Code quality checks\n- Preview deployments for feature branches\n\n## For Production\n- Staging environment deployment\n- Manual approval process\n- Zero-downtime deployment strategy\n- Automated rollback capability\n\nYou can configure these pipelines in the GitHub Integration panel. Would you like me to explain how to set up a specific workflow?`,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("branch") && 
+        message.toLowerCase().includes("strategy")) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `# Branch Strategy Recommendation\n\nFor your project, I recommend the following branch strategy:\n\n## Main Branches\n- **main** - Production code that is deployed to users\n- **develop** - Integration branch for ongoing development\n\n## Supporting Branches\n- **feature/*** - For new features (e.g., feature/user-auth)\n- **bugfix/*** - For bug fixes (e.g., bugfix/login-error)\n- **release/*** - For release preparation (e.g., release/v1.0)\n- **hotfix/*** - For urgent production fixes\n\n## Workflow Process\n1. Develop features in feature branches\n2. Create pull requests to develop\n3. Conduct code reviews\n4. Merge approved features to develop\n5. Create release branches when ready\n6. Test in staging environment\n7. Merge to main and deploy to production\n\nYou can implement this strategy using the GitHub Integration panel. Would you like me to help you set this up?`,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
     return false;
   };
 
