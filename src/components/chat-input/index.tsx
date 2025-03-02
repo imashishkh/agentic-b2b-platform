@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MessageInput } from "./MessageInput";
 import { SendButton } from "./SendButton";
@@ -6,7 +5,7 @@ import { FileUploadButton } from "./FileUploadButton";
 import { FilePreview } from "./FilePreview";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 export type ChatInputProps = {
   onSendMessage: (message: string, files?: File[]) => void;
@@ -34,7 +33,20 @@ export function ChatInput({ onSendMessage, isDisabled = false }: ChatInputProps)
   };
 
   const handleFileChange = (selectedFiles: File[]) => {
-    setFiles(selectedFiles);
+    const markdownFiles = selectedFiles.filter(
+      file => file.name.endsWith('.md') || file.name.endsWith('.markdown')
+    );
+    
+    if (markdownFiles.length !== selectedFiles.length) {
+      toast.error("Only markdown (.md) files are currently supported");
+      setFiles(markdownFiles);
+    } else {
+      setFiles(selectedFiles);
+      
+      if (selectedFiles.length > 0) {
+        toast.success(`${selectedFiles.length} file(s) ready to upload`);
+      }
+    }
   };
 
   const removeFile = (index: number) => {

@@ -5,15 +5,117 @@ import { useChat } from "@/contexts/ChatContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export function ChatView() {
-  const { messages, isAgentTyping } = useChat();
+  const { messages, isAgentTyping, addMessage, setIsAgentTyping } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Handler for starting with example project
+  const handleStartExample = () => {
+    const exampleRequirements = `# E-Commerce Platform Requirements
+
+## Overview
+We need a modern e-commerce platform that can sell physical and digital products with a focus on great user experience and scalability.
+
+## Key Features
+- User authentication and profiles
+- Product catalog with categories and search
+- Shopping cart and checkout process
+- Payment processing (Stripe integration)
+- Order management and history
+- Admin dashboard for inventory management
+- Responsive design for mobile and desktop
+
+## Technical Requirements
+- React frontend
+- RESTful API
+- PostgreSQL database
+- Secure authentication
+- Performance optimization for product listings
+- Automated testing suite
+
+## Deployment
+- CI/CD pipeline
+- AWS hosting
+- Monitoring and analytics
+
+## Timeline
+6 months to MVP with monthly sprint cycles`;
+
+    addMessage({
+      type: "user",
+      content: exampleRequirements,
+    });
+    
+    // Simulate agent response
+    setIsAgentTyping(true);
+    setTimeout(() => {
+      addMessage({
+        type: "agent",
+        content: "Thank you for sharing the e-commerce platform requirements. I'll help you analyze these requirements, create a structured plan, and break down the tasks for different specialized agents. Let's start by organizing this into a project plan with clear phases and milestones.",
+        agentType: "manager",
+      });
+      setIsAgentTyping(false);
+    }, 1500);
+    
+    toast.success("Started example e-commerce project");
+  };
+
+  // Handler for file upload button click
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Handler for file selection
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    
+    // Check if file is markdown
+    if (!file.name.endsWith('.md') && !file.name.endsWith('.markdown')) {
+      toast.error("Please upload a markdown (.md) file");
+      return;
+    }
+    
+    try {
+      const content = await file.text();
+      addMessage({
+        type: "user",
+        content: content,
+      });
+      
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+      toast.success(`Uploaded ${file.name}`);
+      
+      // Simulate agent typing response
+      setIsAgentTyping(true);
+      setTimeout(() => {
+        addMessage({
+          type: "agent",
+          content: `Thank you for uploading "${file.name}". I'll analyze these requirements and help you create a structured project plan. Give me a moment to review the content.`,
+          agentType: "manager",
+        });
+        setIsAgentTyping(false);
+      }, 1500);
+      
+    } catch (error) {
+      console.error("Error reading file:", error);
+      toast.error("Failed to read file content");
+    }
+  };
 
   return (
     <ScrollArea className="flex-1 h-full">
@@ -52,11 +154,28 @@ export function ChatView() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="flex items-center gap-2 bg-sayhalo-coral hover:bg-sayhalo-coral/90 text-white">
+                {/* Hidden file input for uploads */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".md,.markdown"
+                />
+                
+                <Button 
+                  onClick={handleUploadClick}
+                  className="flex items-center gap-2 bg-sayhalo-coral hover:bg-sayhalo-coral/90 text-white"
+                >
                   <Upload className="h-4 w-4" />
                   Upload Requirements
                 </Button>
-                <Button variant="outline" className="flex items-center gap-2">
+                
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                  onClick={handleStartExample}
+                >
                   <Sparkles className="h-4 w-4" />
                   Start with Example Project
                 </Button>

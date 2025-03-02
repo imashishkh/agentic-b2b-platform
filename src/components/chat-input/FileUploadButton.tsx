@@ -44,7 +44,8 @@ export function FileUploadButton({ onChange, disabled }: FileUploadButtonProps) 
           disabled && "cursor-not-allowed opacity-60 hover:text-gray-500"
         )}
         disabled={disabled}
-        aria-label="Upload File"
+        aria-label="Upload Requirements File"
+        title="Upload Requirements File (.md)"
       >
         <Upload className="h-5 w-5" />
       </button>
@@ -54,7 +55,7 @@ export function FileUploadButton({ onChange, disabled }: FileUploadButtonProps) 
         onChange={handleFileChange}
         className="hidden"
         multiple
-        accept="*/*"
+        accept=".md,.markdown"
         disabled={disabled}
       />
     </>
