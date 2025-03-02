@@ -1,84 +1,46 @@
-import React, { useState } from "react";
-import { MessageInput } from "./MessageInput";
-import { SendButton } from "./SendButton";
-import { FileUploadButton } from "./FileUploadButton";
-import { FilePreview } from "./FilePreview";
-import { ApiSettingsDialog } from "../ApiSettingsDialog";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
-export type ChatInputProps = {
-  onSendMessage: (message: string, files?: File[]) => void;
-  isDisabled?: boolean;
-};
+import React, { useState, KeyboardEvent } from 'react';
 
-export function ChatInput({ onSendMessage, isDisabled = false }: ChatInputProps) {
-  const [message, setMessage] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+interface ChatInputProps {
+  onSendMessage: (message: string) => void;
+  isLoading?: boolean;
+}
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (message.trim() || files.length > 0) {
-      onSendMessage(message, files.length > 0 ? files : undefined);
-      setMessage("");
-      setFiles([]);
+export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading = false }) => {
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = () => {
+    if (message.trim() && !isLoading) {
+      onSendMessage(message);
+      setMessage('');
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
-  const handleFileChange = (selectedFiles: File[]) => {
-    const markdownFiles = selectedFiles.filter(
-      file => file.name.endsWith('.md') || file.name.endsWith('.markdown')
-    );
-    
-    if (markdownFiles.length !== selectedFiles.length) {
-      toast.error("Only markdown (.md) files are currently supported");
-      setFiles(markdownFiles);
-    } else {
-      setFiles(selectedFiles);
-      
-      if (selectedFiles.length > 0) {
-        toast.success(`${selectedFiles.length} file(s) ready to upload`);
-      }
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-  };
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="border-t border-gray-200 bg-white p-4 flex flex-col gap-2 shadow-lg"
-    >
-      {files.length > 0 && (
-        <FilePreview files={files} onRemove={removeFile} disabled={isDisabled} />
-      )}
-      <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 shadow-inner">
-        <div className="flex items-center">
-          <ApiSettingsDialog />
-          <FileUploadButton onChange={handleFileChange} disabled={isDisabled} />
-        </div>
-        
-        <MessageInput
-          value={message}
-          onChange={setMessage}
-          onKeyDown={handleKeyDown}
-          disabled={isDisabled}
-        />
-        
-        <SendButton 
-          onClick={() => handleSubmit()} 
-          disabled={isDisabled || (!message.trim() && files.length === 0)} 
-        />
-      </div>
-    </form>
+    <div className="flex-1 flex items-center">
+      <input
+        type="text"
+        placeholder="Type your message here..."
+        className="input input-bordered w-full"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={handleKeyDown}
+        disabled={isLoading}
+      />
+      <button
+        className="btn btn-primary ml-2"
+        onClick={handleSubmit}
+        disabled={!message.trim() || isLoading}
+      >
+        {isLoading ? 'Loading...' : 'Send'}
+      </button>
+    </div>
   );
-}
+};

@@ -1,39 +1,27 @@
+
 import React, { useState, useRef, useEffect } from "react";
-import { ChatMessage } from "@/types";
-import { ChatInput } from "@/components/chat-input/ChatInput";
-import { ChatMessageComponent } from "@/components/ChatMessage";
+import { ChatInput } from "./chat-input";
+import { ChatMessage } from "./ChatMessage";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
-import { FileUploadButton } from "@/components/chat-input/FileUploadButton";
-import { initialMessages } from "@/data/initialMessages";
-import { useCompletion } from "ai/react";
-import { useUser } from "@clerk/clerk-react";
-import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/ModeToggle";
+import { FileUploadButton } from "./chat-input/FileUploadButton";
 import { ApiSettingsDialog } from "@/components/ApiSettingsDialog";
 
+// Create initial messages template
+const initialMessages = [
+  {
+    type: "agent",
+    content: "Hello! I'm DevManager, your AI project manager. How can I help you today?",
+    agentType: AgentType.MANAGER
+  }
+];
+
 export function ChatView() {
-  const { user } = useUser();
-  const { messages, addMessage, clearMessages } = useChat();
+  const { messages, addMessage } = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isLoadingExample, setIsLoadingExample] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const chatRef = useRef<any>(null); // Ref for ChatProcessor methods
-  
-  const { complete, completion, setInput, input } = useCompletion({
-    api: '/api/chat',
-    // Pass the messages to the API route
-    initialInput: '',
-    onFinish: (completion) => {
-      // This will be called when the API route returns
-      addMessage({ type: 'agent', content: completion, agentType: AgentType.MANAGER });
-    },
-    onError: (error) => {
-      // Handle errors
-      console.error("Completion error: ", error);
-      addMessage({ type: 'agent', content: "Sorry, I had trouble processing that. Please try again.", agentType: AgentType.MANAGER });
-    },
-  });
   
   useEffect(() => {
     // Simulate loading initial messages
@@ -63,19 +51,20 @@ export function ChatView() {
     if (!message.trim()) return;
     
     addMessage({ type: "user", content: message });
-    setInput(''); // Clear the input field
     
     if (chatRef.current && chatRef.current.processUserMessage) {
       await chatRef.current.processUserMessage(message);
     } else {
       console.warn("Chat processor not ready yet.");
-      addMessage({ type: 'agent', content: "Chat processor not ready. Please wait and try again.", agentType: AgentType.MANAGER });
+      addMessage({ type: 'agent', content: "Chat processor not ready. Please try again.", agentType: AgentType.MANAGER });
     }
   };
   
   const handleStartWithExample = async () => {
     setIsLoadingExample(true);
-    clearMessages();
+    
+    // Simply add new messages without trying to clear
+    addMessage({ type: "user", content: "Let's start with an example project" });
     
     const welcomeWithExample = `Okay, let's start with an example project:
 
@@ -107,14 +96,12 @@ Develop a fully functional e-commerce platform to sell products online.
 Let me know if you'd like to proceed with this example!
 `;
     
-    addMessage({ type: "user", content: "Let's start with an example project" });
-    
     // Simulate agent response with a delay
     setTimeout(() => {
       addMessage({
         type: "agent",
         content: welcomeWithExample,
-        agentType: AgentType.MANAGER,  // Use enum instead of string
+        agentType: AgentType.MANAGER,
       });
       setIsLoadingExample(false);
     }, 1500);
@@ -140,7 +127,7 @@ Let me know if you'd like to proceed with this example!
         addMessage({
           type: "agent",
           content: "I've received and parsed your requirements document. Let me analyze it...",
-          agentType: AgentType.MANAGER,  // Use enum instead of string
+          agentType: AgentType.MANAGER,
         });
       }, 1500);
       
@@ -159,7 +146,7 @@ Let me know if you'd like to proceed with this example!
     <div className="flex flex-col h-screen">
       <div className="navbar bg-base-100 border-b-2">
         <div className="navbar-start">
-          <ModeToggle />
+          <div className="btn btn-ghost">🌙 / ☀️</div>
         </div>
         <div className="navbar-center">
           <a className="btn btn-ghost normal-case text-xl" href="/">
@@ -175,7 +162,7 @@ Let me know if you'd like to proceed with this example!
           <div className="text-center text-gray-500">Loading initial messages...</div>
         ) : (
           messages.map((message, index) => (
-            <ChatMessageComponent key={index} message={message} />
+            <ChatMessage key={index} message={message} />
           ))
         )}
         {isLoadingExample && (
@@ -196,7 +183,7 @@ Let me know if you'd like to proceed with this example!
         </div>
       </div>
     
-    {/* Hidden ChatProcessor component */}
+      {/* Hidden ChatProcessor component */}
       <div style={{ display: 'none' }}>
         {/* @ts-expect-error */}
         <ChatProcessor chatRef={chatRef} />
