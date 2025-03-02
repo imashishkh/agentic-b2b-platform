@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { MessageInput } from "./MessageInput";
 import { SendButton } from "./SendButton";
 import { FileUploadButton } from "./FileUploadButton";
@@ -79,7 +79,7 @@ export function ChatInput({
           disabled={isDisabled || isUploading}
         />
         
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <FileUploadButton 
             onChange={() => {
               if (handleFileUpload) {
@@ -92,7 +92,6 @@ export function ChatInput({
         </div>
       </div>
       
-      {/* Add Example button within the chat input component */}
       <div className="flex justify-end mt-2">
         <Button
           size="sm"

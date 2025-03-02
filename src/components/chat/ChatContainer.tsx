@@ -2,10 +2,12 @@
 import React, { useRef, useState } from "react";
 import ChatView from "@/components/ChatView";
 import { useChat } from "@/contexts/ChatContext";
-import { ChatFooter } from "@/components/chat/ChatFooter";
 import { toast } from "sonner";
 import { ChatProcessor } from "@/components/ChatProcessor";
 import { AgentType } from "@/agents/AgentTypes";
+import { ChatInput } from "@/components/chat-input";
+import { Trash2, Download, HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function ChatContainer() {
   const { 
@@ -16,7 +18,11 @@ export function ChatContainer() {
     isLoadingExample,
     setIsAgentTyping
   } = useChat();
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+  const [files, setFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const chatRef = useRef<{ processUserMessage: (message: string, files?: File[]) => void }>(null);
   
@@ -32,11 +38,11 @@ export function ChatContainer() {
       
       if (chatRef.current) {
         // Process the message using our ChatProcessor
-        chatRef.current.processUserMessage(message, uploadedFiles.length > 0 ? uploadedFiles : undefined);
+        chatRef.current.processUserMessage(message, files.length > 0 ? files : undefined);
         
-        if (uploadedFiles.length > 0) {
-          toast.success(`Processing message with ${uploadedFiles.length} file(s)`);
-          setUploadedFiles([]);
+        if (files.length > 0) {
+          toast.success(`Processing message with ${files.length} file(s)`);
+          setFiles([]);
         }
       } else {
         console.error("ChatProcessor reference is not available");
@@ -58,11 +64,35 @@ export function ChatContainer() {
     }
   };
   
+  const handleClearFiles = () => {
+    setFiles([]);
+  };
+
+  const handleFileInputChange = (selectedFiles: File[]) => {
+    if (selectedFiles.length > 0) {
+      setFiles(selectedFiles);
+      setIsUploading(true);
+      
+      // Simulate file upload progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setUploadProgress(progress);
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            handleFileUpload(selectedFiles);
+            setIsUploading(false);
+            setUploadProgress(0);
+          }, 500);
+        }
+      }, 200);
+    }
+  };
+  
   const handleFileUpload = (files: File[]) => {
     if (files.length > 0) {
-      setUploadedFiles(files);
-      
-      // Add a user message about the file upload
       addMessage({
         type: "user",
         content: `Uploaded ${files.map(f => f.name).join(", ")}`,
@@ -124,20 +154,95 @@ export function ChatContainer() {
       });
     }, 300);
   };
+
+  const handleDownload = () => {
+    toast.info("Downloading chat history");
+    
+    // Create a text file with current conversation
+    const text = "Chat Export\n\n" + new Date().toLocaleString();
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `chat-export-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  
+  const handleHelp = () => {
+    toast.info("Opening help dialog", {
+      description: "This feature is still in development."
+    });
+  };
   
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-hidden">
         <ChatView />
       </div>
-      <ChatFooter 
-        onSendMessage={handleSendMessage}
-        handleFileUpload={handleFileUpload}
-        handleStartWithExample={handleStartWithExample}
-        handleClearChat={handleClearChat}
-        isLoadingExample={isLoadingExample}
-        isAgentTyping={isAgentTyping}
-      />
+      
+      <div className="border-t bg-white py-2">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex justify-between mb-1.5">
+            <div className="flex items-center gap-1">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleClearChat}
+                className="text-gray-500 hover:text-red-500 h-8 w-8 p-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              
+              <Button 
+                size="sm" 
+                variant="ghost"
+                className="text-gray-500 hover:text-blue-500 h-8 w-8 p-0"
+                onClick={handleDownload}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              
+              <Button 
+                size="sm" 
+                variant="ghost"
+                className="text-gray-500 hover:text-blue-500 h-8 w-8 p-0"
+                onClick={handleHelp}
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <ChatInput 
+            onSendMessage={handleSendMessage}
+            files={files}
+            onClearFiles={handleClearFiles}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            handleFileUpload={() => {
+              if (fileInputRef.current) {
+                fileInputRef.current.click();
+              }
+            }}
+            isDisabled={isLoadingExample || isAgentTyping}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                handleFileInputChange(Array.from(e.target.files));
+              }
+            }}
+            className="hidden"
+            multiple
+            accept=".md,.markdown,.txt,.pdf"
+          />
+        </div>
+      </div>
       <ChatProcessor chatRef={chatRef} />
     </div>
   );
