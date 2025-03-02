@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { ChatMessageProps } from "@/components/ChatMessage";
 import { AgentType } from "@/agents/AgentTypes";
@@ -89,7 +90,7 @@ interface ChatContextType {
   
   // Methods
   addMessage: (message: ChatMessageProps) => void;  // Add a new message to the chat
-  clearMessages: () => void;                  // Clear all messages (ADDED THIS)
+  clearMessages: () => void;                  // Clear all messages
   setIsAgentTyping: (isTyping: boolean) => void;    // Update typing indicator
   setIsFetchingResponse: (isFetching: boolean) => void;  // Update fetching status
   setProjectPhases: (phases: any[]) => void;        // Update project structure
@@ -129,7 +130,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [isRequestingKnowledge, setIsRequestingKnowledge] = useState(false);
   const [architectureProposals, setArchitectureProposals] = useState<ArchitectureProposal[]>([]);
   const [testingStrategies, setTestingStrategies] = useState<TestingStrategy[]>([]);
-  const [gitHubRepository, setGitHubRepository] = useState<GitHubRepository | null>(null);
+  const [gitHubRepository, setGitHubRepo] = useState<GitHubRepository | null>(null);
 
   /**
    * Add a new message to the chat history
@@ -213,7 +214,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
    * @param repo - The GitHub repository object to set
    */
   const setGitHubRepository = (repo: GitHubRepository | null) => {
-    setGitHubRepository(repo);
+    setGitHubRepo(repo);
   };
 
   // Provide the chat state and functions to all child components

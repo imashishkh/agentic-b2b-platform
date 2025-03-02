@@ -1,14 +1,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { ChatInput } from "./chat-input";
-import { ChatMessage } from "./ChatMessage";
+import { ChatMessage, ChatMessageProps } from "./ChatMessage";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
 import { FileUploadButton } from "./chat-input/FileUploadButton";
 import { ApiSettingsDialog } from "@/components/ApiSettingsDialog";
+import { ChatProcessor } from "./ChatProcessor";
 
 // Create initial messages template
-const initialMessages = [
+const initialMessages: ChatMessageProps[] = [
   {
     type: "agent",
     content: "Hello! I'm DevManager, your AI project manager. How can I help you today?",
@@ -17,7 +18,7 @@ const initialMessages = [
 ];
 
 export function ChatView() {
-  const { messages, addMessage } = useChat();
+  const { messages, addMessage, clearMessages } = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isLoadingExample, setIsLoadingExample] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -56,14 +57,19 @@ export function ChatView() {
       await chatRef.current.processUserMessage(message);
     } else {
       console.warn("Chat processor not ready yet.");
-      addMessage({ type: 'agent', content: "Chat processor not ready. Please try again.", agentType: AgentType.MANAGER });
+      addMessage({ 
+        type: 'agent', 
+        content: "Chat processor not ready. Please try again.", 
+        agentType: AgentType.MANAGER 
+      });
     }
   };
   
   const handleStartWithExample = async () => {
     setIsLoadingExample(true);
+    clearMessages(); // Clear existing messages
     
-    // Simply add new messages without trying to clear
+    // Add user message
     addMessage({ type: "user", content: "Let's start with an example project" });
     
     const welcomeWithExample = `Okay, let's start with an example project:
@@ -162,7 +168,7 @@ Let me know if you'd like to proceed with this example!
           <div className="text-center text-gray-500">Loading initial messages...</div>
         ) : (
           messages.map((message, index) => (
-            <ChatMessage key={index} message={message} />
+            <ChatMessage key={index} {...message} />
           ))
         )}
         {isLoadingExample && (
@@ -185,7 +191,6 @@ Let me know if you'd like to proceed with this example!
     
       {/* Hidden ChatProcessor component */}
       <div style={{ display: 'none' }}>
-        {/* @ts-expect-error */}
         <ChatProcessor chatRef={chatRef} />
       </div>
     </div>

@@ -46,7 +46,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       const generatedResponse = await agent.generateResponse(message, []);
       
       if (isMounted.current) {
-        // Add agent response to chat
+        // Add agent response to chat with correct type
         addMessage({
           type: "agent",
           content: generatedResponse,
@@ -58,7 +58,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       toast.error("Failed to process message. Please try again.");
       
       if (isMounted.current) {
-        // Add error message
+        // Add error message with correct type
         addMessage({
           type: "agent",
           content: "I'm sorry, I encountered an error while processing your message. Please try again.",

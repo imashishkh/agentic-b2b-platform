@@ -4,13 +4,18 @@ import React, { useState, KeyboardEvent } from 'react';
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
+  isDisabled?: boolean; // Added isDisabled prop
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading = false }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({ 
+  onSendMessage, 
+  isLoading = false,
+  isDisabled = false 
+}) => {
   const [message, setMessage] = useState('');
 
   const handleSubmit = () => {
-    if (message.trim() && !isLoading) {
+    if (message.trim() && !isLoading && !isDisabled) {
       onSendMessage(message);
       setMessage('');
     }
@@ -32,12 +37,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading =
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
-        disabled={isLoading}
+        disabled={isLoading || isDisabled}
       />
       <button
         className="btn btn-primary ml-2"
         onClick={handleSubmit}
-        disabled={!message.trim() || isLoading}
+        disabled={!message.trim() || isLoading || isDisabled}
       >
         {isLoading ? 'Loading...' : 'Send'}
       </button>
