@@ -36,17 +36,21 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     if (messages.length === 0 && !initialMessageSent.current) {
       initialMessageSent.current = true;
       
+      // Add typing indicator first
+      setIsAgentTyping(true);
+      
       setTimeout(() => {
         if (isMounted.current) {
+          setIsAgentTyping(false);
           addMessage({
             type: "agent",
             content: "Hello! I'm DevManager, your AI project manager. How can I help you today?",
             agentType: AgentType.MANAGER,
           });
         }
-      }, 500);
+      }, 1500);
     }
-  }, [chatRef, addMessage, messages]);
+  }, [chatRef, addMessage, messages, setIsAgentTyping]);
 
   const processMarkdownFile = async (file: File) => {
     return new Promise<string>((resolve, reject) => {
@@ -84,6 +88,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         const file = files[0];
         if (file.name.endsWith('.md') || file.type === 'text/markdown') {
           try {
+            // Show typing indicator before processing
+            setIsAgentTyping(true);
+            
+            // Process the file
             fileContent = await processMarkdownFile(file);
             enhancedMessage = `${message}\n\nHere is the content of the file:\n\n${fileContent}`;
             
@@ -95,6 +103,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             });
           } catch (error) {
             console.error("Error processing markdown file:", error);
+            setIsAgentTyping(false);
             addMessage({
               type: "agent",
               content: "I had trouble reading your markdown file. Please try uploading it again.",
@@ -117,9 +126,15 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       const generatedResponse = await agent.generateResponse(enhancedMessage, files || []);
       
       if (isMounted.current) {
-        // For Markdown files, provide a more detailed response
-        if (fileContent) {
-          const detailedResponse = `I've analyzed your requirements document. Here's my understanding:
+        // Simulate typing delay for more natural interaction
+        const typingDelay = fileContent ? 2000 : 1000; // Longer delay for file processing
+        
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          
+          // For Markdown files, provide a more detailed response
+          if (fileContent) {
+            const detailedResponse = `I've analyzed your requirements document. Here's my understanding:
 
 ${generatedResponse}
 
@@ -128,38 +143,38 @@ Would you like me to:
 2. Suggest a technical stack for implementation?
 3. Estimate timeline and resources needed?
 4. Something else?`;
+            
+            // Add agent response to chat with correct type
+            addMessage({
+              type: "agent",
+              content: detailedResponse,
+              agentType: agentType,
+            });
+          } else {
+            // Add standard agent response to chat
+            addMessage({
+              type: "agent",
+              content: generatedResponse,
+              agentType: agentType,
+            });
+          }
           
-          // Add agent response to chat with correct type
-          addMessage({
-            type: "agent",
-            content: detailedResponse,
-            agentType: agentType,
-          });
-        } else {
-          // Add standard agent response to chat
-          addMessage({
-            type: "agent",
-            content: generatedResponse,
-            agentType: agentType,
-          });
-        }
+          setIsProcessing(false);
+        }, typingDelay);
       }
     } catch (error) {
       console.error("Error processing message:", error);
       toast.error("Failed to process message. Please try again.");
       
       if (isMounted.current) {
+        setIsAgentTyping(false);
         // Add error message with correct type
         addMessage({
           type: "agent",
           content: "I'm sorry, I encountered an error while processing your message. Please try again.",
           agentType: AgentType.MANAGER,
         });
-      }
-    } finally {
-      if (isMounted.current) {
         setIsProcessing(false);
-        setIsAgentTyping(false);
       }
     }
   };

@@ -1,44 +1,89 @@
-import React from "react";
+
+import React, { useState } from "react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { KnowledgeResourcesList } from "./knowledge/KnowledgeResourcesList";
+import { Card } from "./ui/card";
+import { ExternalLink, Plus } from "lucide-react";
 import { useChat } from "@/contexts/ChatContext";
 import { KnowledgeBaseResource } from "@/contexts/types";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 
-export function KnowledgeBasePanel() {
-  const { knowledgeBase } = useChat();
-
-  if (knowledgeBase.length === 0) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        <p>No knowledge resources added yet.</p>
-        <p className="text-sm mt-2">Add documentation links to enhance your project.</p>
-      </div>
-    );
-  }
-
+export default function KnowledgeBasePanel() {
+  const { addKnowledgeResource } = useChat();
+  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("");
+  
+  const handleAddResource = () => {
+    if (!url.trim() || !title.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    
+    if (!url.startsWith("http")) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    
+    const newResource: KnowledgeBaseResource = {
+      id: Date.now().toString(),
+      url,
+      title,
+      category: "Technology",
+      description: "Added by user",
+      isIndexed: true,
+      dateAdded: new Date().toISOString(),
+    };
+    
+    addKnowledgeResource(newResource);
+    toast.success("Resource added to knowledge base");
+    
+    // Reset form
+    setUrl("");
+    setTitle("");
+  };
+  
   return (
-    <div className="space-y-3 p-2">
-      {knowledgeBase.map((resource) => (
-        <Card key={resource.id} className="p-3">
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold">Knowledge Base</h2>
+        <p className="text-sm text-gray-500">Add documentation links to enhance your project</p>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto">
+        <KnowledgeResourcesList />
+      </div>
+      
+      <Card className="m-3 p-3">
+        <h3 className="text-sm font-medium mb-2">Add Resource</h3>
+        <div className="space-y-2">
+          <Input
+            placeholder="Documentation URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+          <Input
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
           <div className="flex justify-between">
-            <div>
-              <h4 className="font-medium">{resource.title}</h4>
-              <p className="text-sm text-gray-600">{resource.description}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge>{resource.category}</Badge>
-                {resource.isIndexed && (
-                  <Badge variant="outline">Indexed</Badge>
-                )}
-                {resource.priority && (
-                  <Badge>{resource.priority}</Badge>
-                )}
-              </div>
-            </div>
-            <ExternalLink href={resource.url} target="_blank" rel="noopener noreferrer" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open("https://docs.lovable.dev", "_blank")}
+              className="text-xs"
+            >
+              <ExternalLink className="h-3 w-3 mr-1" />
+              Docs
+            </Button>
+            <Button size="sm" onClick={handleAddResource}>
+              <Plus className="h-3 w-3 mr-1" />
+              Add
+            </Button>
           </div>
-        </Card>
-      ))}
+        </div>
+      </Card>
     </div>
   );
 }

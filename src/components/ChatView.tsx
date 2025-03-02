@@ -8,10 +8,10 @@ import { EnhancedProjectPanel } from "./project/EnhancedProjectPanel";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatMessages } from "./chat/ChatMessages";
 import { ChatFooter } from "./chat/ChatFooter";
+import { toast } from "sonner";
 
 export function ChatView() {
-  const { messages, addMessage, clearMessages, isAgentTyping } = useChat();
-  const [isLoadingExample, setIsLoadingExample] = useState(false);
+  const { messages, addMessage, clearMessages, isAgentTyping, setIsLoadingExample } = useChat();
   const [showApiSettings, setShowApiSettings] = useState(false);
   const [showProjectPanel, setShowProjectPanel] = useState(false);
   const chatRef = useRef<any>(null);
@@ -67,14 +67,18 @@ Develop a fully functional e-commerce platform to sell products online.
 Let me know if you'd like to proceed with this example!
 `;
     
+    // Show typing animation first
+    setIsAgentTyping(true);
+    
     setTimeout(() => {
+      setIsAgentTyping(false);
       addMessage({
         type: "agent",
         content: welcomeWithExample,
         agentType: AgentType.MANAGER,
       });
       setIsLoadingExample(false);
-    }, 1500);
+    }, 2500);
   };
   
   const handleFileUpload = (files: File[]) => {
@@ -85,29 +89,19 @@ Let me know if you'd like to proceed with this example!
     
     const file = files[0]; // Take the first file
     
-    const reader = new FileReader();
+    // Add user message about the upload
+    addMessage({ 
+      type: "user", 
+      content: `I've uploaded a requirements document: ${file.name}` 
+    });
     
-    reader.onload = (e) => {
-      const fileContent = e.target?.result as string;
-      
-      addMessage({ type: "user", content: `I've uploaded a requirements document: ${file.name}` });
-      
-      setTimeout(() => {
-        addMessage({
-          type: "agent",
-          content: "I've received and parsed your requirements document. Let me analyze it...",
-          agentType: AgentType.MANAGER,
-        });
-      }, 1500);
-      
-      console.log("File content:", fileContent);
-    };
-    
-    reader.onerror = (error) => {
-      console.error("Error reading file:", error);
-    };
-    
-    reader.readAsText(file);
+    // Process the file with the chat processor
+    if (chatRef.current && chatRef.current.processUserMessage) {
+      chatRef.current.processUserMessage(`I'm uploading a requirements document for you to analyze: ${file.name}`, [file]);
+    } else {
+      console.warn("Chat processor not ready yet.");
+      toast.error("Chat processor not ready. Please try again.");
+    }
   };
 
   const handleClearChat = () => {
@@ -127,7 +121,7 @@ Let me know if you'd like to proceed with this example!
       <div className="flex flex-1 overflow-hidden">
         <ChatMessages 
           messages={messages}
-          isLoadingExample={isLoadingExample}
+          isLoadingExample={messages.length === 0}
           isAgentTyping={isAgentTyping}
         />
         
@@ -143,7 +137,7 @@ Let me know if you'd like to proceed with this example!
         handleFileUpload={handleFileUpload}
         handleStartWithExample={handleStartWithExample}
         handleClearChat={handleClearChat}
-        isLoadingExample={isLoadingExample}
+        isLoadingExample={messages.length === 0}
         isAgentTyping={isAgentTyping}
       />
       

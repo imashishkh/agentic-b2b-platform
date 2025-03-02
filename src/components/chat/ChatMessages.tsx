@@ -1,6 +1,8 @@
 
 import React, { useRef, useEffect } from "react";
 import { ChatMessage, ChatMessageProps } from "@/components/ChatMessage";
+import { AgentTypingAnimation } from "./AgentTypingAnimation";
+import { AgentType } from "@/agents/AgentTypes";
 
 interface ChatMessagesProps {
   messages: ChatMessageProps[];
@@ -19,7 +21,7 @@ export function ChatMessages({
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isAgentTyping]);
 
   return (
     <div 
@@ -34,15 +36,7 @@ export function ChatMessages({
           <div className="animate-pulse">Loading example project...</div>
         </div>
       )}
-      {isAgentTyping && (
-        <div className="flex items-start gap-3 mb-4 animate-pulse">
-          <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
-          <div className="flex flex-col gap-1 max-w-[80%]">
-            <div className="h-4 w-24 bg-gray-300 rounded"></div>
-            <div className="h-20 w-64 bg-gray-200 rounded-md"></div>
-          </div>
-        </div>
-      )}
+      {isAgentTyping && <AgentTypingAnimation agentType={AgentType.MANAGER} />}
     </div>
   );
 }
