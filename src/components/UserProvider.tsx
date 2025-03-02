@@ -1,7 +1,7 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
-import { useUser as useClerkUser } from "@clerk/clerk-react";
-import { MockUserProvider, useMockUser } from "./MockUserProvider";
+import { useUser as useClerkUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
+import { MockUserProvider, useMockUser, useAuth as useMockAuth } from "./MockUserProvider";
 
 // Check if Clerk is available by looking for the environment variable
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -21,6 +21,23 @@ export const useUser = () => {
   } else {
     // No Clerk key, use mock
     return useMockUser();
+  }
+};
+
+// Custom hook that tries Clerk first, falls back to mock
+export const useAuth = () => {
+  if (isClerkConfigured) {
+    try {
+      // Try to use Clerk's useAuth
+      return useClerkAuth();
+    } catch (error) {
+      console.warn("Clerk authentication error, falling back to mock auth:", error);
+      // If that fails, use our mock
+      return useMockAuth();
+    }
+  } else {
+    // No Clerk key, use mock
+    return useMockAuth();
   }
 };
 

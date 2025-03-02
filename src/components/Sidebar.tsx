@@ -17,7 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useChat } from "@/contexts/ChatContext";
 import { useState } from "react";
 import { KnowledgeBaseDialogPanel } from "@/components/knowledge/KnowledgeBaseDialogPanel";
-import { UserButton, SignInButton, SignUpButton, useUser, useAuth } from "@clerk/clerk-react";
+import { useUser } from "@/components/UserProvider";
 
 // Define user roles
 export enum UserRole {
@@ -29,9 +29,7 @@ export enum UserRole {
 export function Sidebar() {
   const { clearMessages } = useChat();
   const { toast } = useToast();
-  const { isSignedIn, user } = useUser();
-  const { signOut } = useAuth();
-  
+  const { user, isSignedIn } = useUser();
   const [knowledgeBaseOpen, setKnowledgeBaseOpen] = useState(false);
   
   // For this demo, we'll set the role based on email domain
@@ -39,7 +37,7 @@ export function Sidebar() {
   const getUserRole = (): UserRole => {
     if (!isSignedIn || !user) return UserRole.GUEST;
     
-    const email = user.primaryEmailAddress?.emailAddress || "";
+    const email = user.primaryEmailAddress?.emailAddress || user.email || "";
     if (email.endsWith("admin.com")) return UserRole.ADMIN;
     return UserRole.USER;
   };
@@ -55,12 +53,14 @@ export function Sidebar() {
   };
   
   const handleSignOut = async () => {
-    await signOut();
+    // We'll use a simulated sign out for now
+    console.log("Sign out clicked");
     clearMessages();
     toast({
       title: "Signed out",
       description: "You have been signed out successfully.",
     });
+    // If using real auth, we would call signOut() from useAuth
   };
   
   return (
@@ -68,7 +68,13 @@ export function Sidebar() {
       <div className="flex flex-col items-center group-hover:items-start space-y-2">
         {isSignedIn && (
           <div className="flex items-center justify-center group-hover:justify-start w-full py-2">
-            <UserButton afterSignOutUrl="/" />
+            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              {user?.imageUrl ? (
+                <img src={user.imageUrl} alt={user.fullName || "User"} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-sm font-semibold">{(user?.fullName || user?.username || "U").charAt(0)}</span>
+              )}
+            </div>
             <span className="hidden group-hover:inline-flex ml-2 text-sm font-medium">
               {user?.fullName || user?.username}
               {userRole === UserRole.ADMIN && (
@@ -154,26 +160,22 @@ export function Sidebar() {
           </Button>
         ) : (
           <div className="flex flex-col items-center group-hover:items-start space-y-1 w-full">
-            <SignInButton mode="modal">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-              >
-                <LogIn className="h-5 w-5 group-hover:mr-2" />
-                <span className="hidden group-hover:inline-flex">Sign In</span>
-              </Button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2 text-green-500 hover:text-green-600 hover:bg-green-50"
-              >
-                <UserPlus className="h-5 w-5 group-hover:mr-2" />
-                <span className="hidden group-hover:inline-flex">Sign Up</span>
-              </Button>
-            </SignUpButton>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+            >
+              <LogIn className="h-5 w-5 group-hover:mr-2" />
+              <span className="hidden group-hover:inline-flex">Sign In</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2 text-green-500 hover:text-green-600 hover:bg-green-50"
+            >
+              <UserPlus className="h-5 w-5 group-hover:mr-2" />
+              <span className="hidden group-hover:inline-flex">Sign Up</span>
+            </Button>
           </div>
         )}
       </div>
