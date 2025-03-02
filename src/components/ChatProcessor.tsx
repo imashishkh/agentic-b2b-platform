@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
@@ -5,6 +6,7 @@ import * as AgentFactory from "@/agents/AgentFactory";
 import { toast } from "sonner";
 import { ManagerAgent } from "@/agents/ManagerAgent";
 import { extractTasksWithDependencies, generateDependencyGraph } from "@/utils/markdownParser";
+import { KnowledgeResource } from "@/contexts/types";
 
 export interface ChatProcessorProps {
   chatRef: React.MutableRefObject<any>;
@@ -68,25 +70,21 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
                 {
                   label: "Upload requirements document",
                   message: "I'd like to upload a project requirements document",
-                  icon: "file-code",
                   description: "Upload a markdown file with your project requirements"
                 },
                 {
                   label: "Start with example project",
                   message: "I want to start with an example e-commerce project",
-                  icon: "layout",
                   description: "Use a pre-configured e-commerce project template"
                 },
                 {
                   label: "Create knowledge base",
                   message: "Let's set up a knowledge base for the project",
-                  icon: "book-open",
                   description: "Add documentation and resources to inform development"
                 },
                 {
                   label: "Describe project manually",
                   message: "I want to describe my project requirements manually",
-                  icon: "users",
                   description: "Explain your project requirements in chat"
                 }
               ]
@@ -128,25 +126,21 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       {
         label: "Architecture Planning",
         message: "I'd like to start planning the system architecture for this project",
-        icon: "layout",
         description: "Begin designing the technical architecture for your project"
       },
       {
         label: "Enhance Knowledge Base",
         message: "Let's add resources to the knowledge base for this project",
-        icon: "book-open",
         description: "Add technical documentation and resources to inform development"
       },
       {
         label: "Testing Strategy",
         message: "Let's develop a testing strategy for the project",
-        icon: "check-circle",
         description: "Create a comprehensive testing approach for quality assurance"
       },
       {
         label: "Prioritize Tasks",
         message: "Help me prioritize the tasks we've identified",
-        icon: "list-ordered",
         description: "Organize tasks by importance and dependencies"
       }
     ];
@@ -235,25 +229,21 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
               {
                 label: "Customize product catalog",
                 message: "I'd like to customize the product catalog structure",
-                icon: "database",
                 description: "Define product categories and attributes"
               },
               {
                 label: "Payment integration",
                 message: "Let's configure the payment processing system",
-                icon: "shield",
                 description: "Set up secure payment processing"
               },
               {
                 label: "UI customization",
                 message: "I want to customize the UI design",
-                icon: "layout",
                 description: "Personalize the look and feel of the application"
               },
               {
                 label: "Deployment setup",
                 message: "Help me set up deployment for this project",
-                icon: "code",
                 description: "Configure CI/CD and hosting"
               }
             ]
@@ -539,8 +529,19 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       
       const agent = AgentFactory.createAgent(agentType);
       
-      const generatedResponse = knowledgeBase && knowledgeBase.length > 0 
-        ? await agent.generateKnowledgeEnhancedResponse(enhancedMessage, [], knowledgeBase)
+      // Extract knowledge resources from knowledgeBase if it exists
+      let knowledgeResources: KnowledgeResource[] = [];
+      if (knowledgeBase) {
+        // Flatten the knowledgeBase object into an array of KnowledgeResource
+        Object.values(knowledgeBase).forEach(categoryResources => {
+          if (Array.isArray(categoryResources)) {
+            knowledgeResources = [...knowledgeResources, ...categoryResources];
+          }
+        });
+      }
+      
+      const generatedResponse = knowledgeResources.length > 0 
+        ? await agent.generateKnowledgeEnhancedResponse(enhancedMessage, [], knowledgeResources)
         : await agent.generateResponse(enhancedMessage, []);
       
       if (isMounted.current) {

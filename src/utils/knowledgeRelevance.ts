@@ -1,15 +1,15 @@
 
-import { KnowledgeBaseResource } from "@/contexts/types";
+import { KnowledgeResource } from "@/contexts/types";
 import { calculateRelevanceScore } from "./resourceExtractor";
 
 /**
  * Find the most relevant resources for a given query or context
  */
 export const findRelevantResources = (
-  knowledgeBase: KnowledgeBaseResource[],
+  knowledgeBase: KnowledgeResource[],
   query: string,
   limit: number = 5
-): KnowledgeBaseResource[] => {
+): KnowledgeResource[] => {
   if (!query || !knowledgeBase.length) return [];
   
   // Calculate scores for all resources
@@ -29,8 +29,8 @@ export const findRelevantResources = (
  * Update resource metadata when it's accessed or used
  */
 export const trackResourceUsage = (
-  resource: KnowledgeBaseResource
-): KnowledgeBaseResource => {
+  resource: KnowledgeResource
+): KnowledgeResource => {
   return {
     ...resource,
     lastAccessed: new Date().toISOString(),
@@ -42,7 +42,7 @@ export const trackResourceUsage = (
  * Generate a knowledge context from relevant resources
  */
 export const generateKnowledgeContext = (
-  relevantResources: KnowledgeBaseResource[]
+  relevantResources: KnowledgeResource[]
 ): string => {
   if (!relevantResources.length) return "";
   
@@ -61,7 +61,7 @@ Reference: ${resource.url}
  * Analyzes resource content for relevance to architecture
  */
 export const extractArchitectureInsights = (
-  resources: KnowledgeBaseResource[]
+  resources: KnowledgeResource[]
 ): {
   patterns: string[];
   technologies: string[];
@@ -137,8 +137,8 @@ export const extractArchitectureInsights = (
  * Find architecture-related resources
  */
 export const findArchitectureResources = (
-  knowledgeBase: KnowledgeBaseResource[]
-): KnowledgeBaseResource[] => {
+  knowledgeBase: KnowledgeResource[]
+): KnowledgeResource[] => {
   if (!knowledgeBase.length) return [];
   
   // Keywords related to architecture

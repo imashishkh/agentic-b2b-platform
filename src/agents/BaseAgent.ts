@@ -1,7 +1,7 @@
 
 import { AgentType } from './AgentTypes';
 import { findRelevantResources, generateKnowledgeContext } from '@/utils/knowledgeRelevance';
-import { KnowledgeBaseResource } from '@/contexts/types';
+import { KnowledgeResource } from '@/contexts/types';
 
 /**
  * Base Agent class that other specialized agents extend
@@ -26,7 +26,7 @@ export class BaseAgent {
   /**
    * Enrich response with knowledge base resources
    */
-  enrichResponseWithKnowledge(message: string, knowledgeBase: KnowledgeBaseResource[]): string {
+  enrichResponseWithKnowledge(message: string, knowledgeBase: KnowledgeResource[]): string {
     // Find relevant resources for this message
     const relevantResources = findRelevantResources(knowledgeBase, message, 3);
     
@@ -55,7 +55,7 @@ export class BaseAgent {
   async generateKnowledgeEnhancedResponse(
     message: string, 
     previousMessages: string[], 
-    knowledgeBase: KnowledgeBaseResource[]
+    knowledgeBase: KnowledgeResource[]
   ): Promise<string> {
     // Get basic response
     const basicResponse = await this.generateResponse(message, previousMessages);

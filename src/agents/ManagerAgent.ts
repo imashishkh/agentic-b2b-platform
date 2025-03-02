@@ -1,7 +1,12 @@
 
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
-import { PerformanceMetric, OptimizationRecommendation, SecurityFinding, ComplianceRequirement } from "@/contexts/types";
+import { 
+  PerformanceMetric, 
+  OptimizationRecommendation, 
+  SecurityFinding, 
+  ComplianceRequirement 
+} from "@/contexts/types";
 
 /**
  * ManagerAgent class - Main agent implementation that coordinates the project

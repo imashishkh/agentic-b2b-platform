@@ -1,3 +1,4 @@
+
 import { AgentType } from "@/agents/AgentTypes";
 
 export interface ChatMessageProps {
@@ -14,6 +15,8 @@ export interface ChatMessageProps {
 export interface SuggestionOption {
   label: string;
   message: string;
+  icon?: string;
+  description?: string;
 }
 
 export interface Suggestion {
@@ -22,11 +25,24 @@ export interface Suggestion {
   options: string[] | SuggestionOption[];
 }
 
+// Alias SuggestionProps to Suggestion for backward compatibility
+export type SuggestionProps = Suggestion;
+
 export interface KnowledgeResource {
   id: string;
   title: string;
   content: string;
+  category?: string;
+  tags?: string[];
+  description?: string;
+  url?: string;
+  lastAccessed?: string;
+  accessCount?: number;
+  calculatedScore?: number;
 }
+
+// Alias KnowledgeBaseResource to KnowledgeResource for backward compatibility
+export type KnowledgeBaseResource = KnowledgeResource;
 
 export interface ProjectTask {
   id: string;
@@ -35,6 +51,32 @@ export interface ProjectTask {
   status: "open" | "in progress" | "completed";
   assignee?: string;
   dueDate?: Date;
+}
+
+// Define the Task type for compatibility
+export type Task = ProjectTask;
+
+export interface ProjectPhase {
+  id: string;
+  name: string;
+  tasks: Task[];
+  startDate?: Date;
+  endDate?: Date;
+  status?: "planned" | "in-progress" | "completed";
+}
+
+export interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  completed: boolean;
+  relatedTasks?: string[];
+}
+
+export interface ProjectTimeline {
+  phases: ProjectPhase[];
+  milestones: Milestone[];
 }
 
 export interface TaskDependency {
@@ -50,12 +92,114 @@ export interface TaskAssignment {
   agentType: AgentType;
 }
 
+export interface ArchitectureProposal {
+  id: string;
+  title: string;
+  description: string;
+  components: {
+    id: string;
+    name: string;
+    type: string;
+    description: string;
+  }[];
+  relationships: {
+    source: string;
+    target: string;
+    type: string;
+  }[];
+  approved?: boolean;
+}
+
+export interface TestingStrategy {
+  id: string;
+  title: string;
+  description: string;
+  testTypes: {
+    type: string;
+    description: string;
+    tools: string[];
+  }[];
+  coverage: {
+    unit: number;
+    integration: number;
+    e2e: number;
+  };
+  approved?: boolean;
+}
+
+export interface GitHubRepository {
+  name: string;
+  url: string;
+  owner: string;
+  branches: {
+    name: string;
+    isDefault: boolean;
+  }[];
+  configured: boolean;
+}
+
+export interface SecurityReview {
+  id: string;
+  title: string;
+  description: string;
+  status: "pending" | "in_progress" | "completed";
+  findings: SecurityFinding[];
+  date: string;
+}
+
+export interface SecurityFinding {
+  id: string;
+  title: string;
+  description: string;
+  severity: "low" | "medium" | "high" | "critical";
+  status: "open" | "fixed" | "false_positive" | "wont_fix";
+  recommendation: string;
+}
+
+export interface ComplianceCheck {
+  id: string;
+  standard: string;
+  requirement: string;
+  status: "passed" | "failed" | "not_applicable";
+  evidence?: string;
+}
+
+export interface ComplianceRequirement {
+  id: string;
+  standard: string;
+  description: string;
+  status: "implemented" | "pending" | "not_applicable";
+}
+
+export interface PerformanceMetric {
+  id: string;
+  name: string;
+  currentValue: number;
+  unit: string;
+  category: "frontend" | "backend" | "database" | "network";
+  description: string;
+  threshold: {
+    warning: number;
+    critical: number;
+  };
+}
+
+export interface OptimizationRecommendation {
+  id: string;
+  title: string;
+  description: string;
+  impact: "low" | "medium" | "high";
+  effort: "low" | "medium" | "high";
+  category: "frontend" | "backend" | "database" | "infrastructure";
+  implemented: boolean;
+}
+
 export interface ChatContextType {
   messages: ChatMessageProps[];
   isAgentTyping: boolean;
   isFetchingResponse: boolean;
   isLoadingExample: boolean;
-  projectPhases: any[];
+  projectPhases: ProjectPhase[];
   hasRequestedFile: boolean;
   currentAgentType: AgentType;
   setCurrentAgentType: (agentType: AgentType) => void;
@@ -71,23 +215,30 @@ export interface ChatContextType {
     [category: string]: KnowledgeResource[];
   };
   projectTasks: ProjectTask[];
-  projectMilestones: any[];
+  projectMilestones: Milestone[];
   taskDependencies: TaskDependency[];
   taskAssignments: TaskAssignment[];
   vulnerabilityAssessments: any[];
   bestPracticesViolations: any[];
   collaborationActive: boolean;
-  contextAwareEnabled?: boolean;  // Add this property
-  currentCollaborators?: AgentType[];  // Add this property
-  projectPlans?: any[];  // Add this property
-  currentPlanId?: string | null;  // Add this property
-  claudeAPIEnabled?: boolean;  // Add this property
+  contextAwareEnabled?: boolean;
+  currentCollaborators?: AgentType[];
+  projectPlans?: any[];
+  currentPlanId?: string | null;
+  claudeAPIEnabled?: boolean;
+  architectureProposals?: ArchitectureProposal[];
+  testingStrategies?: TestingStrategy[];
+  gitHubRepository?: GitHubRepository | null;
+  securityReviews?: SecurityReview[];
+  complianceChecks?: ComplianceCheck[];
+  isRequestingKnowledge?: boolean;
   addMessage: (message: any) => void;
   clearMessages: () => void;
   setIsAgentTyping: (isTyping: boolean) => void;
   setIsFetchingResponse: (isFetching: boolean) => void;
   setIsLoadingExample: (isLoading: boolean) => void;
   addProjectPhase: (phase: any) => void;
+  setProjectPhases?: (phases: ProjectPhase[]) => void; 
   setHasRequestedFile: (hasRequested: boolean) => void;
   addSuggestion: (suggestion: Suggestion) => void;
   removeSuggestion: (title: string) => void;
@@ -108,7 +259,7 @@ export interface ChatContextType {
   addVulnerabilityAssessment: (assessment: any) => void;
   addBestPracticesViolation: (violation: any) => void;
   setCollaborationActive: (isActive: boolean) => void;
-  addProjectPlan?: (plan: any) => void;  // Add these optional methods
+  addProjectPlan?: (plan: any) => void;
   updateProjectPlan?: (id: string, plan: Partial<any>) => void;
   setActivePlan?: (id: string | null) => void;
   storeInAgentMemory?: (key: string, value: any) => void;
@@ -116,4 +267,14 @@ export interface ChatContextType {
   toggleClaudeAPI?: (enabled: boolean) => void;
   setCollaborators?: (collaborators: AgentType[]) => void;
   toggleContextAware?: (enabled: boolean) => void;
+  setIsRequestingKnowledge?: (isRequesting: boolean) => void;
+  addArchitectureProposal?: (proposal: ArchitectureProposal) => void;
+  updateArchitectureProposal?: (id: string, proposal: Partial<ArchitectureProposal>) => void;
+  addTestingStrategy?: (strategy: TestingStrategy) => void;
+  updateTestingStrategy?: (id: string, strategy: Partial<TestingStrategy>) => void;
+  setGitHubRepository?: (repo: GitHubRepository | null) => void;
+  addSecurityReview?: (review: SecurityReview) => void;
+  updateSecurityReview?: (id: string, review: Partial<SecurityReview>) => void;
+  addComplianceCheck?: (check: ComplianceCheck) => void;
+  updateComplianceCheck?: (id: string, check: Partial<ComplianceCheck>) => void;
 }
