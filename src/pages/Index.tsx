@@ -1,7 +1,7 @@
 
 import React, { useRef, useState } from "react";
 import { Chat } from "@/components/Chat";
-import { ChatInput } from "@/components/ChatInput";
+import { ChatInput } from "@/components/chat-input";
 import { ApiSettings } from "@/components/ApiSettings";
 import { Sidebar } from "@/components/Sidebar";
 import { AgentType } from "@/agents/AgentTypes";
