@@ -1,19 +1,39 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ExternalLink, Trash2 } from "lucide-react";
-import { KnowledgeBaseResource } from "@/contexts/types";
+import { KnowledgeBaseResource } from '@/contexts/types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Trash2, Calendar, Tag } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ResourceListProps {
   resources: KnowledgeBaseResource[];
   onDelete: (id: string) => void;
+  onTagClick?: (tag: string) => void;
+  onOpenResource?: (url: string) => void;
 }
 
-export const ResourceList: React.FC<ResourceListProps> = ({ resources, onDelete }) => {
+export const ResourceList: React.FC<ResourceListProps> = ({ 
+  resources, 
+  onDelete,
+  onTagClick,
+  onOpenResource
+}) => {
   if (resources.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No resources found
+      <div className="text-center py-10 text-slate-500">
+        <p>No resources found.</p>
       </div>
     );
   }
@@ -22,49 +42,79 @@ export const ResourceList: React.FC<ResourceListProps> = ({ resources, onDelete 
     <div className="space-y-2">
       {resources.map(resource => (
         <div 
-          key={resource.id}
-          className="p-3 border rounded-md hover:bg-gray-50 flex justify-between items-center"
+          key={resource.id} 
+          className="border rounded-md p-3 hover:bg-slate-50 transition-colors group"
         >
-          <div className="flex-1">
-            <div className="flex items-center">
-              <a 
-                href={resource.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="font-medium text-blue-600 hover:underline flex items-center"
-              >
-                {resource.title}
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </a>
-            </div>
-            <p className="text-sm text-gray-600 mt-1">{resource.description}</p>
-            {resource.tags && resource.tags.length > 0 && (
-              <div className="flex mt-1 flex-wrap">
-                {resource.tags.map(tag => (
-                  <span 
-                    key={tag} 
-                    className="text-xs bg-gray-100 rounded-full px-2 py-0.5 mr-1 mb-1"
-                  >
-                    {tag}
-                  </span>
-                ))}
+          <div className="flex justify-between">
+            <div>
+              <h3 className="font-medium">{resource.title}</h3>
+              <p className="text-sm text-slate-600 mt-1">{resource.description}</p>
+              
+              <div className="flex flex-wrap mt-2 space-x-2">
+                <Badge variant="outline">{resource.category}</Badge>
+                
+                {resource.tags && resource.tags.length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs text-slate-500 flex items-center">
+                      <Tag className="h-3 w-3 mr-1" />
+                    </span>
+                    {resource.tags.map(tag => (
+                      <Badge 
+                        key={tag} 
+                        variant="secondary" 
+                        className="text-xs cursor-pointer hover:bg-secondary/80"
+                        onClick={() => onTagClick?.(tag)}
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-            <div className="flex items-center mt-1 text-xs text-gray-500">
-              <span className="bg-blue-100 text-blue-800 rounded-full px-2 py-0.5 mr-2">
-                {resource.category}
-              </span>
-              <span>Added {new Date(resource.dateAdded).toLocaleDateString()}</span>
+              
+              <div className="flex items-center text-xs text-slate-500 mt-2">
+                <Calendar className="h-3 w-3 mr-1" />
+                Added {formatDistanceToNow(new Date(resource.dateAdded))} ago
+              </div>
+            </div>
+            
+            <div className="flex space-x-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => onOpenResource?.(resource.url)}
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete this resource from your knowledge base.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(resource.id)}>
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(resource.id)}
-            className="h-8 w-8 text-gray-500 hover:text-red-500"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
         </div>
       ))}
     </div>

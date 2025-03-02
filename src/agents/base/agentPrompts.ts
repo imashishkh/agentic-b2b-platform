@@ -1,72 +1,174 @@
 
 /**
- * Utility functions for creating and handling agent prompts
+ * This file contains common prompt templates that can be used by different agents
  */
 
-import { AgentType } from "../AgentTypes";
+// Suggestions for common user actions after initial project analysis
+export const getProjectAnalysisSuggestions = () => {
+  return {
+    title: "Project Next Steps",
+    description: "Choose an action to continue developing your project",
+    options: [
+      {
+        id: "1",
+        label: "Create Architecture Proposal",
+        message: "Create a technical architecture proposal for our e-commerce system",
+        icon: "database"
+      },
+      {
+        id: "2",
+        label: "Develop Testing Strategy",
+        message: "Propose a comprehensive testing strategy for our project",
+        icon: "check-circle"
+      },
+      {
+        id: "3",
+        label: "Show Project Timeline",
+        message: "Show me a visual timeline of our project phases and milestones",
+        icon: "calendar"
+      },
+      {
+        id: "4",
+        label: "Task Visualization",
+        message: "Create a Gantt chart to visualize our project tasks and dependencies",
+        icon: "bar-chart"
+      }
+    ]
+  };
+};
 
-/**
- * Creates a prompt for Claude AI based on the agent's expertise
- */
-export function createPrompt(userMessage: string, projectPhases: any[], expertise: string[], type: AgentType, title: string): string {
-  const expertiseContext = expertise.join(", ");
-  
-  return `
-    As an AI agent specializing in ${expertiseContext} for e-commerce platforms, please respond to the following user message:
-    
-    User: "${userMessage}"
-    
-    ${projectPhases.length > 0 
-      ? `Consider the following project phases while responding: ${JSON.stringify(projectPhases)}` 
-      : "The project structure has not been defined yet."}
-    
-    Focus on providing technical, actionable advice specific to your domain of expertise.
-    Be detailed yet concise. Include code snippets where appropriate.
-    
-    If you need to coordinate with other specialists, include "COORDINATE_WITH:" followed by the specialist type and what you need from them.
-    For example: "COORDINATE_WITH:BACKEND:Need API endpoints for product data before I can implement the frontend components"
-    
-    If you're not confident in your answer or this is outside your expertise, please respond with "ESCALATE:" followed by your best attempt at an answer.
-  `;
-}
+// Suggestions for knowledge base enhancement
+export const getKnowledgeBaseSuggestions = () => {
+  return {
+    title: "Knowledge Base Enhancement",
+    description: "Add resources to your project knowledge base",
+    options: [
+      {
+        id: "1",
+        label: "Add Technical Documentation",
+        message: "I want to add technical documentation to our knowledge base",
+        icon: "book-open"
+      },
+      {
+        id: "2",
+        label: "Add Industry Standards",
+        message: "I want to add industry standards and best practices to our knowledge base",
+        icon: "check-circle"
+      },
+      {
+        id: "3",
+        label: "Add Security Resources",
+        message: "I want to add security guidelines and resources to our knowledge base",
+        icon: "shield"
+      },
+      {
+        id: "4",
+        label: "Add Competitor Analysis",
+        message: "I want to add competitor analysis to our knowledge base",
+        icon: "users"
+      }
+    ]
+  };
+};
 
-/**
- * Creates a search query based on the message and project phases
- */
-export function createSearchQuery(message: string, projectPhases: any[], type: AgentType): string {
-  // Extract the core question or topic from the message
-  const coreQuery = message.replace(/(?:can you|please|i want to|how do i|what is the best way to)\s+/gi, "");
-  
-  // Combine with agent expertise for a targeted search
-  return `${type} ${coreQuery} e-commerce best practices`;
-}
+// Suggestions for architecture development
+export const getArchitectureSuggestions = () => {
+  return {
+    title: "Architecture Development",
+    description: "Refine your project's architecture",
+    options: [
+      {
+        id: "1",
+        label: "Database Schema Design",
+        message: "Create a database schema design for our e-commerce platform",
+        icon: "database"
+      },
+      {
+        id: "2",
+        label: "Frontend Component Structure",
+        message: "Propose a component structure for our frontend application",
+        icon: "layout"
+      },
+      {
+        id: "3",
+        label: "API Design",
+        message: "Design the RESTful API structure for our application",
+        icon: "code"
+      },
+      {
+        id: "4",
+        label: "Authentication Flow",
+        message: "Design an authentication and authorization flow for our application",
+        icon: "shield"
+      }
+    ]
+  };
+};
 
-/**
- * Creates a search query for code examples
- */
-export function createCodeSearchQuery(message: string, type: AgentType): string {
-  return `${type.toLowerCase()} ${message.replace(/can you (show|provide|give) (me )?(an |some )?(example|code|implementation)/i, "")} e-commerce`;
-}
+// Suggestions for project timeline management
+export const getTimelineSuggestions = () => {
+  return {
+    title: "Timeline Management",
+    description: "Manage your project timeline",
+    options: [
+      {
+        id: "1",
+        label: "Add Project Milestone",
+        message: "Add an important milestone to our project timeline",
+        icon: "milestone"
+      },
+      {
+        id: "2",
+        label: "View Critical Path",
+        message: "Show me the critical path of tasks in our project",
+        icon: "bar-chart"
+      },
+      {
+        id: "3",
+        label: "Adjust Task Dependencies",
+        message: "I need to adjust some task dependencies in our project",
+        icon: "clock"
+      },
+      {
+        id: "4",
+        label: "Generate Timeline Report",
+        message: "Generate a report of our current project timeline status",
+        icon: "file-code"
+      }
+    ]
+  };
+};
 
-/**
- * Generates a prompt to request knowledge base resources
- */
-export function generateKnowledgeBasePrompt(): string {
-  return `
-## Knowledge Base Resources Needed
-
-To provide you with the most accurate and relevant guidance for your e-commerce project, I'd like to gather some key resources for our knowledge base:
-
-1. **Technology Stack Documentation**: Please share links to documentation for your preferred frontend framework, backend technology, and database system.
-
-2. **Industry Standards**: Any relevant e-commerce best practices, security standards, or compliance requirements specific to your industry.
-
-3. **Competitor Analysis**: Links to similar e-commerce platforms that you admire or wish to compete with.
-
-4. **Design Guidelines**: Any brand guidelines, design systems, or UX principles you want to follow.
-
-5. **API Documentation**: If you're integrating with any third-party services (payment processors, shipping calculators, etc.), please share their API documentation.
-
-Please share any links you have available. You can provide them now or as we progress through the project. These resources will help all specialists provide more tailored and effective solutions for your specific needs.
-  `;
-}
+// Suggestions for GitHub integration
+export const getGitHubSuggestions = () => {
+  return {
+    title: "GitHub Integration",
+    description: "Set up and manage your GitHub repository",
+    options: [
+      {
+        id: "1",
+        label: "Connect Repository",
+        message: "I want to connect my GitHub repository to this project",
+        icon: "git-branch"
+      },
+      {
+        id: "2",
+        label: "Set Up Branching Strategy",
+        message: "Recommend a branching strategy for our GitHub repository",
+        icon: "git-branch"
+      },
+      {
+        id: "3",
+        label: "Configure CI/CD Pipeline",
+        message: "Help me set up a CI/CD pipeline for our repository",
+        icon: "check-circle"
+      },
+      {
+        id: "4",
+        label: "Create Repository Structure",
+        message: "Create a recommended file and folder structure for our repository",
+        icon: "folder"
+      }
+    ]
+  };
+};

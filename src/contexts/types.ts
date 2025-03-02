@@ -84,6 +84,9 @@ export interface Task {
   startDate?: string;
   endDate?: string;
   subtasks?: Task[];
+  duration?: number; // Duration in days
+  progress?: number; // Progress percentage (0-100)
+  milestone?: boolean; // Flag for milestone tasks
 }
 
 // Project phase interface
@@ -95,6 +98,27 @@ export interface ProjectPhase {
   startDate?: string;
   endDate?: string;
   status: 'planned' | 'in-progress' | 'completed';
+}
+
+// Timeline milestone interface
+export interface Milestone {
+  id: string;
+  title: string;
+  date: string;
+  description: string;
+  completed: boolean;
+  relatedTasks: string[]; // References to task IDs
+}
+
+// Project timeline interface
+export interface ProjectTimeline {
+  id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  milestones: Milestone[];
+  phases: ProjectPhase[];
 }
 
 // Chat context interface

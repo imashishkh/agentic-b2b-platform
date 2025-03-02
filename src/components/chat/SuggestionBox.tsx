@@ -14,7 +14,11 @@ import {
   Shield,
   Code,
   FileCode,
-  Database
+  Database,
+  Milestone,
+  Gantt,
+  Calendar,
+  GitBranch
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +44,10 @@ const IconComponent = ({ name }: { name: string }) => {
     case "code": return <Code className="h-4 w-4" />;
     case "file-code": return <FileCode className="h-4 w-4" />;
     case "database": return <Database className="h-4 w-4" />;
+    case "milestone": return <Milestone className="h-4 w-4" />;
+    case "gantt": return <BarChart className="h-4 w-4" />;
+    case "calendar": return <Calendar className="h-4 w-4" />;
+    case "git-branch": return <GitBranch className="h-4 w-4" />;
     default: return <ArrowRight className="h-4 w-4" />;
   }
 };
@@ -61,14 +69,14 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {options.map((option) => (
           <Button
-            key={option.id}
+            key={option.id || option.label}
             variant="outline"
             size="sm"
             className="justify-start bg-white hover:bg-slate-100 border-slate-200 transition-all"
             onClick={() => handleSelectOption(option.message)}
             title={option.description || option.label}
           >
-            <IconComponent name={option.icon} />
+            <IconComponent name={option.icon || "arrow-right"} />
             <span className="ml-2 truncate">{option.label}</span>
           </Button>
         ))}

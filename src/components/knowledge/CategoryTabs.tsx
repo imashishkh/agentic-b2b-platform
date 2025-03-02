@@ -3,6 +3,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KnowledgeBaseResource } from "@/contexts/types";
 import { ResourceList } from "./ResourceList";
+import { ResourceGrid } from "./ResourceGrid";
 
 interface CategoryTabsProps {
   categories: string[];
@@ -11,6 +12,9 @@ interface CategoryTabsProps {
   activeCategory: string | null;
   setActiveCategory: (category: string | null) => void;
   onDelete: (id: string) => void;
+  view?: 'list' | 'grid';
+  onTagClick?: (tag: string) => void;
+  onOpenResource?: (url: string) => void;
 }
 
 export const CategoryTabs: React.FC<CategoryTabsProps> = ({
@@ -19,7 +23,10 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
   filteredResources,
   activeCategory,
   setActiveCategory,
-  onDelete
+  onDelete,
+  view = 'list',
+  onTagClick,
+  onOpenResource
 }) => {
   return (
     <Tabs defaultValue="all">
@@ -44,15 +51,40 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
       </TabsList>
       
       <TabsContent value="all" className="max-h-[400px] overflow-y-auto">
-        <ResourceList resources={filteredResources} onDelete={onDelete} />
+        {view === 'list' ? (
+          <ResourceList 
+            resources={filteredResources} 
+            onDelete={onDelete} 
+            onTagClick={onTagClick}
+            onOpenResource={onOpenResource}
+          />
+        ) : (
+          <ResourceGrid 
+            resources={filteredResources} 
+            onDelete={onDelete}
+            onTagClick={onTagClick}
+            onOpenResource={onOpenResource}
+          />
+        )}
       </TabsContent>
       
       {categories.map(category => (
         <TabsContent key={category} value={category} className="max-h-[400px] overflow-y-auto">
-          <ResourceList 
-            resources={knowledgeBase.filter(r => r.category === category)}
-            onDelete={onDelete}
-          />
+          {view === 'list' ? (
+            <ResourceList 
+              resources={knowledgeBase.filter(r => r.category === category)} 
+              onDelete={onDelete}
+              onTagClick={onTagClick}
+              onOpenResource={onOpenResource}
+            />
+          ) : (
+            <ResourceGrid 
+              resources={knowledgeBase.filter(r => r.category === category)} 
+              onDelete={onDelete}
+              onTagClick={onTagClick}
+              onOpenResource={onOpenResource}
+            />
+          )}
         </TabsContent>
       ))}
     </Tabs>
