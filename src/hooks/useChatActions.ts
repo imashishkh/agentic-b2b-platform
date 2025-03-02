@@ -18,6 +18,21 @@ export const useChatActions = () => {
     knowledgeBase
   } = useChat();
 
+  // Add the missing sendMessage and sendFiles functions
+  const sendMessage = (message: string) => {
+    contextAddMessage({
+      type: "user",
+      content: message,
+    });
+  };
+
+  const sendFiles = (files: File[]) => {
+    contextAddMessage({
+      type: "user",
+      content: `Uploaded ${files.map(f => f.name).join(", ")}`,
+    });
+  };
+
   return {
     addMessage: contextAddMessage,
     setIsAgentTyping,
@@ -26,7 +41,10 @@ export const useChatActions = () => {
     setHasRequestedFile,
     setCurrentAgentType,
     setIsRequestingKnowledge,
-    knowledgeBase
+    knowledgeBase,
+    // Include the new functions in the returned object
+    sendMessage,
+    sendFiles
   };
 };
 

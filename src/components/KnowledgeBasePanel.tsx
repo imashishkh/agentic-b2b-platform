@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { KnowledgeResourcesList } from "@/components/knowledge/KnowledgeResourcesList";
-import { useChatContext } from "@/contexts";
+import { useChat } from "@/contexts/ChatContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Plus } from "lucide-react";
 import { EnhancedKnowledgeBase } from "./knowledge/EnhancedKnowledgeBase";
 
 export function KnowledgeBasePanel() {
-  const { knowledgeResources, addKnowledgeResource } = useChatContext();
+  const { knowledgeBase, addKnowledgeResource } = useChat();
   const [resourceUrl, setResourceUrl] = useState("");
   const [resourceTitle, setResourceTitle] = useState("");
   const [resourceType, setResourceType] = useState("documentation");
@@ -21,9 +21,12 @@ export function KnowledgeBasePanel() {
         id: crypto.randomUUID(),
         title: resourceTitle,
         url: resourceUrl,
-        type: resourceType,
-        dateAdded: new Date().toISOString(), // Return ISO string instead of Date object
-        status: "active"
+        category: resourceType,
+        description: "",
+        dateAdded: new Date(),
+        tags: [],
+        priority: "medium",
+        isIndexed: false
       });
       setResourceUrl("");
       setResourceTitle("");
@@ -71,7 +74,8 @@ export function KnowledgeBasePanel() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto pr-2">
-              <KnowledgeResourcesList resources={knowledgeResources} />
+              {/* Pass the knowledgeBase as resources prop to KnowledgeResourcesList */}
+              <KnowledgeResourcesList resources={knowledgeBase} />
             </div>
           </CardContent>
         </TabsContent>

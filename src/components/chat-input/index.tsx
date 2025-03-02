@@ -1,53 +1,66 @@
 
-import React, { useState, KeyboardEvent } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React from "react";
+import { MessageInput } from "./MessageInput";
+import { SendButton } from "./SendButton";
+import { FileUploadButton } from "./FileUploadButton";
+import { FilePreview } from "./FilePreview";
+import { FileUploadProgress } from "./FileUploadProgress";
 
-interface ChatInputProps {
+export interface ChatInputProps {
   onSendMessage: (message: string) => void;
-  isLoading?: boolean;
-  isDisabled?: boolean;
+  files?: File[];
+  onClearFiles?: () => void;
+  isUploading?: boolean;
+  uploadProgress?: number;
+  handleFileUpload?: () => void;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ 
-  onSendMessage, 
-  isLoading = false,
-  isDisabled = false 
-}) => {
-  const [message, setMessage] = useState('');
+export function ChatInput({
+  onSendMessage,
+  files = [],
+  onClearFiles,
+  isUploading = false,
+  uploadProgress = 0,
+  handleFileUpload
+}: ChatInputProps) {
+  const [message, setMessage] = React.useState("");
 
-  const handleSubmit = () => {
-    if (message.trim() && !isLoading && !isDisabled) {
+  const handleSendMessage = () => {
+    if (message.trim()) {
       onSendMessage(message);
-      setMessage('');
+      setMessage("");
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
     }
   };
 
   return (
-    <div className="flex items-center gap-2 w-full">
-      <Input
-        type="text"
-        placeholder="Type your message here..."
-        className="flex-1"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={isLoading || isDisabled}
-      />
-      <Button
-        type="submit"
-        onClick={handleSubmit}
-        disabled={!message.trim() || isLoading || isDisabled}
-      >
-        {isLoading ? 'Loading...' : 'Send'}
-      </Button>
+    <div className="p-4 border-t bg-background">
+      {files.length > 0 && (
+        <FilePreview files={files} onClearFiles={onClearFiles} />
+      )}
+      
+      {isUploading && (
+        <FileUploadProgress progress={uploadProgress} />
+      )}
+      
+      <div className="flex gap-2 items-end">
+        <MessageInput
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        
+        <div className="flex gap-2">
+          <FileUploadButton onClick={handleFileUpload} />
+          <SendButton onClick={handleSendMessage} disabled={!message.trim()} />
+        </div>
+      </div>
     </div>
   );
-};
+}

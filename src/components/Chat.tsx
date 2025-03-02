@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ChatView } from "@/components/ChatView";
+import ChatView from "@/components/ChatView";
 import { ChatProcessor } from "@/components/ChatProcessor";
 
 interface ChatProps {

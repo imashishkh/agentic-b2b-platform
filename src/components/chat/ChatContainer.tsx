@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from "react";
-import { ChatView } from "@/components/ChatView";
+import ChatView from "@/components/ChatView";
 import { useChat } from "@/contexts/ChatContext";
 import { ChatFooter } from "@/components/chat/ChatFooter";
 import { toast } from "sonner";

@@ -8,7 +8,7 @@ import { ChatInput } from "@/components/chat-input";
 import { useMobileView } from "@/hooks/use-mobile";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatProcessor } from "@/components/ChatProcessor";
-import { useChatContext } from "@/contexts";
+import { useChat } from "@/contexts/ChatContext";
 
 export default function ChatView() {
   const { isMobile } = useMobileView();
@@ -19,8 +19,31 @@ export default function ChatView() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isAgentTyping, setIsAgentTyping] = useState<boolean>(false);
   const { chatId } = useParams<{ chatId: string }>();
-  const { messages, knowledgeResources, isLoadingExample } = useChatContext();
-  const { sendMessage, sendFiles } = useChatActions();
+  const { messages, isLoadingExample } = useChat();
+  
+  // Create a ref for the ChatProcessor
+  const chatProcessorRef = useRef<any>(null);
+  
+  // Fix: Define missing state variables for ChatHeader props
+  const [showApiSettings, setShowApiSettings] = useState(false);
+  const [showProjectPanel, setShowProjectPanel] = useState(false);
+
+  const handleSendMessage = (message: string) => {
+    if (message.trim()) {
+      // Instead of using sendMessage from useChatActions, use addMessage from useChat
+      const { addMessage } = useChat();
+      addMessage({
+        type: "user",
+        content: message,
+      });
+      
+      setIsAgentTyping(true);
+      // Simulate agent typing time after sending message
+      setTimeout(() => {
+        setIsAgentTyping(false);
+      }, 2000);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -36,7 +59,13 @@ export default function ChatView() {
         if (progress >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            sendFiles(Array.from(e.target.files!));
+            // Instead of using sendFiles, we'll handle file processing here
+            const { addMessage } = useChat();
+            addMessage({
+              type: "user",
+              content: `Uploaded ${Array.from(e.target.files!).map(f => f.name).join(", ")}`,
+            });
+            
             setIsUploading(false);
             setUploadProgress(0);
             setFiles([]);
@@ -50,17 +79,6 @@ export default function ChatView() {
           }, 500);
         }
       }, 200);
-    }
-  };
-
-  const handleSendMessage = (message: string) => {
-    if (message.trim()) {
-      sendMessage(message);
-      setIsAgentTyping(true);
-      // Simulate agent typing time after sending message
-      setTimeout(() => {
-        setIsAgentTyping(false);
-      }, 2000);
     }
   };
 
@@ -79,7 +97,11 @@ export default function ChatView() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
-      <ChatHeader />
+      <ChatHeader 
+        setShowApiSettings={setShowApiSettings}
+        showProjectPanel={showProjectPanel}
+        setShowProjectPanel={setShowProjectPanel}
+      />
       <div className="flex-1 overflow-hidden relative">
         <ChatMessages 
           messages={messages} 
@@ -88,11 +110,11 @@ export default function ChatView() {
         />
         <ChatInput
           onSendMessage={handleSendMessage}
-          onFileUpload={handleFileUpload}
           files={files}
           onClearFiles={handleClearFiles}
           isUploading={isUploading}
           uploadProgress={uploadProgress}
+          handleFileUpload={handleFileUpload}
         />
         <input
           type="file"
@@ -102,7 +124,7 @@ export default function ChatView() {
           multiple
         />
       </div>
-      <ChatProcessor />
+      <ChatProcessor chatRef={chatProcessorRef} />
     </div>
   );
 }
