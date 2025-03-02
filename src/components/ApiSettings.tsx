@@ -8,12 +8,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings } from "lucide-react";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 interface ApiSettingsProps {
   onClose: () => void;
@@ -22,7 +21,7 @@ interface ApiSettingsProps {
 export function ApiSettings({ onClose }: ApiSettingsProps) {
   const [claudeApiKey, setClaudeApiKey] = useState("");
   const [searchApiKey, setSearchApiKey] = useState("");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   // Load keys from localStorage on component mount
   useEffect(() => {
@@ -44,8 +43,7 @@ export function ApiSettings({ onClose }: ApiSettingsProps) {
     }
     
     toast.success("API keys saved successfully");
-    setOpen(false);
-    onClose();
+    handleClose();
   };
 
   const clearApiKeys = () => {
@@ -58,25 +56,19 @@ export function ApiSettings({ onClose }: ApiSettingsProps) {
     setSearchApiKey("");
     
     toast.success("API keys cleared");
+    handleClose();
+  };
+
+  const handleClose = () => {
     setOpen(false);
     onClose();
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      onClose();
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full">
-          <Settings className="h-4 w-4" />
-          <span className="sr-only">Settings</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      if (!newOpen) onClose();
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>API Settings</DialogTitle>
@@ -84,6 +76,14 @@ export function ApiSettings({ onClose }: ApiSettingsProps) {
             Enter your API keys for Claude and search services.
             Keys are stored locally in your browser.
           </DialogDescription>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleClose}
+            className="absolute right-4 top-4"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

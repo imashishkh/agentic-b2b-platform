@@ -1,13 +1,13 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Settings, PanelLeft } from "lucide-react";
-import { Tooltip } from "@/components/ui/tooltip";
+import { ApiSettings } from "@/components/ApiSettings";
 
 interface ChatHeaderProps {
-  setShowApiSettings: (show: boolean) => void;
+  setShowApiSettings: React.Dispatch<React.SetStateAction<boolean>>;
   showProjectPanel: boolean;
-  setShowProjectPanel: (show: boolean) => void;
+  setShowProjectPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function ChatHeader({ 
@@ -21,28 +21,25 @@ export function ChatHeader({
         <h1 className="text-xl font-semibold">DevManager AI</h1>
       </div>
       <div className="flex items-center gap-2">
-        <Tooltip tooltip="API Settings">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex items-center gap-1"
-            onClick={() => setShowApiSettings(true)}
-          >
-            <Settings className="h-4 w-4" />
-            <span>API Settings</span>
-          </Button>
-        </Tooltip>
-        <Tooltip tooltip="Toggle Project Panel">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowProjectPanel(!showProjectPanel)}
-            className={showProjectPanel ? "bg-blue-100" : ""}
-          >
-            <PanelLeft className="h-4 w-4 mr-1" />
-            <span>Show Project Panel</span>
-          </Button>
-        </Tooltip>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center gap-2"
+          onClick={() => setShowApiSettings(true)}
+        >
+          <Settings className="h-5 w-5" />
+          <span>API Settings</span>
+        </Button>
+        
+        <Button 
+          variant={showProjectPanel ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowProjectPanel(!showProjectPanel)}
+          className="flex items-center gap-2"
+        >
+          <PanelLeft className="h-5 w-5" />
+          <span>Show Project Panel</span>
+        </Button>
       </div>
     </header>
   );

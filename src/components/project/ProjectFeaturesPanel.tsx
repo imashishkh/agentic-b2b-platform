@@ -11,7 +11,32 @@ import { Book, Code, FileCode, Github } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+// Extending the types as needed for the UI to work properly
+interface ExtendedArchitectureProposal {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  technologies: string[];
+  approved?: boolean;
+  diagram?: string;
+  dependencies?: string[];
+}
+
+interface ExtendedTestingStrategy {
+  id: string;
+  name: string;
+  description: string;
+  approved?: boolean;
+  approaches?: Array<{
+    name: string;
+    description: string;
+    tools: string[];
+  }>;
+}
+
 export const ProjectFeaturesPanel: React.FC = () => {
+  // Cast to extended types
   const { 
     architectureProposals, 
     updateArchitectureProposal,
@@ -32,7 +57,7 @@ export const ProjectFeaturesPanel: React.FC = () => {
   return (
     <div className="p-4 h-full flex flex-col">
       <div className="mb-4">
-        <h2 className="text-xl font-semibold text-sayhalo-dark">Project Features</h2>
+        <h2 className="text-xl font-semibold">Project Features</h2>
         <p className="text-sm text-gray-500 mt-1">Manage your project's knowledge, architecture, and testing strategies</p>
       </div>
       
@@ -76,7 +101,7 @@ export const ProjectFeaturesPanel: React.FC = () => {
                       {architectureProposals.map(proposal => (
                         <ArchitectureProposalCard 
                           key={proposal.id}
-                          proposal={proposal}
+                          proposal={proposal as unknown as ExtendedArchitectureProposal}
                           onApprove={handleApproveProposal}
                         />
                       ))}
@@ -108,7 +133,7 @@ export const ProjectFeaturesPanel: React.FC = () => {
                       {testingStrategies.map(strategy => (
                         <TestingStrategyCard 
                           key={strategy.id}
-                          strategy={strategy}
+                          strategy={strategy as unknown as ExtendedTestingStrategy}
                           onApprove={handleApproveStrategy}
                         />
                       ))}
