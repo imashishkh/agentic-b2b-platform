@@ -1,181 +1,218 @@
 
 import React, { useState } from "react";
+import { useChat } from "@/contexts/ChatContext";
 import { SayHaloLogo } from "./SayHaloLogo";
-import { Code, ChevronLeft, ChevronRight, Upload, Settings, MessageSquare } from "lucide-react";
+import { Book, BookOpen, List, LayoutDashboard, Zap, Users, Settings, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { AgentType } from "@/agents/AgentTypes";
+import { KnowledgeBasePanel } from "./KnowledgeBasePanel";
+import { useMobile } from "@/hooks/use-mobile";
 
+/**
+ * Props for the sidebar component
+ */
 interface SidebarProps {
   className?: string;
-  currentAgentType: AgentType;
-  setCurrentAgentType: (type: AgentType) => void;
-  onToggleSettings: () => void;
 }
 
-export function Sidebar({ 
-  className, 
-  currentAgentType, 
-  setCurrentAgentType, 
-  onToggleSettings 
-}: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+/**
+ * Enum for different sidebar tabs
+ */
+enum SidebarTab {
+  CHAT = "chat",
+  KNOWLEDGE_BASE = "knowledge-base",
+  PROJECT = "project"
+}
 
-  // Helper function to get agent info based on agent type
-  const getAgentInfo = (type: AgentType) => {
-    switch (type) {
-      case AgentType.FRONTEND:
-        return {
-          name: "FrontendDev",
-          title: "Frontend Developer",
-          color: "bg-blue-600 hover:bg-blue-700",
-          textColor: "text-blue-600"
-        };
-      case AgentType.BACKEND:
-        return {
-          name: "BackendDev",
-          title: "Backend Developer",
-          color: "bg-green-600 hover:bg-green-700",
-          textColor: "text-green-600"
-        };
-      case AgentType.DATABASE:
-        return {
-          name: "DataArchitect",
-          title: "Database Architect",
-          color: "bg-purple-600 hover:bg-purple-700",
-          textColor: "text-purple-600"
-        };
-      case AgentType.DEVOPS:
-        return {
-          name: "DevOpsEng",
-          title: "DevOps Engineer",
-          color: "bg-orange-600 hover:bg-orange-700",
-          textColor: "text-orange-600"
-        };
-      case AgentType.UX:
-        return {
-          name: "UXDesigner",
-          title: "UX Designer",
-          color: "bg-pink-600 hover:bg-pink-700",
-          textColor: "text-pink-600"
-        };
-      case AgentType.MANAGER:
+/**
+ * Sidebar component for navigation and additional functionality
+ */
+export function Sidebar({ className }: SidebarProps) {
+  const { knowledgeBase } = useChat();
+  const isMobile = useMobile();
+  const [activeTab, setActiveTab] = useState<SidebarTab>(SidebarTab.CHAT);
+  const [isOpen, setIsOpen] = useState(!isMobile);
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case SidebarTab.KNOWLEDGE_BASE:
+        return <KnowledgeBasePanel />;
+      case SidebarTab.PROJECT:
+        return (
+          <div className="p-4">
+            <h2 className="font-semibold mb-2">Project Structure</h2>
+            <p className="text-sm text-gray-500">Coming soon...</p>
+          </div>
+        );
       default:
-        return {
-          name: "DevManager",
-          title: "Development Manager",
-          color: "bg-sayhalo-dark hover:bg-sayhalo-dark/90",
-          textColor: "text-sayhalo-dark"
-        };
+        return null;
     }
   };
 
+  // Mobile sidebar uses Sheet component
+  if (isMobile) {
+    return (
+      <>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+              <Menu size={20} />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 max-w-[280px]">
+            <SidebarContent 
+              activeTab={activeTab} 
+              setActiveTab={setActiveTab} 
+              knowledgeBaseCount={knowledgeBase.length}
+            />
+            {renderTabContent()}
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  // Desktop sidebar
   return (
     <div className={cn(
-      "flex flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out h-screen",
-      collapsed ? "w-16" : "w-64",
+      "h-screen transition-all duration-300 border-r bg-white overflow-hidden",
+      isOpen ? "w-[280px]" : "w-[70px]",
       className
     )}>
-      {/* Sidebar Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <SayHaloLogo size={24} />
-            <h1 className="text-lg font-semibold text-sayhalo-dark">DevManager</h1>
-          </div>
-        )}
-        {collapsed && <SayHaloLogo size={24} className="mx-auto" />}
-        <button 
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
-        >
-          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
-      </div>
-
-      {/* Main Sidebar Content */}
-      <div className="flex-1 overflow-y-auto py-4">
-        {/* Agent Selection Section */}
-        <div className="px-3 mb-6">
-          {!collapsed && <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-2">Agents</h2>}
-          
-          <div className="space-y-1">
-            {Object.values(AgentType).map((type) => {
-              const agentInfo = getAgentInfo(type);
-              return (
-                <button
-                  key={type}
-                  onClick={() => setCurrentAgentType(type)}
-                  className={cn(
-                    "w-full flex items-center gap-2 rounded-md p-2 transition-colors",
-                    currentAgentType === type
-                      ? `${agentInfo.color} text-white`
-                      : "hover:bg-gray-100 text-gray-700",
-                    collapsed && "justify-center"
-                  )}
-                >
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    currentAgentType === type ? "bg-white/20" : agentInfo.color
-                  )}>
-                    <Code size={16} className={currentAgentType === type ? "text-white" : "text-white"} />
-                  </div>
-                  {!collapsed && (
-                    <div className="text-left overflow-hidden">
-                      <p className="text-sm font-medium truncate">{agentInfo.name}</p>
-                      {currentAgentType === type && <p className="text-xs opacity-80 truncate">{agentInfo.title}</p>}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Actions Section */}
-        {!collapsed && (
-          <div className="px-3 mb-6">
-            <h2 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2 px-2">Actions</h2>
-            <div className="space-y-1">
-              <button className="w-full flex items-center gap-2 rounded-md p-2 hover:bg-gray-100 text-gray-700">
-                <Upload size={16} />
-                <span className="text-sm">Upload Requirements</span>
-              </button>
-              <button className="w-full flex items-center gap-2 rounded-md p-2 hover:bg-gray-100 text-gray-700">
-                <MessageSquare size={16} />
-                <span className="text-sm">New Conversation</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Collapsed Actions */}
-        {collapsed && (
-          <div className="px-3 flex flex-col items-center space-y-4 mt-4">
-            <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-              <Upload size={18} />
-            </button>
-            <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-              <MessageSquare size={18} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Sidebar Footer */}
-      <div className="border-t border-gray-200 p-4">
-        <Button
-          onClick={onToggleSettings}
-          variant="outline"
-          className={cn(
-            "w-full justify-start gap-2", 
-            collapsed && "justify-center p-2"
-          )}
-        >
-          <Settings size={16} />
-          {!collapsed && <span>API Settings</span>}
-        </Button>
+      <div className="flex flex-col h-full">
+        <SidebarContent 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isCollapsed={!isOpen}
+          toggleCollapse={() => setIsOpen(!isOpen)}
+          knowledgeBaseCount={knowledgeBase.length}
+        />
+        
+        {isOpen && renderTabContent()}
       </div>
     </div>
+  );
+}
+
+/**
+ * Props for the sidebar content component
+ */
+interface SidebarContentProps {
+  activeTab: SidebarTab;
+  setActiveTab: (tab: SidebarTab) => void;
+  isCollapsed?: boolean;
+  toggleCollapse?: () => void;
+  knowledgeBaseCount: number;
+}
+
+/**
+ * Sidebar content with navigation items
+ */
+function SidebarContent({ 
+  activeTab, 
+  setActiveTab, 
+  isCollapsed = false,
+  toggleCollapse,
+  knowledgeBaseCount
+}: SidebarContentProps) {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-2">
+          <SayHaloLogo size={isCollapsed ? 24 : 20} />
+          {!isCollapsed && <span className="font-semibold text-sayhalo-dark">DevManager</span>}
+        </div>
+        
+        {toggleCollapse && (
+          <button 
+            onClick={toggleCollapse} 
+            className="text-gray-500 hover:text-gray-700"
+          >
+            {isCollapsed ? <Menu size={18} /> : <X size={18} />}
+          </button>
+        )}
+      </div>
+      
+      <div className="flex flex-col gap-1 p-2">
+        <SidebarItem
+          icon={<Zap size={isCollapsed ? 20 : 18} />}
+          label="Chat"
+          isActive={activeTab === SidebarTab.CHAT}
+          onClick={() => setActiveTab(SidebarTab.CHAT)}
+          isCollapsed={isCollapsed}
+        />
+        
+        <SidebarItem
+          icon={<BookOpen size={isCollapsed ? 20 : 18} />}
+          label="Knowledge Base"
+          isActive={activeTab === SidebarTab.KNOWLEDGE_BASE}
+          onClick={() => setActiveTab(SidebarTab.KNOWLEDGE_BASE)}
+          isCollapsed={isCollapsed}
+          badge={knowledgeBaseCount > 0 ? knowledgeBaseCount.toString() : undefined}
+        />
+        
+        <SidebarItem
+          icon={<LayoutDashboard size={isCollapsed ? 20 : 18} />}
+          label="Project"
+          isActive={activeTab === SidebarTab.PROJECT}
+          onClick={() => setActiveTab(SidebarTab.PROJECT)}
+          isCollapsed={isCollapsed}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Props for individual sidebar item
+ */
+interface SidebarItemProps {
+  icon: React.ReactNode;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  isCollapsed?: boolean;
+  badge?: string;
+}
+
+/**
+ * Individual sidebar navigation item
+ */
+function SidebarItem({ icon, label, isActive, onClick, isCollapsed = false, badge }: SidebarItemProps) {
+  return (
+    <button
+      className={cn(
+        "flex items-center gap-3 py-2 px-3 rounded-md transition-colors",
+        isActive 
+          ? "bg-sayhalo-coral/10 text-sayhalo-coral" 
+          : "text-gray-700 hover:bg-gray-100"
+      )}
+      onClick={onClick}
+    >
+      <div className={cn(
+        "flex items-center justify-center",
+        isCollapsed && "mx-auto"
+      )}>
+        {icon}
+      </div>
+      
+      {!isCollapsed && (
+        <div className="flex items-center justify-between flex-1">
+          <span>{label}</span>
+          {badge && (
+            <span className="bg-sayhalo-coral text-white text-xs px-2 py-0.5 rounded-full">
+              {badge}
+            </span>
+          )}
+        </div>
+      )}
+      
+      {isCollapsed && badge && (
+        <span className="absolute top-0 right-0 bg-sayhalo-coral text-white text-xs px-1.5 rounded-full">
+          {badge}
+        </span>
+      )}
+    </button>
   );
 }

@@ -21,6 +21,7 @@ interface ChatProcessorProps {
  * - Managing the conversation flow
  * - Parsing project requirements
  * - Assigning tasks to specialized agents
+ * - Managing knowledge base resources
  * 
  * @param chatRef - Reference that exposes the processUserMessage method to parent components
  */
@@ -33,7 +34,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     hasRequestedFile,
     setProjectPhases,
     setHasRequestedFile,
-    setCurrentAgentType
+    setCurrentAgentType,
+    knowledgeBase,
+    isRequestingKnowledge,
+    setIsRequestingKnowledge
   } = useChat();
 
   /**
@@ -86,13 +90,18 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
                   agentType: AgentType.MANAGER
                 });
                 
-                // Follow-up question
+                // Request knowledge base resources
                 setTimeout(() => {
+                  const managerAgent = createAgent(AgentType.MANAGER) as any;
+                  const knowledgeBasePrompt = managerAgent.generateKnowledgeBasePrompt();
+                  
                   addMessage({ 
                     type: "agent", 
-                    content: "Which specific task would you like to start working on first? I can provide technical advice or connect you with the appropriate specialist.",
+                    content: knowledgeBasePrompt,
                     agentType: AgentType.MANAGER
                   });
+                  
+                  setIsRequestingKnowledge(true);
                   setIsAgentTyping(false);
                 }, 1000);
               }, 1000);
@@ -123,6 +132,40 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
           reader.readAsText(markdownFiles[0]);
           return;
         }
+      }
+      
+      // Check if we're in knowledge base request mode
+      if (isRequestingKnowledge) {
+        // Check if this message contains a URL for the knowledge base
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = userMessage.match(urlRegex);
+        
+        if (urls && urls.length > 0) {
+          // User is likely providing a resource, respond accordingly
+          setTimeout(() => {
+            const managerAgent = createAgent(AgentType.MANAGER);
+            managerAgent.generateResponse(userMessage, projectPhases).then(response => {
+              addMessage({ 
+                type: "agent", 
+                content: response,
+                agentType: AgentType.MANAGER
+              });
+              setIsAgentTyping(false);
+            });
+          }, 1000);
+        } else {
+          // No URL found, assume user wants to move on
+          setTimeout(() => {
+            setIsRequestingKnowledge(false);
+            addMessage({ 
+              type: "agent", 
+              content: "Now that we have set up the knowledge base, we can proceed with architecture planning. What specific aspect of the e-commerce platform would you like to focus on first?",
+              agentType: AgentType.MANAGER
+            });
+            setIsAgentTyping(false);
+          }, 1000);
+        }
+        return;
       }
       
       // Continue with existing logic for handling text inputs
@@ -187,13 +230,18 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
                 agentType: AgentType.MANAGER
               });
               
-              // Follow-up question
+              // Request knowledge base resources
               setTimeout(() => {
+                const managerAgent = createAgent(AgentType.MANAGER) as any;
+                const knowledgeBasePrompt = managerAgent.generateKnowledgeBasePrompt();
+                
                 addMessage({ 
                   type: "agent", 
-                  content: "Which specific task would you like to start working on first? I can provide technical advice or connect you with the appropriate specialist.",
+                  content: knowledgeBasePrompt,
                   agentType: AgentType.MANAGER
                 });
+                
+                setIsRequestingKnowledge(true);
                 setIsAgentTyping(false);
               }, 1000);
             }, 1000);
@@ -226,10 +274,22 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         // Generate response using the specialized agent
         const response = await agent.generateResponse(userMessage, projectPhases);
         
+        // If this is the manager agent, check if we need to enhance response with knowledge base
+        let enhancedResponse = response;
+        if (agentType === AgentType.MANAGER && knowledgeBase.length > 0) {
+          // Only enhance if the response doesn't already reference the knowledge base
+          if (!response.includes("Knowledge Base Resources")) {
+            const managerAgent = agent as any;
+            if (managerAgent.enhanceResponseWithKnowledgeBase) {
+              enhancedResponse = managerAgent.enhanceResponseWithKnowledgeBase(response, knowledgeBase);
+            }
+          }
+        }
+        
         setTimeout(() => {
           addMessage({ 
             type: "agent", 
-            content: response,
+            content: enhancedResponse,
             agentType: agentType
           });
           setIsAgentTyping(false);
@@ -341,7 +401,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         processUserMessage
       };
     }
-  }, [chatRef, projectPhases, hasRequestedFile]);
+  }, [chatRef, projectPhases, hasRequestedFile, isRequestingKnowledge, knowledgeBase]);
 
   // This component doesn't render anything visible
   return null;

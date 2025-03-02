@@ -4,6 +4,19 @@ import { ChatMessageProps } from "@/components/ChatMessage";
 import { AgentType } from "@/agents/AgentTypes";
 
 /**
+ * Interface for knowledge base resource items
+ * Represents documentation, links, and other reference materials
+ */
+export interface KnowledgeBaseResource {
+  id: string;           // Unique identifier for the resource
+  title: string;        // Display title for the resource
+  url: string;          // URL to the resource
+  category: string;     // Category (e.g., "Technology", "Industry Standards", "Security")
+  description: string;  // Brief description of the resource
+  dateAdded: Date;      // When the resource was added
+}
+
+/**
  * Initial messages to bootstrap the conversation when a user first interacts with the system
  * These provide guidance on how to start the project planning process
  */
@@ -20,12 +33,17 @@ interface ChatContextType {
   projectPhases: any[];                     // Structured project data
   hasRequestedFile: boolean;                // Whether we've asked for a requirements file
   currentAgentType: AgentType;              // Which agent is currently active
+  knowledgeBase: KnowledgeBaseResource[];   // Knowledge base resources
+  isRequestingKnowledge: boolean;           // Whether we're currently requesting knowledge base resources
   addMessage: (message: ChatMessageProps) => void;  // Add a new message to the chat
   setIsAgentTyping: (isTyping: boolean) => void;    // Update typing indicator
   setIsFetchingResponse: (isFetching: boolean) => void;  // Update fetching status
   setProjectPhases: (phases: any[]) => void;        // Update project structure
   setHasRequestedFile: (hasRequested: boolean) => void;  // Update file request status
   setCurrentAgentType: (agentType: AgentType) => void;   // Change the active agent
+  addKnowledgeResource: (resource: KnowledgeBaseResource) => void;  // Add a new knowledge resource
+  removeKnowledgeResource: (id: string) => void;    // Remove a knowledge resource
+  setIsRequestingKnowledge: (isRequesting: boolean) => void;  // Update knowledge request status
 }
 
 /**
@@ -48,6 +66,8 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [projectPhases, setProjectPhases] = useState<any[]>([]);
   const [hasRequestedFile, setHasRequestedFile] = useState(true);
   const [currentAgentType, setCurrentAgentType] = useState<AgentType>(AgentType.MANAGER);
+  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseResource[]>([]);
+  const [isRequestingKnowledge, setIsRequestingKnowledge] = useState(false);
 
   /**
    * Add a new message to the chat history
@@ -56,6 +76,24 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
    */
   const addMessage = (message: ChatMessageProps) => {
     setMessages(prev => [...prev, message]);
+  };
+
+  /**
+   * Add a new knowledge base resource
+   * 
+   * @param resource - The resource object to add to the knowledge base
+   */
+  const addKnowledgeResource = (resource: KnowledgeBaseResource) => {
+    setKnowledgeBase(prev => [...prev, resource]);
+  };
+
+  /**
+   * Remove a knowledge base resource by ID
+   * 
+   * @param id - The ID of the resource to remove
+   */
+  const removeKnowledgeResource = (id: string) => {
+    setKnowledgeBase(prev => prev.filter(resource => resource.id !== id));
   };
 
   // Provide the chat state and functions to all child components
@@ -67,12 +105,17 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       projectPhases,
       hasRequestedFile,
       currentAgentType,
+      knowledgeBase,
+      isRequestingKnowledge,
       addMessage,
       setIsAgentTyping,
       setIsFetchingResponse,
       setProjectPhases,
       setHasRequestedFile,
-      setCurrentAgentType
+      setCurrentAgentType,
+      addKnowledgeResource,
+      removeKnowledgeResource,
+      setIsRequestingKnowledge
     }}>
       {children}
     </ChatContext.Provider>

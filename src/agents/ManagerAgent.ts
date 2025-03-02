@@ -1,4 +1,3 @@
-
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 
@@ -32,7 +31,8 @@ export class ManagerAgent extends BaseAgent {
     "Quality assurance",
     "Security review",
     "Performance optimization strategy",
-    "E-commerce domain expertise"
+    "E-commerce domain expertise",
+    "Knowledge base management"
   ];
   
   /**
@@ -44,7 +44,39 @@ export class ManagerAgent extends BaseAgent {
   canHandle(message: string): boolean {
     // The manager can handle any message related to project management,
     // planning, coordination, or technical oversight
-    return message.match(/project|plan|phase|task|milestone|timeline|requirement|specification|team|coordinate|oversee|manage|guide|help|stuck|uncertain|advice|architecture|decision|review|quality|security|performance/i) !== null;
+    return message.match(/project|plan|phase|task|milestone|timeline|requirement|specification|team|coordinate|oversee|manage|guide|help|stuck|uncertain|advice|architecture|decision|review|quality|security|performance|knowledge|documentation|resource|reference/i) !== null;
+  }
+  
+  /**
+   * Checks if a message is related to knowledge base requests
+   * 
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this is a knowledge base request
+   */
+  isKnowledgeBaseRequest(message: string): boolean {
+    return message.match(/knowledge base|documentation|reference|resource|link|article|guide|tutorial|standard|best practice|example/i) !== null;
+  }
+  
+  /**
+   * Generates a knowledge base request prompt after task assignments
+   * 
+   * @returns A structured prompt asking for knowledge base resources
+   */
+  generateKnowledgeBasePrompt(): string {
+    return `
+## Knowledge Base Enhancement
+
+To better support your e-commerce project, I'd like to build a knowledge base of relevant resources. Could you provide links to:
+
+1. **Technology Documentation** - Links to docs for your preferred tech stack (frontend, backend, database)
+2. **Industry Standards** - E-commerce best practices, security standards, accessibility guidelines
+3. **Competitor Analysis** - Examples of similar e-commerce platforms you admire or want to reference
+4. **Security Compliance** - Any specific security or regulatory requirements your project needs to meet
+
+Adding these resources will help all specialists provide more accurate and relevant guidance throughout the development process.
+
+To add a resource, simply share a link with a brief description of what it contains.
+    `;
   }
   
   /**
@@ -55,6 +87,23 @@ export class ManagerAgent extends BaseAgent {
    * @returns A structured prompt that guides the AI response
    */
   protected createPrompt(userMessage: string, projectPhases: any[]): string {
+    // Handle knowledge base-related messages specifically
+    if (this.isKnowledgeBaseRequest(userMessage)) {
+      return `
+        As the Development Manager for this e-commerce project, you're managing the project knowledge base.
+        
+        ${userMessage}
+        
+        Please provide a response that:
+        1. Acknowledges the resource information shared
+        2. Explains how this will be used to inform development decisions
+        3. If appropriate, requests additional specific resources that would complement what's been shared
+        4. Organizes the knowledge into relevant categories (Tech Stack, Industry Standards, Security, etc.)
+        
+        Make your response helpful and focused on how these resources will improve the project's quality and efficiency.
+      `;
+    }
+    
     // Determine the type of request to tailor the prompt appropriately
     const isConsultation = userMessage.includes("One of your team members") && 
                           userMessage.includes("needs guidance");
@@ -163,6 +212,7 @@ export class ManagerAgent extends BaseAgent {
       6. Make authoritative technical decisions when needed
       7. Ensure quality, security, and performance standards are met
       8. Provide strategic direction aligned with e-commerce best practices
+      9. Maintain and leverage the project knowledge base
       
       Focus on project structure, dependencies, and integration points between different system components.
       As the Development Manager, you have the final say on technical decisions and can provide authoritative guidance across all domains.
@@ -251,5 +301,40 @@ As the Development Manager, I recommend that all team members follow these testi
 
 Would you like me to help set up a testing framework or provide specific test cases for this code?
     `;
+  }
+  
+  /**
+   * Enhanced response generation for knowledge base queries
+   * 
+   * @param response - The original response
+   * @param knowledgeBase - The current knowledge base resources
+   * @returns Enhanced response with knowledge base information
+   */
+  enhanceResponseWithKnowledgeBase(response: string, knowledgeBase: any[]): string {
+    if (knowledgeBase.length === 0) {
+      return response;
+    }
+    
+    // Group resources by category
+    const categorizedResources: Record<string, any[]> = {};
+    knowledgeBase.forEach(resource => {
+      if (!categorizedResources[resource.category]) {
+        categorizedResources[resource.category] = [];
+      }
+      categorizedResources[resource.category].push(resource);
+    });
+    
+    let knowledgeBaseSection = "\n\n## Relevant Knowledge Base Resources\n\n";
+    
+    // Add resources by category
+    Object.entries(categorizedResources).forEach(([category, resources]) => {
+      knowledgeBaseSection += `### ${category}\n`;
+      resources.forEach(resource => {
+        knowledgeBaseSection += `- [${resource.title}](${resource.url}) - ${resource.description}\n`;
+      });
+      knowledgeBaseSection += "\n";
+    });
+    
+    return `${response}${knowledgeBaseSection}`;
   }
 }
