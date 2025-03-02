@@ -4,20 +4,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { useChat } from "@/contexts/ChatContext";
-import { KnowledgeResourcesList } from "@/components/knowledge/KnowledgeResourcesList";
-
-interface KnowledgeResource {
-  id: string;
-  title: string;
-  url: string;
-  description: string;
-  category: string;
-  dateAdded: string; // Using string instead of Date for now
-}
+import { KnowledgeResourcesList, KnowledgeResourceProps } from "@/components/knowledge/KnowledgeResourcesList";
 
 export function KnowledgeBasePanel() {
   const { toast } = useToast();
-  const [resources, setResources] = useState<KnowledgeResource[]>([
+  const [resources, setResources] = useState<KnowledgeResourceProps[]>([
     {
       id: "1",
       title: "E-commerce Best Practices",
