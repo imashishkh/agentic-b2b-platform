@@ -6,7 +6,7 @@ import { useChat } from "@/contexts/ChatContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Remove the Clerk import and PUBLISHABLE_KEY since we're handling it at root level
+// Remove the BrowserRouter since it's now in App.tsx
 const IndexContent = () => {
   // Get current agent type from chat context
   const { currentAgentType, setCurrentAgentType } = useChat();

@@ -1,7 +1,6 @@
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import App from "./App";
@@ -27,18 +26,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           {clerkEnabled ? (
             <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
               <UserProvider>
-                <BrowserRouter>
-                  <App />
-                  <Toaster />
-                </BrowserRouter>
+                <App />
+                <Toaster />
               </UserProvider>
             </ClerkProvider>
           ) : (
             <UserProvider>
-              <BrowserRouter>
-                <App />
-                <Toaster />
-              </BrowserRouter>
+              <App />
+              <Toaster />
             </UserProvider>
           )}
         </TooltipProvider>

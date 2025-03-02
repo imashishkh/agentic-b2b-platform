@@ -27,20 +27,16 @@ const FallbackLoading = () => (
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Suspense fallback={<FallbackLoading />}>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </Suspense>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <Suspense fallback={<FallbackLoading />}>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   </ErrorBoundary>
 );
 
