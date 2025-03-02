@@ -12,7 +12,7 @@ export interface ChatProcessorProps {
 }
 
 export function ChatProcessor({ chatRef }: ChatProcessorProps) {
-  const { addMessage, setIsAgentTyping, messages } = useChat();
+  const { addMessage, setIsAgentTyping, messages, addSuggestion } = useChat();
   const [isProcessing, setIsProcessing] = useState(false);
   const isMounted = useRef(true);
   const initialMessageSent = useRef(false);
@@ -80,6 +80,42 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     });
   };
 
+  const generateNextStepSuggestions = () => {
+    // Generate next step suggestions based on the user flow in knowledge base
+    const nextStepSuggestions = [
+      {
+        id: "architecture-planning",
+        label: "Architecture Planning",
+        message: "I'd like to start planning the system architecture for this project",
+        icon: "layout",
+        description: "Begin designing the technical architecture for your project"
+      },
+      {
+        id: "knowledge-base",
+        label: "Enhance Knowledge Base",
+        message: "Let's add resources to the knowledge base for this project",
+        icon: "book-open",
+        description: "Add technical documentation and resources to inform development"
+      },
+      {
+        id: "testing-strategy",
+        label: "Testing Strategy",
+        message: "Let's develop a testing strategy for the project",
+        icon: "check-circle",
+        description: "Create a comprehensive testing approach for quality assurance"
+      },
+      {
+        id: "prioritize-tasks",
+        label: "Prioritize Tasks",
+        message: "Help me prioritize the tasks we've identified",
+        icon: "list-ordered",
+        description: "Organize tasks by importance and dependencies"
+      }
+    ];
+    
+    return nextStepSuggestions;
+  };
+
   const processMessage = async (message: string, files?: File[]) => {
     if (isProcessing || !message.trim() && (!files || files.length === 0)) return;
     
@@ -119,11 +155,29 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
               // Add a slight delay to simulate processing
               setTimeout(() => {
                 setIsAgentTyping(false);
+                
+                // Add the manager's response
                 addMessage({
                   type: "agent",
                   content: managerResponse,
                   agentType: AgentType.MANAGER,
                 });
+                
+                // Generate and add next step suggestions
+                const suggestions = generateNextStepSuggestions();
+                addSuggestion({
+                  title: "Next Steps",
+                  description: "Here are some suggested next steps for your project:",
+                  options: suggestions
+                });
+                
+                // Add guidance message for next steps
+                addMessage({
+                  type: "agent",
+                  content: "Now that I've analyzed your requirements, you can proceed with one of the suggested next steps above, or ask me any specific questions about the project.",
+                  agentType: AgentType.MANAGER,
+                });
+                
                 setIsProcessing(false);
               }, 2000);
             }

@@ -7,7 +7,8 @@ import {
   ArchitectureProposal, 
   TestingStrategy, 
   GitHubRepository, 
-  ChatContextType 
+  ChatContextType,
+  SuggestionProps
 } from "./types";
 import { initialMessages, initialState } from "./initialState";
 
@@ -37,6 +38,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [architectureProposals, setArchitectureProposals] = useState<ArchitectureProposal[]>([]);
   const [testingStrategies, setTestingStrategies] = useState<TestingStrategy[]>([]);
   const [gitHubRepository, setGitHubRepo] = useState<GitHubRepository | null>(null);
+  const [suggestions, setSuggestions] = useState<SuggestionProps[]>([]);
 
   /**
    * Add a new message to the chat history
@@ -52,6 +54,22 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
    */
   const clearMessages = () => {
     setMessages([]);
+  };
+
+  /**
+   * Add a new suggestion for next steps
+   * 
+   * @param suggestion - The suggestion object to add
+   */
+  const addSuggestion = (suggestion: SuggestionProps) => {
+    setSuggestions(prev => [...prev, suggestion]);
+  };
+
+  /**
+   * Clear all suggestions
+   */
+  const clearSuggestions = () => {
+    setSuggestions([]);
   };
 
   /**
@@ -138,6 +156,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       architectureProposals,
       testingStrategies,
       gitHubRepository,
+      suggestions,
       addMessage,
       clearMessages,
       setIsAgentTyping,
@@ -153,7 +172,9 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       updateArchitectureProposal,
       addTestingStrategy,
       updateTestingStrategy,
-      setGitHubRepository
+      setGitHubRepository,
+      addSuggestion,
+      clearSuggestions
     }}>
       {children}
     </ChatContext.Provider>
