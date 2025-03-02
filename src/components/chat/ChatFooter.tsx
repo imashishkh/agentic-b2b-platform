@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { ChatInput } from "@/components/chat-input";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { Trash2, Download, HelpCircle, Upload } from "lucide-react";
+import { Trash2, Download, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface ChatFooterProps {
@@ -86,37 +86,37 @@ export function ChatFooter({
   };
   
   return (
-    <div className="p-4 bg-background border-t">
+    <div className="border-t bg-white py-2">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between mb-2">
+        <div className="flex justify-between mb-1.5 px-4">
           <div className="flex items-center gap-1">
-            <Tooltip tooltip="Clear all messages">
+            <Tooltip>
               <Button 
                 size="sm" 
                 variant="ghost" 
                 onClick={handleClearChat}
-                className="text-gray-500 hover:text-red-500"
+                className="text-gray-500 hover:text-red-500 h-8 w-8 p-0"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </Tooltip>
             
-            <Tooltip tooltip="Download chat history">
+            <Tooltip>
               <Button 
                 size="sm" 
                 variant="ghost"
-                className="text-gray-500 hover:text-blue-500"
+                className="text-gray-500 hover:text-blue-500 h-8 w-8 p-0"
                 onClick={handleDownload}
               >
                 <Download className="h-4 w-4" />
               </Button>
             </Tooltip>
             
-            <Tooltip tooltip="Help">
+            <Tooltip>
               <Button 
                 size="sm" 
                 variant="ghost"
-                className="text-gray-500 hover:text-blue-500"
+                className="text-gray-500 hover:text-blue-500 h-8 w-8 p-0"
                 onClick={handleHelp}
               >
                 <HelpCircle className="h-4 w-4" />
@@ -124,7 +124,8 @@ export function ChatFooter({
             </Tooltip>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        
+        <div className="flex items-center gap-2 px-4">
           <ChatInput 
             onSendMessage={async (message) => {
               await onSendMessage(message);
@@ -149,6 +150,7 @@ export function ChatFooter({
             variant="outline"
             onClick={handleStartWithExample}
             disabled={isLoadingExample || isAgentTyping}
+            className="whitespace-nowrap"
           >
             {isLoadingExample ? "Loading..." : "Example"}
           </Button>

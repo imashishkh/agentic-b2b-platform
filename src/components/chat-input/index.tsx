@@ -53,7 +53,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="p-4 border-t bg-background">
+    <div className="px-4 py-3 bg-white border-t">
       {files.length > 0 && (
         <FilePreview files={files} onRemove={handleRemoveFile} disabled={isDisabled || isUploading} />
       )}
@@ -66,7 +66,7 @@ export function ChatInput({
         />
       )}
       
-      <div className="flex gap-2 items-end">
+      <div className="flex gap-2 items-center">
         <MessageInput
           value={message}
           onChange={setMessage}
