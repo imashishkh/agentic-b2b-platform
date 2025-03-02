@@ -55,7 +55,7 @@ export default function ChatView() {
         
         {/* Render suggestions after the chat messages */}
         {suggestions.length > 0 && (
-          <div className="px-4 pb-4 mb-20 absolute bottom-0 left-0 right-0 z-10">
+          <div className="px-4 pb-4 mb-24 absolute bottom-0 left-0 right-0 z-10">
             {suggestions.map((suggestion, index) => (
               <SuggestionBox
                 key={index}

@@ -26,8 +26,8 @@ export function ChatMessages({
   return (
     <div 
       ref={chatContainerRef} 
-      className="flex-1 overflow-y-auto p-4 pb-32 bg-blue-50/50"
-      style={{ maxHeight: 'calc(100vh - 180px)' }}
+      className="flex-1 overflow-y-auto p-4 pb-40 bg-blue-50/50"
+      style={{ maxHeight: 'calc(100vh - 160px)' }}
     >
       {messages.map((message, index) => (
         <ChatMessage key={index} {...message} />
