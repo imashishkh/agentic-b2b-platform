@@ -34,7 +34,7 @@ export function ChatMessages({
   };
   
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex-1 overflow-y-auto px-4 py-6 mb-40 md:mb-32">
       {messages.map((message, index) => {
         // Check if the message is a documentation message
         const isDoc = typeof message.content === 'string' && isDocumentation(message.content);

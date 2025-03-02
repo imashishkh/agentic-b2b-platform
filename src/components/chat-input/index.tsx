@@ -62,7 +62,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-3xl mx-auto px-4 py-3">
       {files.length > 0 && (
         <div className="mb-2">
           <FilePreview files={files} onRemove={handleRemoveFile} disabled={isDisabled || isUploading} />

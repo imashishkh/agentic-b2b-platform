@@ -100,12 +100,13 @@ export default function ChatView() {
     <div className="flex h-full overflow-hidden bg-background relative">
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader />
-        <div className="absolute top-16 right-4 z-10 flex gap-2">
+        
+        <div className="fixed top-16 right-4 z-20 flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm">
                 <BarChart className="h-4 w-4" />
-                Performance
+                <span className="hidden sm:inline">Performance</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -133,9 +134,9 @@ export default function ChatView() {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="flex items-center gap-2 shadow-sm">
                 <FileText className="h-4 w-4" />
-                Documentation
+                <span className="hidden sm:inline">Documentation</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -161,7 +162,8 @@ export default function ChatView() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex-1 overflow-auto relative pb-40">
+        
+        <div className="flex-1 overflow-auto relative">
           <ChatMessages 
             messages={messages}
             isLoadingExample={isLoadingExample} 
@@ -171,20 +173,25 @@ export default function ChatView() {
           />
           
           {uniqueSuggestions.length > 0 && (
-            <div className="px-4 pb-4 mb-32 absolute bottom-0 left-0 right-0 z-10">
-              {uniqueSuggestions.map((suggestion, index) => (
-                <SuggestionBox
-                  key={index}
-                  title={suggestion.title}
-                  description={suggestion.description}
-                  options={suggestion.options}
-                  onSelect={handleSuggestionSelect}
-                />
-              ))}
+            <div className="fixed bottom-24 left-0 right-0 z-10 px-4">
+              <div className="max-w-3xl mx-auto space-y-3">
+                {uniqueSuggestions.map((suggestion, index) => (
+                  <SuggestionBox
+                    key={index}
+                    title={suggestion.title}
+                    description={suggestion.description}
+                    options={suggestion.options}
+                    onSelect={handleSuggestionSelect}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
-        <ChatProcessor chatRef={chatProcessorRef} />
+        
+        <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur-sm border-t">
+          <ChatProcessor chatRef={chatProcessorRef} />
+        </div>
       </div>
     </div>
   );

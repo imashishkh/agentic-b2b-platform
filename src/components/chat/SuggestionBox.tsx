@@ -69,9 +69,9 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
   };
 
   return (
-    <div className="bg-slate-50 rounded-lg p-4 mb-4 shadow-sm border border-slate-100">
+    <div className="bg-white rounded-lg p-4 shadow-md border border-slate-200">
       <h3 className="text-sm font-semibold mb-1 text-slate-800">{title}</h3>
-      <p className="text-sm text-slate-600 mb-3">{description}</p>
+      <p className="text-xs text-slate-600 mb-3">{description}</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {options.map((option) => (
@@ -79,7 +79,7 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
             key={option.id || option.label}
             variant="outline"
             size="sm"
-            className="justify-start bg-white hover:bg-slate-100 border-slate-200 transition-all"
+            className="justify-start bg-white hover:bg-slate-100 border-slate-200 transition-all text-left h-auto py-2"
             onClick={() => handleSelectOption(option.message)}
             title={option.description || option.label}
           >

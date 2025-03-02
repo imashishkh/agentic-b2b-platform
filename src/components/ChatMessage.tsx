@@ -38,12 +38,12 @@ export function ChatMessage({
 }: ChatMessageProps) {
   const isUser = type === "user";
   const messageContainerClasses = isUser
-    ? "flex flex-row-reverse space-x-2 space-x-reverse items-start mb-4"
-    : "flex space-x-2 items-start mb-4";
+    ? "flex flex-row-reverse space-x-2 space-x-reverse items-start mb-6"
+    : "flex space-x-2 items-start mb-6";
 
   const messageClasses = isUser
-    ? `bg-primary text-primary-foreground p-3 rounded-lg max-w-[80%] ${className}`
-    : `bg-muted p-3 rounded-lg max-w-[80%] ${className}`;
+    ? `bg-primary text-primary-foreground p-3 rounded-lg max-w-[85%] md:max-w-[70%] ${className}`
+    : `bg-muted p-3 rounded-lg max-w-[85%] md:max-w-[70%] ${className}`;
 
   const getIconForAgentType = (type: AgentType) => {
     switch (type) {
@@ -65,17 +65,17 @@ export function ChatMessage({
 
   return (
     <div className={messageContainerClasses}>
-      <Avatar className={isUser ? "bg-primary" : "bg-muted-foreground"}>
+      <Avatar className={`${isUser ? "bg-primary" : "bg-muted-foreground"} flex-shrink-0`}>
         {isUser ? (
           <User className="text-primary-foreground h-5 w-5" />
         ) : (
           <div className="text-background font-semibold">{agentType?.charAt(0)}</div>
         )}
       </Avatar>
-      <div className="space-y-1">
+      <div className="space-y-1 overflow-hidden">
         {!isUser && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">
+          <div className="flex items-center space-x-2 mb-1">
+            <span className="text-sm font-medium truncate">
               {agentType}
               {isSecurityReview && (
                 <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
@@ -101,11 +101,13 @@ export function ChatMessage({
           </div>
         )}
         <div className={messageClasses}>
-          {typeof content === "string" ? (
-            <ReactMarkdown>{content}</ReactMarkdown>
-          ) : (
-            content
-          )}
+          <div className="prose prose-sm max-w-none dark:prose-invert">
+            {typeof content === "string" ? (
+              <ReactMarkdown>{content}</ReactMarkdown>
+            ) : (
+              content
+            )}
+          </div>
         </div>
         
         {collaborators && collaborators.length > 0 && (

@@ -1,4 +1,3 @@
-
 import { BaseAgent } from "../BaseAgent";
 import { AgentType } from "../AgentTypes";
 import TaskManager from "./TaskManager";
@@ -244,3 +243,5 @@ export class ManagerAgent extends BaseAgent {
     }
   }
 }
+
+export { SecurityManager, KnowledgeManager };

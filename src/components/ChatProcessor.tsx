@@ -384,8 +384,8 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             managerAgent.current = AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent;
           }
           
-          managerAgent.current.definePerformanceMetrics();
-          const performanceReport = managerAgent.current.generatePerformanceOptimizations();
+          managerAgent.current.getPerformanceMetrics();
+          const performanceReport = managerAgent.current.generateOptimizations();
           
           addMessage({
             type: "agent",

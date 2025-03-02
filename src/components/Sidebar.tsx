@@ -5,6 +5,7 @@ import { Code, BookOpen, LayoutDashboard, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AgentType } from "@/agents/AgentTypes";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SidebarProps {
   className?: string;
@@ -21,7 +22,7 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <div className={cn(
-      "w-64 h-screen border-r bg-background flex flex-col",
+      "w-64 h-screen border-r bg-background flex flex-col shadow-sm",
       className
     )}>
       {/* Header */}
@@ -32,29 +33,31 @@ export function Sidebar({
           </div>
           <span className="font-semibold">DevManager</span>
         </div>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="h-8 w-8">
           <X size={18} />
         </Button>
       </div>
       
       {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-1">
-        <SidebarItem 
-          icon={<Code size={18} />} 
-          label="Chat" 
-          isActive={true} 
-        />
-        <SidebarItem 
-          icon={<BookOpen size={18} />} 
-          label="Knowledge Base" 
-          isActive={false} 
-        />
-        <SidebarItem 
-          icon={<LayoutDashboard size={18} />} 
-          label="Project" 
-          isActive={false} 
-        />
-      </nav>
+      <ScrollArea className="flex-1">
+        <nav className="p-2 space-y-1">
+          <SidebarItem 
+            icon={<Code size={18} />} 
+            label="Chat" 
+            isActive={true} 
+          />
+          <SidebarItem 
+            icon={<BookOpen size={18} />} 
+            label="Knowledge Base" 
+            isActive={false} 
+          />
+          <SidebarItem 
+            icon={<LayoutDashboard size={18} />} 
+            label="Project" 
+            isActive={false} 
+          />
+        </nav>
+      </ScrollArea>
       
       {/* Footer */}
       <div className="p-4 border-t">
@@ -91,7 +94,7 @@ function SidebarItem({ icon, label, isActive, onClick }: SidebarItemProps) {
       onClick={onClick}
     >
       <div className="flex-shrink-0">{icon}</div>
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 }
