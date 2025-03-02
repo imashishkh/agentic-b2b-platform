@@ -1,58 +1,74 @@
 
 import React, { useRef } from "react";
-import { Link, FolderUp } from "lucide-react";
+import { Upload, FolderUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface FileUploadButtonProps {
-  onFileChange: (files: File[]) => void;
+type FileUploadButtonProps = {
+  /**
+   * Icon to display: "file" for single file upload or "folder" for multiple files
+   */
   icon: "file" | "folder";
-}
+  
+  /**
+   * Callback function when files are selected
+   */
+  onFileChange: (files: File[]) => void;
+  
+  /**
+   * Whether the button is disabled
+   */
+  disabled?: boolean;
+};
 
-/**
- * Button component for file or folder uploads
- * Handles the file input logic and triggers the onFileChange callback
- */
-export const FileUploadButton: React.FC<FileUploadButtonProps> = ({ 
-  onFileChange, 
-  icon 
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+export function FileUploadButton({ icon, onFileChange, disabled }: FileUploadButtonProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Determine accept and multiple attributes based on icon type
+  const isFolder = icon === "folder";
+  
+  const handleButtonClick = () => {
+    if (disabled) return;
+    fileInputRef.current?.click();
+  };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    
     const files = e.target.files;
     if (files && files.length > 0) {
       onFileChange(Array.from(files));
-      e.target.value = '';
     }
+    // Reset the input so the same file can be uploaded again
+    e.target.value = '';
   };
-
-  const IconComponent = icon === "file" ? Link : FolderUp;
-  const title = icon === "file" ? "Upload file" : "Upload folder";
-  
-  // Additional attributes for folder upload
-  const folderAttributes = icon === "folder" 
-    ? {
-        // @ts-ignore - These are non-standard attributes but they work in modern browsers
-        webkitdirectory: "",
-        directory: ""
-      } as any
-    : {};
   
   return (
-    <button 
-      className="p-3 text-gray-500 hover:text-sayhalo-dark hover:bg-gray-50 transition-colors"
-      onClick={() => inputRef.current?.click()}
-      title={title}
-    >
-      <IconComponent size={20} />
-      <input 
-        type="file" 
-        className="hidden" 
-        ref={inputRef}
+    <>
+      <button 
+        type="button"
+        onClick={handleButtonClick}
+        className={cn(
+          "p-2 text-gray-500 hover:text-gray-700 focus:outline-none",
+          disabled && "cursor-not-allowed opacity-60 hover:text-gray-500"
+        )}
+        disabled={disabled}
+        aria-label={isFolder ? "Upload Folder" : "Upload File"}
+      >
+        {isFolder ? (
+          <FolderUp className="h-5 w-5" />
+        ) : (
+          <Upload className="h-5 w-5" />
+        )}
+      </button>
+      <input
+        type="file"
+        ref={fileInputRef}
         onChange={handleFileChange}
-        accept={icon === "file" ? ".md,.markdown,text/markdown" : undefined}
-        multiple
-        {...folderAttributes}
+        className="hidden"
+        multiple={isFolder}
+        accept={isFolder ? undefined : "*/*"}
+        disabled={disabled}
       />
-    </button>
+    </>
   );
-};
+}

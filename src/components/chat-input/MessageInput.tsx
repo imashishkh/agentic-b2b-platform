@@ -1,124 +1,45 @@
 
-import React, { useEffect, useRef } from "react";
-import { useChat, KnowledgeBaseResource } from "@/contexts/ChatContext";
-import { extractResourceUrls, suggestResourceCategory, extractTitleFromUrl } from "@/utils/knowledgeBaseUtils";
-import { toast } from "sonner";
-
-interface MessageInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-}
+import React from "react";
 
 /**
- * Text input component for chat messages
- * Handles user typing and keyboard events
- * Also processes potential knowledge base resources
+ * Props for the MessageInput component
  */
-export const MessageInput: React.FC<MessageInputProps> = ({ 
-  value, 
-  onChange, 
-  onKeyDown 
-}) => {
-  const { isRequestingKnowledge, addKnowledgeResource } = useChat();
-  const previousValueRef = useRef(value);
-
+type MessageInputProps = {
   /**
-   * Process potential knowledge base resources when in knowledge request mode
+   * Current value of the input
    */
-  useEffect(() => {
-    // Only check for resources when we're specifically requesting them
-    if (isRequestingKnowledge && value !== previousValueRef.current) {
-      const urls = extractResourceUrls(value);
-      
-      // Process each URL to suggest it as a resource
-      urls.forEach(url => {
-        // Only process new URLs that weren't in the previous value
-        if (previousValueRef.current.includes(url)) {
-          return;
-        }
-        
-        // Create a placeholder description from the URL
-        const title = extractTitleFromUrl(url);
-        const category = suggestResourceCategory(url);
-        const description = `Resource from ${new URL(url).hostname.replace('www.', '')}`;
-        
-        // Show a notification that we've detected a resource
-        toast.info(
-          <div className="text-sm">
-            <p className="font-medium mb-1">Resource detected</p>
-            <p className="text-xs">{title}</p>
-            <p className="text-xs text-gray-500 mt-1">Press Enter to add to knowledge base</p>
-          </div>,
-          {
-            duration: 5000,
-            action: {
-              label: "Add",
-              onClick: () => {
-                addKnowledgeResource({
-                  id: Date.now().toString(),
-                  title,
-                  url,
-                  category,
-                  description,
-                  dateAdded: new Date()
-                });
-                toast.success("Resource added to knowledge base");
-              }
-            }
-          }
-        );
-      });
-    }
-    
-    previousValueRef.current = value;
-  }, [value, isRequestingKnowledge, addKnowledgeResource]);
+  value: string;
+  
+  /**
+   * Callback when the value changes
+   */
+  onChange: (value: string) => void;
+  
+  /**
+   * Optional key down handler
+   */
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  
+  /**
+   * Whether the input is disabled
+   */
+  disabled?: boolean;
+};
 
+/**
+ * MessageInput component renders the text input field for the chat
+ */
+export function MessageInput({ value, onChange, onKeyDown, disabled }: MessageInputProps) {
   return (
-    <input 
-      type="text" 
-      placeholder={isRequestingKnowledge 
-        ? "Paste a URL to add to knowledge base..." 
-        : "Ask DevManager anything..."
-      }
-      className="flex-1 py-3 px-4 bg-transparent border-none outline-none text-sayhalo-dark placeholder:text-gray-400"
+    <input
+      type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      onKeyDown={(e) => {
-        // Handle special case for knowledge base URL submission
-        if (isRequestingKnowledge && e.key === "Enter" && value.trim()) {
-          const urls = extractResourceUrls(value);
-          
-          // If we have a URL, add it to the knowledge base
-          if (urls.length > 0) {
-            urls.forEach(url => {
-              try {
-                // Validate URL
-                new URL(url);
-                
-                // Create resource
-                const resource: KnowledgeBaseResource = {
-                  id: Date.now().toString(),
-                  title: extractTitleFromUrl(url),
-                  url,
-                  category: suggestResourceCategory(url),
-                  description: `Resource from ${new URL(url).hostname.replace('www.', '')}`,
-                  dateAdded: new Date()
-                };
-                
-                // Add to knowledge base
-                addKnowledgeResource(resource);
-                toast.success("Resource added to knowledge base");
-              } catch (error) {
-                console.error("Invalid URL:", url);
-              }
-            });
-          }
-        }
-        
-        // Pass the event to the parent handler
-        onKeyDown(e);
-      }}
+      onKeyDown={onKeyDown}
+      disabled={disabled}
+      placeholder={disabled ? "Agent is thinking..." : "Type a message..."}
+      className="flex-1 border-0 bg-transparent py-2.5 pl-2 focus:ring-0 focus:outline-none text-gray-900"
+      aria-label="Message input"
     />
   );
-};
+}

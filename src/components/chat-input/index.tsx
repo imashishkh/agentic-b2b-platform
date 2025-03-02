@@ -11,10 +11,12 @@ import { FilePreview } from "./FilePreview";
  * Props interface for the ChatInput component
  * @property {string} [className] - Optional CSS class name for styling
  * @property {function} [onSendMessage] - Callback function when a message is sent
+ * @property {boolean} [isDisabled] - Whether the input is disabled
  */
 interface ChatInputProps {
   className?: string;
   onSendMessage?: (message: string, files?: File[]) => void;
+  isDisabled?: boolean;
 }
 
 /**
@@ -26,7 +28,7 @@ interface ChatInputProps {
  * @param {ChatInputProps} props - Component properties
  * @returns {JSX.Element} - Rendered chat input component
  */
-export function ChatInput({ className, onSendMessage }: ChatInputProps) {
+export function ChatInput({ className, onSendMessage, isDisabled }: ChatInputProps) {
   // State for the message input
   const [message, setMessage] = useState("");
   
@@ -38,8 +40,8 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
    * Shows a toast notification on successful send
    */
   const handleSendMessage = () => {
-    // Only send if there's a message or file
-    if (!message.trim() && selectedFiles.length === 0) return;
+    // Only send if there's a message or file and not disabled
+    if (isDisabled || (!message.trim() && selectedFiles.length === 0)) return;
     
     // Call the onSendMessage callback if provided
     if (onSendMessage) {
@@ -59,6 +61,9 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
    * @param {File[]} files - Array of selected files
    */
   const handleFileChange = (files: File[]) => {
+    // Don't add files if disabled
+    if (isDisabled) return;
+    
     // Add new files to the current selection
     setSelectedFiles(prev => [...prev, ...files]);
     
@@ -76,7 +81,7 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
    * @param {React.KeyboardEvent<HTMLInputElement>} e - Keyboard event
    */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -87,11 +92,12 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
    * @param {number} index - Index of the file to remove
    */
   const removeFile = (index: number) => {
+    if (isDisabled) return;
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   // Determine if the send button should be disabled
-  const isSendDisabled = !message.trim() && selectedFiles.length === 0;
+  const isSendDisabled = isDisabled || (!message.trim() && selectedFiles.length === 0);
 
   return (
     <div className={cn(
@@ -99,16 +105,20 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
       className
     )}>
       <div className="relative">
-        <div className="flex items-center bg-white rounded-full border border-gray-200 shadow-sm overflow-hidden">
+        <div className={cn(
+          "flex items-center bg-white rounded-full border border-gray-200 shadow-sm overflow-hidden",
+          isDisabled && "opacity-70"
+        )}>
           {/* File upload buttons */}
-          <FileUploadButton icon="file" onFileChange={handleFileChange} />
-          <FileUploadButton icon="folder" onFileChange={handleFileChange} />
+          <FileUploadButton icon="file" onFileChange={handleFileChange} disabled={isDisabled} />
+          <FileUploadButton icon="folder" onFileChange={handleFileChange} disabled={isDisabled} />
           
           {/* Message input field */}
           <MessageInput 
             value={message}
             onChange={setMessage}
             onKeyDown={handleKeyDown}
+            disabled={isDisabled}
           />
           
           {/* Selected files preview (for single file) */}
@@ -116,6 +126,7 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
             <FilePreview 
               files={selectedFiles} 
               onRemoveFile={removeFile} 
+              disabled={isDisabled}
             />
           )}
           
@@ -132,6 +143,7 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
         <FilePreview 
           files={selectedFiles} 
           onRemoveFile={removeFile} 
+          disabled={isDisabled}
         />
       )}
     </div>

@@ -1,52 +1,68 @@
 
 import React from "react";
+import { X } from "lucide-react";
 
-interface FilePreviewProps {
+type FilePreviewProps = {
+  /**
+   * Array of files to preview
+   */
   files: File[];
+  
+  /**
+   * Callback to remove a file by its index
+   */
   onRemoveFile: (index: number) => void;
-}
+  
+  /**
+   * Whether the preview is disabled (can't remove files)
+   */
+  disabled?: boolean;
+};
 
 /**
- * Component to display a preview of selected files
- * Allows users to remove files from the selection
+ * Displays a preview of selected files with the ability to remove them
  */
-export const FilePreview: React.FC<FilePreviewProps> = ({ files, onRemoveFile }) => {
-  if (files.length <= 0) return null;
+export function FilePreview({ files, onRemoveFile, disabled }: FilePreviewProps) {
+  if (files.length === 0) return null;
   
-  // If only one file, show a simple pill
-  if (files.length === 1) {
-    return (
-      <div className="flex items-center bg-gray-100 px-3 py-1 mr-2 rounded-full">
-        <span className="text-xs text-gray-700 truncate max-w-[100px]">
-          {files[0].name}
-        </span>
-        <button 
-          className="ml-1 text-gray-500 hover:text-gray-700"
-          onClick={() => onRemoveFile(0)}
-        >
-          ×
-        </button>
-      </div>
-    );
-  }
-
-  // If multiple files, show a detailed list
   return (
-    <div className="mt-2 p-2 bg-white/80 backdrop-blur-sm rounded-md max-h-32 overflow-y-auto">
-      <p className="text-xs font-medium mb-1">Selected files ({files.length}):</p>
-      <ul className="space-y-1">
-        {files.map((file, index) => (
-          <li key={index} className="flex items-center justify-between text-xs">
-            <span className="truncate max-w-[250px]">{file.name}</span>
-            <button 
-              onClick={() => onRemoveFile(index)}
-              className="text-red-500 hover:text-red-700"
-            >
-              ×
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className="flex flex-wrap gap-2 p-2">
+      {files.length === 1 ? (
+        // Single file inline display
+        <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+          <span className="truncate max-w-[150px]">{files[0].name}</span>
+          <button
+            type="button"
+            onClick={() => onRemoveFile(0)}
+            disabled={disabled}
+            className={`ml-2 text-gray-500 hover:text-gray-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            aria-label="Remove file"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        // Multiple files display
+        <div className="w-full space-y-2 mt-2">
+          <div className="text-sm font-medium">Selected files:</div>
+          <div className="space-y-1">
+            {files.map((file, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-100 rounded px-3 py-1 text-sm">
+                <span className="truncate max-w-[300px]">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveFile(index)}
+                  disabled={disabled}
+                  className={`ml-2 text-gray-500 hover:text-gray-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
