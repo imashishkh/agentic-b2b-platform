@@ -35,7 +35,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     setCurrentAgentType,
     knowledgeBase,
     isRequestingKnowledge,
-    setIsRequestingKnowledge
+    setIsRequestingKnowledge,
+    addArchitectureProposal,
+    addTestingStrategy,
+    setGitHubRepository
   } = useChat();
 
   // Set up global action handlers for non-React code
@@ -91,6 +94,143 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         );
         
         if (handled) return;
+      }
+      
+      // Handle GitHub integration request
+      if (userMessage.toLowerCase().includes("github") && 
+          (userMessage.toLowerCase().includes("connect") || 
+           userMessage.toLowerCase().includes("integration") || 
+           userMessage.toLowerCase().includes("repository"))) {
+        setTimeout(() => {
+          addMessage({ 
+            type: "agent", 
+            content: "I can help you set up GitHub integration. Please use the 'Show Project Features' button in the top right corner, then navigate to the GitHub tab to connect your repository.",
+            agentType: AgentType.MANAGER
+          });
+          setIsAgentTyping(false);
+        }, 1000);
+        return;
+      }
+      
+      // Handle architecture proposal request
+      if (userMessage.toLowerCase().includes("architecture") && 
+          (userMessage.toLowerCase().includes("propose") || 
+           userMessage.toLowerCase().includes("suggestion") || 
+           userMessage.toLowerCase().includes("plan"))) {
+        setTimeout(() => {
+          // Create a sample architecture proposal
+          const proposal = {
+            id: Date.now().toString(),
+            title: "E-commerce Platform Architecture",
+            description: "Scalable microservices architecture for an e-commerce platform with high availability and security.",
+            components: [
+              {
+                name: "Frontend Client",
+                type: "React SPA",
+                description: "Single page application built with React, Redux for state management, and Tailwind CSS for styling.",
+                dependencies: ["API Gateway"]
+              },
+              {
+                name: "API Gateway",
+                type: "Express.js",
+                description: "Central gateway for all client requests, handles routing, authentication, and request validation.",
+                dependencies: ["User Service", "Product Service", "Order Service"]
+              },
+              {
+                name: "User Service",
+                type: "Microservice",
+                description: "Handles user authentication, profile management, and permissions.",
+                dependencies: ["User Database"]
+              },
+              {
+                name: "Product Service",
+                type: "Microservice",
+                description: "Manages product catalog, inventory, and product search functionality.",
+                dependencies: ["Product Database", "Search Engine"]
+              },
+              {
+                name: "Order Service",
+                type: "Microservice",
+                description: "Processes orders, payments, and shipping information.",
+                dependencies: ["Order Database", "Payment Gateway"]
+              }
+            ],
+            diagram: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNDAwIiB5PSIyMDAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QXJjaGl0ZWN0dXJlIERpYWdyYW0gUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+",
+            dateCreated: new Date(),
+            approved: false
+          };
+          
+          // Add the proposal to the context
+          addArchitectureProposal(proposal);
+          
+          // Respond to the user
+          addMessage({ 
+            type: "agent", 
+            content: "I've created an architecture proposal for your e-commerce platform. You can view the details by clicking the 'Show Project Features' button in the top right corner, then navigating to the Architecture tab.",
+            agentType: AgentType.MANAGER
+          });
+          setIsAgentTyping(false);
+        }, 1500);
+        return;
+      }
+      
+      // Handle testing strategy request
+      if (userMessage.toLowerCase().includes("testing") && 
+          (userMessage.toLowerCase().includes("strategy") || 
+           userMessage.toLowerCase().includes("plan") || 
+           userMessage.toLowerCase().includes("approach"))) {
+        setTimeout(() => {
+          // Create a sample testing strategy
+          const strategy = {
+            id: Date.now().toString(),
+            title: "Comprehensive E-commerce Testing Strategy",
+            description: "Multi-layered testing approach ensuring functionality, performance, and security of the e-commerce platform.",
+            approaches: [
+              {
+                type: "Unit Testing",
+                framework: "Jest",
+                coverageGoal: 80,
+                description: "Test individual functions and components in isolation with mocked dependencies."
+              },
+              {
+                type: "Integration Testing",
+                framework: "Jest + Supertest",
+                coverageGoal: 70,
+                description: "Verify interactions between components and services work correctly together."
+              },
+              {
+                type: "End-to-End Testing",
+                framework: "Cypress",
+                coverageGoal: 60,
+                description: "Test complete user flows like registration, product search, and checkout from a user perspective."
+              },
+              {
+                type: "Performance Testing",
+                framework: "k6",
+                description: "Load test critical paths with simulated user traffic to ensure response times remain acceptable."
+              },
+              {
+                type: "Security Testing",
+                framework: "OWASP ZAP",
+                description: "Automated vulnerability scanning and penetration testing to identify security issues."
+              }
+            ],
+            dateCreated: new Date(),
+            approved: false
+          };
+          
+          // Add the strategy to the context
+          addTestingStrategy(strategy);
+          
+          // Respond to the user
+          addMessage({ 
+            type: "agent", 
+            content: "I've created a comprehensive testing strategy for your e-commerce platform. You can view the details by clicking the 'Show Project Features' button in the top right corner, then navigating to the Testing tab.",
+            agentType: AgentType.MANAGER
+          });
+          setIsAgentTyping(false);
+        }, 1500);
+        return;
       }
       
       // Continue with existing logic for handling text inputs

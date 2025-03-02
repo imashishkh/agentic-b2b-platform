@@ -1,3 +1,4 @@
+
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 
@@ -32,7 +33,11 @@ export class ManagerAgent extends BaseAgent {
     "Security review",
     "Performance optimization strategy",
     "E-commerce domain expertise",
-    "Knowledge base management"
+    "Knowledge base management",
+    "Documentation management",
+    "System architecture design",
+    "Testing strategy development",
+    "GitHub integration"
   ];
   
   /**
@@ -44,7 +49,7 @@ export class ManagerAgent extends BaseAgent {
   canHandle(message: string): boolean {
     // The manager can handle any message related to project management,
     // planning, coordination, or technical oversight
-    return message.match(/project|plan|phase|task|milestone|timeline|requirement|specification|team|coordinate|oversee|manage|guide|help|stuck|uncertain|advice|architecture|decision|review|quality|security|performance|knowledge|documentation|resource|reference/i) !== null;
+    return message.match(/project|plan|phase|task|milestone|timeline|requirement|specification|team|coordinate|oversee|manage|guide|help|stuck|uncertain|advice|architecture|decision|review|quality|security|performance|knowledge|documentation|resource|reference|github|testing|strategy/i) !== null;
   }
   
   /**
@@ -55,6 +60,36 @@ export class ManagerAgent extends BaseAgent {
    */
   isKnowledgeBaseRequest(message: string): boolean {
     return message.match(/knowledge base|documentation|reference|resource|link|article|guide|tutorial|standard|best practice|example/i) !== null;
+  }
+  
+  /**
+   * Checks if a message is related to architecture proposals
+   * 
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this is an architecture proposal request
+   */
+  isArchitectureRequest(message: string): boolean {
+    return message.match(/architecture|system design|component|diagram|structure|high level design|technical architecture/i) !== null;
+  }
+  
+  /**
+   * Checks if a message is related to testing strategies
+   * 
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this is a testing strategy request
+   */
+  isTestingStrategyRequest(message: string): boolean {
+    return message.match(/testing|test strategy|unit test|integration test|end-to-end|e2e|quality assurance|qa plan/i) !== null;
+  }
+  
+  /**
+   * Checks if a message is related to GitHub integration
+   * 
+   * @param message - The user message to evaluate
+   * @returns boolean indicating whether this is a GitHub integration request
+   */
+  isGitHubRequest(message: string): boolean {
+    return message.match(/github|git|repository|version control|branch|commit|pr|pull request/i) !== null;
   }
   
   /**
@@ -101,6 +136,59 @@ To add a resource, simply share a link with a brief description of what it conta
         4. Organizes the knowledge into relevant categories (Tech Stack, Industry Standards, Security, etc.)
         
         Make your response helpful and focused on how these resources will improve the project's quality and efficiency.
+      `;
+    }
+    
+    // Handle architecture-related messages
+    if (this.isArchitectureRequest(userMessage)) {
+      return `
+        As the Development Manager and system architect for this e-commerce project, you're being asked about system architecture.
+        
+        ${userMessage}
+        
+        Please provide a response that:
+        1. Outlines a high-level architecture appropriate for an e-commerce system
+        2. Describes key components and their relationships
+        3. Explains technical decisions and trade-offs
+        4. Recommends technologies for each component
+        5. Mentions that you can create a formal architecture proposal the user can view in the Project Features panel
+        
+        Make your response detailed but accessible, explaining architectural concepts clearly.
+      `;
+    }
+    
+    // Handle testing strategy messages
+    if (this.isTestingStrategyRequest(userMessage)) {
+      return `
+        As the Development Manager and quality assurance lead for this e-commerce project, you're being asked about testing strategies.
+        
+        ${userMessage}
+        
+        Please provide a response that:
+        1. Outlines a comprehensive testing approach for an e-commerce system
+        2. Covers different testing levels (unit, integration, e2e, etc.)
+        3. Recommends testing frameworks and tools
+        4. Explains how testing fits into the development lifecycle
+        5. Mentions that you can create a formal testing strategy the user can view in the Project Features panel
+        
+        Make your response practical and actionable, with concrete examples.
+      `;
+    }
+    
+    // Handle GitHub integration messages
+    if (this.isGitHubRequest(userMessage)) {
+      return `
+        As the Development Manager and DevOps expert for this e-commerce project, you're being asked about GitHub integration.
+        
+        ${userMessage}
+        
+        Please provide a response that:
+        1. Explains the benefits of GitHub integration for an e-commerce project
+        2. Outlines best practices for repository structure and branching strategies
+        3. Suggests CI/CD workflows appropriate for e-commerce
+        4. Directs the user to use the Project Features panel to connect their GitHub repository
+        
+        Make your response practical and focused on the e-commerce context.
       `;
     }
     

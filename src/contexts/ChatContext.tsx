@@ -14,6 +14,55 @@ export interface KnowledgeBaseResource {
   category: string;     // Category (e.g., "Technology", "Industry Standards", "Security")
   description: string;  // Brief description of the resource
   dateAdded: Date;      // When the resource was added
+  tags?: string[];      // Optional tags for improved indexing
+  priority?: 'low' | 'medium' | 'high'; // Priority of the resource
+  isIndexed?: boolean;  // Whether the resource has been processed/indexed
+}
+
+/**
+ * Interface for system architecture proposal
+ */
+export interface ArchitectureProposal {
+  id: string;
+  title: string;
+  description: string;
+  components: Array<{
+    name: string;
+    type: string;
+    description: string;
+    dependencies?: string[];
+  }>;
+  diagram?: string; // URL or base64 representation of diagram
+  dateCreated: Date;
+  approved?: boolean;
+}
+
+/**
+ * Interface for testing strategy
+ */
+export interface TestingStrategy {
+  id: string;
+  title: string;
+  description: string;
+  approaches: Array<{
+    type: string; // e.g., "unit", "integration", "e2e"
+    framework: string;
+    coverageGoal?: number;
+    description: string;
+  }>;
+  dateCreated: Date;
+  approved?: boolean;
+}
+
+/**
+ * Interface for GitHub repository information
+ */
+export interface GitHubRepository {
+  name: string;
+  url: string;
+  branch: string;
+  connected: boolean;
+  lastSynced?: Date;
 }
 
 /**
@@ -35,6 +84,11 @@ interface ChatContextType {
   currentAgentType: AgentType;              // Which agent is currently active
   knowledgeBase: KnowledgeBaseResource[];   // Knowledge base resources
   isRequestingKnowledge: boolean;           // Whether we're currently requesting knowledge base resources
+  architectureProposals: ArchitectureProposal[]; // System architecture proposals
+  testingStrategies: TestingStrategy[];     // Testing strategies
+  gitHubRepository: GitHubRepository | null; // GitHub repository information
+  
+  // Methods
   addMessage: (message: ChatMessageProps) => void;  // Add a new message to the chat
   setIsAgentTyping: (isTyping: boolean) => void;    // Update typing indicator
   setIsFetchingResponse: (isFetching: boolean) => void;  // Update fetching status
@@ -44,6 +98,11 @@ interface ChatContextType {
   addKnowledgeResource: (resource: KnowledgeBaseResource) => void;  // Add a new knowledge resource
   removeKnowledgeResource: (id: string) => void;    // Remove a knowledge resource
   setIsRequestingKnowledge: (isRequesting: boolean) => void;  // Update knowledge request status
+  addArchitectureProposal: (proposal: ArchitectureProposal) => void; // Add new architecture proposal
+  updateArchitectureProposal: (id: string, proposal: Partial<ArchitectureProposal>) => void; // Update proposal
+  addTestingStrategy: (strategy: TestingStrategy) => void; // Add new testing strategy
+  updateTestingStrategy: (id: string, strategy: Partial<TestingStrategy>) => void; // Update strategy
+  setGitHubRepository: (repo: GitHubRepository | null) => void; // Set GitHub repository
 }
 
 /**
@@ -68,6 +127,9 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [currentAgentType, setCurrentAgentType] = useState<AgentType>(AgentType.MANAGER);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseResource[]>([]);
   const [isRequestingKnowledge, setIsRequestingKnowledge] = useState(false);
+  const [architectureProposals, setArchitectureProposals] = useState<ArchitectureProposal[]>([]);
+  const [testingStrategies, setTestingStrategies] = useState<TestingStrategy[]>([]);
+  const [gitHubRepository, setGitHubRepository] = useState<GitHubRepository | null>(null);
 
   /**
    * Add a new message to the chat history
@@ -96,6 +158,48 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     setKnowledgeBase(prev => prev.filter(resource => resource.id !== id));
   };
 
+  /**
+   * Add a new architecture proposal
+   * 
+   * @param proposal - The proposal object to add
+   */
+  const addArchitectureProposal = (proposal: ArchitectureProposal) => {
+    setArchitectureProposals(prev => [...prev, proposal]);
+  };
+
+  /**
+   * Update an existing architecture proposal
+   * 
+   * @param id - The ID of the proposal to update
+   * @param proposal - Partial proposal object with updates
+   */
+  const updateArchitectureProposal = (id: string, proposal: Partial<ArchitectureProposal>) => {
+    setArchitectureProposals(prev => 
+      prev.map(p => p.id === id ? { ...p, ...proposal } : p)
+    );
+  };
+
+  /**
+   * Add a new testing strategy
+   * 
+   * @param strategy - The strategy object to add
+   */
+  const addTestingStrategy = (strategy: TestingStrategy) => {
+    setTestingStrategies(prev => [...prev, strategy]);
+  };
+
+  /**
+   * Update an existing testing strategy
+   * 
+   * @param id - The ID of the strategy to update
+   * @param strategy - Partial strategy object with updates
+   */
+  const updateTestingStrategy = (id: string, strategy: Partial<TestingStrategy>) => {
+    setTestingStrategies(prev => 
+      prev.map(s => s.id === id ? { ...s, ...strategy } : s)
+    );
+  };
+
   // Provide the chat state and functions to all child components
   return (
     <ChatContext.Provider value={{
@@ -107,6 +211,9 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       currentAgentType,
       knowledgeBase,
       isRequestingKnowledge,
+      architectureProposals,
+      testingStrategies,
+      gitHubRepository,
       addMessage,
       setIsAgentTyping,
       setIsFetchingResponse,
@@ -115,7 +222,12 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       setCurrentAgentType,
       addKnowledgeResource,
       removeKnowledgeResource,
-      setIsRequestingKnowledge
+      setIsRequestingKnowledge,
+      addArchitectureProposal,
+      updateArchitectureProposal,
+      addTestingStrategy,
+      updateTestingStrategy,
+      setGitHubRepository
     }}>
       {children}
     </ChatContext.Provider>
