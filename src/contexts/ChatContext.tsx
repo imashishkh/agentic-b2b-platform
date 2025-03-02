@@ -7,13 +7,7 @@ import { AgentType } from "@/agents/AgentTypes";
  * Initial messages to bootstrap the conversation when a user first interacts with the system
  * These provide guidance on how to start the project planning process
  */
-const initialMessages: ChatMessageProps[] = [
-  {
-    type: "agent",
-    content: "Hello! I'm your project manager agent for building an e-commerce platform. Could you please upload a markdown file with your project requirements? Alternatively, you can describe your project and I'll help organize it into phases and tasks.",
-    agentType: AgentType.MANAGER
-  }
-];
+const initialMessages: ChatMessageProps[] = [];
 
 /**
  * Interface defining the shape of the ChatContext

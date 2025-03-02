@@ -1,7 +1,7 @@
+
 import { useState, useRef, ChangeEvent } from "react";
-import { ArrowRight, Link, Settings, FolderUp } from "lucide-react";
+import { ArrowUpCircle, Link, Settings, FolderUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 
 /**
@@ -100,116 +100,91 @@ export function ChatInput({ className, onSendMessage }: ChatInputProps) {
 
   return (
     <div className={cn(
-      "w-full max-w-[80%] mx-auto relative",
+      "w-full max-w-4xl mx-auto",
       className
     )}>
-      <div className="glass rounded-[15px] flex items-center w-full shadow-lg shadow-black/5 border border-white/15 px-4">
-        {/* Settings popover button */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="p-2 text-sayhalo-dark opacity-70 hover:opacity-100 transition-opacity">
-              <Settings size={20} />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64">
-            <div className="space-y-3">
-              <h3 className="font-medium text-sm">Chat Settings</h3>
-              {/* Response length setting */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-sayhalo-dark/80 block">Response Length</label>
-                <select className="w-full text-xs rounded-md border border-sayhalo-dark/20 p-1.5">
-                  <option value="short">Short</option>
-                  <option value="medium" selected>Medium</option>
-                  <option value="long">Long</option>
-                </select>
-              </div>
-              {/* Tone setting */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-sayhalo-dark/80 block">Tone</label>
-                <select className="w-full text-xs rounded-md border border-sayhalo-dark/20 p-1.5">
-                  <option value="casual">Casual</option>
-                  <option value="professional" selected>Professional</option>
-                  <option value="friendly">Friendly</option>
-                </select>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-        
-        {/* Single file upload button */}
-        <button 
-          className="p-2 text-sayhalo-dark opacity-70 hover:opacity-100 transition-opacity"
-          onClick={() => fileInputRef.current?.click()}
-          title="Upload file"
-        >
-          <Link size={20} />
-          <input 
-            type="file" 
-            className="hidden" 
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".md,.markdown,text/markdown"
-            multiple
-          />
-        </button>
+      <div className="relative">
+        <div className="flex items-center bg-white rounded-full border border-gray-200 shadow-sm overflow-hidden">
+          {/* File upload button */}
+          <button 
+            className="p-3 text-gray-500 hover:text-sayhalo-dark hover:bg-gray-50 transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload file"
+          >
+            <Link size={20} />
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".md,.markdown,text/markdown"
+              multiple
+            />
+          </button>
 
-        {/* Folder upload button */}
-        <button 
-          className="p-2 text-sayhalo-dark opacity-70 hover:opacity-100 transition-opacity"
-          onClick={() => folderInputRef.current?.click()}
-          title="Upload folder"
-        >
-          <FolderUp size={20} />
+          {/* Folder upload button */}
+          <button 
+            className="p-3 text-gray-500 hover:text-sayhalo-dark hover:bg-gray-50 transition-colors"
+            onClick={() => folderInputRef.current?.click()}
+            title="Upload folder"
+          >
+            <FolderUp size={20} />
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={folderInputRef}
+              onChange={handleFileChange}
+              // Using a data attribute approach instead of the non-standard properties
+              // @ts-ignore - These are non-standard attributes but they work in modern browsers
+              multiple
+              {...({
+                webkitdirectory: "",
+                directory: ""
+              } as any)}
+            />
+          </button>
+          
+          {/* Message input field */}
           <input 
-            type="file" 
-            className="hidden" 
-            ref={folderInputRef}
-            onChange={handleFileChange}
-            // Using a data attribute approach instead of the non-standard properties
-            // @ts-ignore - These are non-standard attributes but they work in modern browsers
-            multiple
-            {...({
-              webkitdirectory: "",
-              directory: ""
-            } as any)}
+            type="text" 
+            placeholder="Ask DevManager anything..." 
+            className="flex-1 py-3 px-4 bg-transparent border-none outline-none text-sayhalo-dark placeholder:text-gray-400"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
-        </button>
-        
-        {/* Message input field */}
-        <input 
-          type="text" 
-          placeholder="Ask DevManager anything..." 
-          className="flex-1 py-3 px-2 bg-transparent border-none outline-none text-sayhalo-dark placeholder:text-sayhalo-light/70"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        
-        {/* Selected files display */}
-        {selectedFiles.length > 0 && (
-          <div className="flex items-center gap-1 bg-sayhalo-dark/10 px-2 py-1 rounded-md mr-2">
-            <span className="text-xs truncate max-w-[100px]">
-              {selectedFiles.length === 1 
-                ? selectedFiles[0].name 
-                : `${selectedFiles.length} files selected`}
-            </span>
-            <button 
-              className="text-sayhalo-dark/70 hover:text-sayhalo-dark"
-              onClick={() => setSelectedFiles([])}
-            >
-              ×
-            </button>
-          </div>
-        )}
-        
-        {/* Send button */}
-        <button 
-          className="flex items-center justify-center gap-1 bg-sayhalo-coral text-white px-4 py-2 rounded-[10px] font-medium hover:shadow-md transition-all duration-300"
-          onClick={handleSendMessage}
-        >
-          Send
-          <ArrowRight size={16} />
-        </button>
+          
+          {/* Selected files display */}
+          {selectedFiles.length > 0 && (
+            <div className="flex items-center bg-gray-100 px-3 py-1 mr-2 rounded-full">
+              <span className="text-xs text-gray-700 truncate max-w-[100px]">
+                {selectedFiles.length === 1 
+                  ? selectedFiles[0].name 
+                  : `${selectedFiles.length} files`}
+              </span>
+              <button 
+                className="ml-1 text-gray-500 hover:text-gray-700"
+                onClick={() => setSelectedFiles([])}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          
+          {/* Send button */}
+          <button 
+            className={cn(
+              "p-2 m-1 rounded-full transition-all duration-200",
+              message.trim() || selectedFiles.length > 0
+                ? "text-white bg-sayhalo-coral hover:bg-sayhalo-coral/90"
+                : "text-gray-400 bg-gray-100 cursor-not-allowed"
+            )}
+            onClick={handleSendMessage}
+            disabled={!message.trim() && selectedFiles.length === 0}
+          >
+            <ArrowUpCircle size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Selected files preview - only show if multiple files are selected */}

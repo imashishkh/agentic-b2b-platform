@@ -11,6 +11,8 @@ import { AgentType } from "./AgentTypes";
  * - State management
  * - UI performance optimization
  * - Frontend testing
+ * - User experience considerations
+ * - Accessibility standards
  */
 export class FrontendAgent extends BaseAgent {
   type = AgentType.FRONTEND;
@@ -29,8 +31,11 @@ export class FrontendAgent extends BaseAgent {
     "State management",
     "Frontend performance optimization",
     "Accessibility",
+    "UI/UX design principles",
     "UI animations",
-    "Frontend testing"
+    "Frontend testing",
+    "Component architecture",
+    "Design systems"
   ];
   
   /**
@@ -40,7 +45,17 @@ export class FrontendAgent extends BaseAgent {
    * @returns boolean indicating whether this agent can handle the message
    */
   canHandle(message: string): boolean {
-    return message.match(/frontend|UI|component|react|design|css|tailwind|style|layout|responsive|mobile|desktop|animation|transition|state management|redux|context|hook/i) !== null;
+    const frontendKeywords = [
+      'frontend', 'ui', 'ux', 'component', 'react', 'design', 'css', 'tailwind', 
+      'style', 'layout', 'responsive', 'mobile', 'desktop', 'animation', 
+      'transition', 'state management', 'redux', 'context', 'hook', 'interface',
+      'user interface', 'button', 'form', 'input', 'modal', 'sidebar', 'navbar',
+      'design system', 'theme', 'accessibility', 'a11y'
+    ];
+    
+    // Create a regex pattern that matches any of the keywords
+    const pattern = new RegExp(frontendKeywords.join('|'), 'i');
+    return pattern.test(message);
   }
   
   /**
@@ -61,13 +76,15 @@ export class FrontendAgent extends BaseAgent {
         : "No project structure has been defined yet. Focus on general frontend best practices for e-commerce."}
       
       Your expertise is in:
-      - React component architecture
-      - Tailwind CSS styling and responsive design
-      - State management patterns
-      - Frontend performance optimization
-      - Accessibility and user experience
+      - React component architecture and design patterns
+      - Tailwind CSS styling and responsive design principles
+      - State management strategies (Context API, useState, useReducer)
+      - Frontend performance optimization techniques
+      - Accessibility standards and user experience best practices
+      - UI animations and interactive elements
       
       Provide concrete code examples when applicable, focusing on modern React patterns with TypeScript and Tailwind CSS.
+      When discussing UI components, emphasize clean, maintainable code architecture.
     `;
   }
   
@@ -79,6 +96,19 @@ export class FrontendAgent extends BaseAgent {
    * @returns A search query string focused on frontend development
    */
   protected createSearchQuery(message: string, projectPhases: any[]): string {
-    return `React Tailwind CSS ${message} e-commerce UI component best practices`;
+    // Enhance search queries with more specific frontend-related terms
+    const frontendTerms = ["React", "Tailwind CSS", "UI component", "responsive design"];
+    
+    // Extract any project-specific terms if available
+    const projectTerms = projectPhases.length > 0 
+      ? projectPhases
+          .flatMap(phase => phase.tasks || [])
+          .filter(task => task.type === 'frontend')
+          .map(task => task.description)
+          .slice(0, 2)
+      : [];
+      
+    // Combine terms for a more focused search
+    return `${frontendTerms.join(" ")} ${projectTerms.join(" ")} ${message} e-commerce best practices`;
   }
 }

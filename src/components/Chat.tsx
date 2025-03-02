@@ -10,9 +10,15 @@ interface ChatProps {
 
 export function Chat({ chatRef }: ChatProps) {
   return (
-    <ChatProvider>
-      <ChatProcessor chatRef={chatRef} />
-      <ChatView />
-    </ChatProvider>
+    <div className="h-full flex flex-col bg-lavender-light">
+      <ChatProvider>
+        <div className="hidden">
+          <ChatProcessor chatRef={chatRef} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <ChatView />
+        </div>
+      </ChatProvider>
+    </div>
   );
 }
