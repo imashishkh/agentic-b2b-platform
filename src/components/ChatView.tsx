@@ -4,7 +4,7 @@ import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
 import { ApiSettings } from "@/components/ApiSettings";
 import { ChatProcessor } from "./ChatProcessor";
-import { ProjectFeaturesPanel } from "./project/ProjectFeaturesPanel";
+import { EnhancedProjectPanel } from "./project/EnhancedProjectPanel";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatMessages } from "./chat/ChatMessages";
 import { ChatFooter } from "./chat/ChatFooter";
@@ -133,7 +133,7 @@ Let me know if you'd like to proceed with this example!
         
         {showProjectPanel && (
           <div className="w-80 border-l bg-background overflow-y-auto">
-            <ProjectFeaturesPanel />
+            <EnhancedProjectPanel />
           </div>
         )}
       </div>
