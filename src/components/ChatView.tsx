@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
 import { ChatMessages } from "@/components/chat/ChatMessages";
@@ -48,7 +49,7 @@ export default function ChatView() {
         />
         
         {suggestions.length > 0 && (
-          <div className="px-4 pb-4 mb-28 absolute bottom-0 left-0 right-0 z-10">
+          <div className="px-4 pb-4 mb-32 absolute bottom-0 left-0 right-0 z-10">
             {suggestions.map((suggestion, index) => (
               <SuggestionBox
                 key={index}
