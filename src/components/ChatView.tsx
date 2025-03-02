@@ -1,11 +1,10 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { ChatInput } from "./chat-input";
 import { ChatMessage } from "./ChatMessage";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
 import { FileUploadButton } from "./chat-input/FileUploadButton";
-import { ApiSettingsDialog } from "@/components/ApiSettingsDialog";
+import { ApiSettings } from "@/components/ApiSettings";
 import { ChatProcessor } from "./ChatProcessor";
 import { Settings, PanelLeft, Trash2, Download, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
@@ -244,7 +243,7 @@ Let me know if you'd like to proceed with this example!
       </div>
       
       {showApiSettings && (
-        <ApiSettingsDialog onClose={() => setShowApiSettings(false)} />
+        <ApiSettings onClose={() => setShowApiSettings(false)} />
       )}
       
       <div style={{ display: 'none' }}>

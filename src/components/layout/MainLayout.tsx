@@ -4,9 +4,6 @@ import { ApiSettings } from "@/components/ApiSettings";
 import { Sidebar } from "@/components/Sidebar";
 import { AgentType } from "@/agents/AgentTypes";
 import { ProjectFeaturesPanel } from "@/components/project/ProjectFeaturesPanel";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Layout, Settings } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 interface MainLayoutProps {
   children: React.ReactNode;
