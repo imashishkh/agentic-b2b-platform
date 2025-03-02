@@ -1,60 +1,65 @@
 
-import React, { ReactNode, useEffect, useState } from "react";
-import { useUser as useClerkUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
-import { MockUserProvider, useMockUser, useAuth as useMockAuth } from "./MockUserProvider";
+import React, { createContext, useContext, ReactNode } from "react";
 
-// Check if Clerk is available by looking for the environment variable
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const isClerkConfigured = PUBLISHABLE_KEY && PUBLISHABLE_KEY !== "pk_test_placeholder";
+// Define a simple mock user type
+export interface MockUser {
+  id: string;
+  fullName: string;
+  imageUrl: string;
+  username: string;
+  primaryEmailAddress?: {
+    emailAddress: string;
+  };
+}
 
-// Custom hook that tries Clerk first, falls back to mock
-export const useUser = () => {
-  if (isClerkConfigured) {
-    try {
-      // Try to use Clerk's useUser
-      return useClerkUser();
-    } catch (error) {
-      console.warn("Clerk authentication error, falling back to mock user:", error);
-      // If that fails, use our mock
-      return useMockUser();
+// Create context with default values
+const UserContext = createContext<{
+  user: MockUser;
+  isSignedIn: boolean;
+  isLoaded: boolean;
+}>({
+  user: {
+    id: "mock-user-id",
+    fullName: "Demo User",
+    imageUrl: "/placeholder.svg",
+    username: "demouser",
+    primaryEmailAddress: {
+      emailAddress: "demo@example.com"
     }
-  } else {
-    // No Clerk key, use mock
-    return useMockUser();
-  }
-};
+  },
+  isSignedIn: true,
+  isLoaded: true
+});
 
-// Custom hook that tries Clerk first, falls back to mock
+// Custom hook to use the user context
+export const useUser = () => useContext(UserContext);
+
+// Mock auth function for compatibility
 export const useAuth = () => {
-  if (isClerkConfigured) {
-    try {
-      // Try to use Clerk's useAuth
-      return useClerkAuth();
-    } catch (error) {
-      console.warn("Clerk authentication error, falling back to mock auth:", error);
-      // If that fails, use our mock
-      return useMockAuth();
+  return {
+    signOut: async () => {
+      console.log("Mock sign out successful");
+      return Promise.resolve();
     }
-  } else {
-    // No Clerk key, use mock
-    return useMockAuth();
-  }
+  };
 };
 
-// User provider component that provides real or mock data
+// Provider component for the user context
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [usingMock, setUsingMock] = useState(!isClerkConfigured);
-
-  useEffect(() => {
-    if (!isClerkConfigured) {
-      console.info("Running in development mode with mock authentication. Set VITE_CLERK_PUBLISHABLE_KEY for real authentication.");
+  // Create a static mock user
+  const mockUser: MockUser = {
+    id: "mock-user-id",
+    fullName: "Demo User",
+    imageUrl: "/placeholder.svg",
+    username: "demouser",
+    primaryEmailAddress: {
+      emailAddress: "demo@example.com"
     }
-  }, []);
+  };
 
-  // Always use MockUserProvider when Clerk is not configured
-  return usingMock ? (
-    <MockUserProvider>{children}</MockUserProvider>
-  ) : (
-    <>{children}</>
+  return (
+    <UserContext.Provider value={{ user: mockUser, isSignedIn: true, isLoaded: true }}>
+      {children}
+    </UserContext.Provider>
   );
 };
