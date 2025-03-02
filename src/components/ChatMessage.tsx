@@ -1,177 +1,131 @@
 
-import React, { useState } from "react";
-import { AgentType } from "@/agents/AgentTypes";
+import React from "react";
 import { Avatar } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
+import { AgentType } from "@/agents/AgentTypes";
+import { 
+  Shield, 
+  AlertTriangle, 
+  CheckCircle, 
+  User, 
+  Code, 
+  Database, 
+  Cpu,
+  Layout,
+  Users
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { Code, User, ThumbsUp, ThumbsDown, Copy, MessageCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Tooltip } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 export interface ChatMessageProps {
-  type: "user" | "agent";
-  content: string;
-  isLoading?: boolean;
+  type: string;
+  content: React.ReactNode;
   agentType?: AgentType;
+  isSecurityReview?: boolean;
+  complianceStatus?: "passed" | "warning" | "failed";
+  collaborators?: AgentType[];
+  projectContext?: string;
+  className?: string;
 }
 
-export function ChatMessage({ type, content, isLoading = false, agentType = AgentType.MANAGER }: ChatMessageProps) {
-  const [feedback, setFeedback] = useState<"helpful" | "not-helpful" | null>(null);
-  const [showCommentBox, setShowCommentBox] = useState(false);
-  const [comment, setComment] = useState("");
+export function ChatMessage({ 
+  type, 
+  content, 
+  agentType = AgentType.MANAGER,
+  isSecurityReview,
+  complianceStatus,
+  collaborators,
+  projectContext,
+  className = ""
+}: ChatMessageProps) {
+  const isUser = type === "user";
+  const messageContainerClasses = isUser
+    ? "flex flex-row-reverse space-x-2 space-x-reverse items-start mb-4"
+    : "flex space-x-2 items-start mb-4";
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(content);
-    toast.success("Copied to clipboard");
-  };
+  const messageClasses = isUser
+    ? `bg-primary text-primary-foreground p-3 rounded-lg max-w-[80%] ${className}`
+    : `bg-muted p-3 rounded-lg max-w-[80%] ${className}`;
 
-  const handleFeedback = (type: "helpful" | "not-helpful") => {
-    setFeedback(type);
-    toast.success(type === "helpful" ? "Marked as helpful" : "Marked as not helpful");
-    // Here you would typically send feedback to your backend
-  };
-
-  const handleComment = () => {
-    if (showCommentBox) {
-      if (comment.trim()) {
-        toast.success("Comment submitted");
-        // Here you would typically send the comment to your backend
-        setComment("");
-      }
-      setShowCommentBox(false);
-    } else {
-      setShowCommentBox(true);
+  const getIconForAgentType = (type: AgentType) => {
+    switch (type) {
+      case AgentType.FRONTEND:
+        return <Layout className="h-4 w-4" />;
+      case AgentType.BACKEND:
+        return <Code className="h-4 w-4" />;
+      case AgentType.DATABASE:
+        return <Database className="h-4 w-4" />;
+      case AgentType.DEVOPS:
+        return <Cpu className="h-4 w-4" />;
+      case AgentType.UX:
+        return <Users className="h-4 w-4" />;
+      case AgentType.MANAGER:
+      default:
+        return null;
     }
   };
 
-  if (type === "user") {
-    return (
-      <div className="flex justify-end mb-4 animate-fade-in">
-        <div className="flex items-start gap-3 max-w-[80%]">
-          <div className="bg-blue-600 text-white rounded-lg p-3">
-            <p className="text-sm whitespace-pre-wrap">{content}</p>
+  return (
+    <div className={messageContainerClasses}>
+      <Avatar className={isUser ? "bg-primary" : "bg-muted-foreground"}>
+        {isUser ? (
+          <User className="text-primary-foreground h-5 w-5" />
+        ) : (
+          <div className="text-background font-semibold">{agentType?.charAt(0)}</div>
+        )}
+      </Avatar>
+      <div className="space-y-1">
+        {!isUser && (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">
+              {agentType}
+              {isSecurityReview && (
+                <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                  Security Review
+                </span>
+              )}
+              {complianceStatus && (
+                <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
+                  complianceStatus === "passed" 
+                    ? "bg-green-100 text-green-800" 
+                    : complianceStatus === "warning"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                }`}>
+                  {complianceStatus === "passed" && <CheckCircle className="inline h-3 w-3 mr-1" />}
+                  {complianceStatus === "warning" && <AlertTriangle className="inline h-3 w-3 mr-1" />}
+                  {complianceStatus === "failed" && <Shield className="inline h-3 w-3 mr-1" />}
+                  {complianceStatus.charAt(0).toUpperCase() + complianceStatus.slice(1)}
+                </span>
+              )}
+            </span>
+            {getIconForAgentType(agentType)}
           </div>
-          <Avatar className="h-8 w-8 bg-blue-700">
-            <User className="h-4 w-4 text-white" />
-          </Avatar>
-        </div>
-      </div>
-    );
-  } else {
-    return (
-      <div className={cn(
-        "flex items-start gap-3 mb-4",
-        isLoading ? "opacity-70" : "animate-fade-in"
-      )}>
-        <Avatar className="h-8 w-8 bg-gray-800">
-          <Code className="h-4 w-4 text-white" />
-        </Avatar>
-        <div className="flex flex-col gap-1 max-w-[80%]">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">DevManager</span>
-            <span className="text-xs text-gray-500">Development Manager</span>
-          </div>
-          <Card className="p-3 bg-white">
-            {isLoading ? (
-              <p className="text-sm text-gray-500">Thinking...</p>
-            ) : (
-              <div className="prose prose-sm max-w-none">
-                <ReactMarkdown>{content}</ReactMarkdown>
-              </div>
-            )}
-          </Card>
-          {showCommentBox && (
-            <div className="mt-2 mb-2">
-              <textarea 
-                className="w-full p-2 text-sm border border-gray-300 rounded-md" 
-                placeholder="Add your comment..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={3}
-              />
-              <div className="flex justify-end mt-1">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="mr-2"
-                  onClick={() => setShowCommentBox(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={handleComment}
-                  disabled={!comment.trim()}
-                >
-                  Submit
-                </Button>
-              </div>
-            </div>
+        )}
+        <div className={messageClasses}>
+          {typeof content === "string" ? (
+            <ReactMarkdown>{content}</ReactMarkdown>
+          ) : (
+            content
           )}
-          <div className="flex items-center gap-1 mt-1">
-            <Tooltip tooltip="Copy message">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 w-6 p-0" 
-                onClick={copyToClipboard}
-              >
-                <Copy className="h-3 w-3 text-gray-400 hover:text-gray-600" />
-              </Button>
-            </Tooltip>
-            <Tooltip tooltip="Helpful">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={cn(
-                  "h-6 w-6 p-0",
-                  feedback === "helpful" && "text-green-600"
-                )}
-                onClick={() => handleFeedback("helpful")}
-              >
-                <ThumbsUp className={cn(
-                  "h-3 w-3",
-                  feedback === "helpful" ? "text-green-600" : "text-gray-400 hover:text-green-600"
-                )} />
-              </Button>
-            </Tooltip>
-            <Tooltip tooltip="Not helpful">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={cn(
-                  "h-6 w-6 p-0",
-                  feedback === "not-helpful" && "text-red-600"
-                )}
-                onClick={() => handleFeedback("not-helpful")}
-              >
-                <ThumbsDown className={cn(
-                  "h-3 w-3",
-                  feedback === "not-helpful" ? "text-red-600" : "text-gray-400 hover:text-red-600"
-                )} />
-              </Button>
-            </Tooltip>
-            <Tooltip tooltip="Comment">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={cn(
-                  "h-6 w-6 p-0",
-                  showCommentBox && "text-blue-600"
-                )}
-                onClick={handleComment}
-              >
-                <MessageCircle className={cn(
-                  "h-3 w-3",
-                  showCommentBox ? "text-blue-600" : "text-gray-400 hover:text-blue-600"
-                )} />
-              </Button>
-            </Tooltip>
-          </div>
         </div>
+        
+        {collaborators && collaborators.length > 0 && (
+          <div className="flex flex-wrap mt-1 gap-1">
+            <span className="text-xs text-gray-500">Collaborating with:</span>
+            {collaborators.map((agent, index) => (
+              <span key={index} className="text-xs bg-slate-100 px-2 py-0.5 rounded-full flex items-center">
+                {getIconForAgentType(agent)}
+                <span className="ml-1">{agent}</span>
+              </span>
+            ))}
+          </div>
+        )}
+        
+        {projectContext && (
+          <div className="text-xs text-gray-500 mt-1">
+            Context: {projectContext}
+          </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 }

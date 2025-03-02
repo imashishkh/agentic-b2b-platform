@@ -39,17 +39,11 @@ export function ChatMessages({
         // Check if the message is a documentation message
         const isDoc = typeof message.content === 'string' && isDocumentation(message.content);
         
+        // Spread all message properties and add className if documentation
         return (
           <ChatMessage
             key={index}
-            type={message.type}
-            content={message.content}
-            agentType={message.agentType || AgentType.MANAGER}
-            isSecurityReview={message.isSecurityReview}
-            complianceStatus={message.complianceStatus}
-            collaborators={message.collaborators}
-            projectContext={message.projectContext}
-            // Add a CSS class for documentation messages
+            {...message}
             className={isDoc ? "documentation-message border-l-4 border-blue-500 pl-2" : ""}
           />
         );

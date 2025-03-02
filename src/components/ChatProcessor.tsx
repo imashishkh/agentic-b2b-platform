@@ -18,7 +18,8 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     addSuggestion, 
     clearSuggestions,
     isAgentTyping,
-    knowledgeBase
+    knowledgeBase,
+    suggestions
   } = useChat();
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,44 +56,50 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             agentType: AgentType.MANAGER,
           });
           
-          addSuggestion({
-            title: "Getting Started",
-            description: "Here are some ways to get started with your project:",
-            options: [
-              {
-                id: "upload-requirements",
-                label: "Upload requirements document",
-                message: "I'd like to upload a project requirements document",
-                icon: "file-code",
-                description: "Upload a markdown file with your project requirements"
-              },
-              {
-                id: "example-project",
-                label: "Start with example project",
-                message: "I want to start with an example e-commerce project",
-                icon: "layout",
-                description: "Use a pre-configured e-commerce project template"
-              },
-              {
-                id: "knowledge-base",
-                label: "Create knowledge base",
-                message: "Let's set up a knowledge base for the project",
-                icon: "book-open",
-                description: "Add documentation and resources to inform development"
-              },
-              {
-                id: "custom-requirements",
-                label: "Describe project manually",
-                message: "I want to describe my project requirements manually",
-                icon: "users",
-                description: "Explain your project requirements in chat"
-              }
-            ]
-          });
+          const hasGettingStartedSuggestion = suggestions.some(
+            suggestion => suggestion.title === "Getting Started"
+          );
+          
+          if (!hasGettingStartedSuggestion) {
+            addSuggestion({
+              title: "Getting Started",
+              description: "Here are some ways to get started with your project:",
+              options: [
+                {
+                  id: "upload-requirements",
+                  label: "Upload requirements document",
+                  message: "I'd like to upload a project requirements document",
+                  icon: "file-code",
+                  description: "Upload a markdown file with your project requirements"
+                },
+                {
+                  id: "example-project",
+                  label: "Start with example project",
+                  message: "I want to start with an example e-commerce project",
+                  icon: "layout",
+                  description: "Use a pre-configured e-commerce project template"
+                },
+                {
+                  id: "knowledge-base",
+                  label: "Create knowledge base",
+                  message: "Let's set up a knowledge base for the project",
+                  icon: "book-open",
+                  description: "Add documentation and resources to inform development"
+                },
+                {
+                  id: "custom-requirements",
+                  label: "Describe project manually",
+                  message: "I want to describe my project requirements manually",
+                  icon: "users",
+                  description: "Explain your project requirements in chat"
+                }
+              ]
+            });
+          }
         }
       }, 1500);
     }
-  }, [chatRef, addMessage, messages, setIsAgentTyping, addSuggestion]);
+  }, [chatRef, addMessage, messages, setIsAgentTyping, addSuggestion, suggestions]);
 
   const processMarkdownFile = async (file: File) => {
     console.log("Processing markdown file in ChatProcessor:", file.name);
@@ -370,7 +377,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         message.toLowerCase().includes("documentation")) {
       if (!isAgentTyping) {
         setIsAgentTyping(true);
-        setTimeout(() => {
+        setTimeout(async () => {
           setIsAgentTyping(false);
           
           if (!managerAgent.current) {

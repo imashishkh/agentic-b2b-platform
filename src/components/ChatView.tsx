@@ -31,6 +31,18 @@ export default function ChatView() {
   
   const chatProcessorRef = useRef<any>(null);
   
+  // Filter out duplicate suggestion boxes by title
+  const uniqueSuggestions = React.useMemo(() => {
+    const uniqueTitles = new Set();
+    return suggestions.filter(suggestion => {
+      if (!uniqueTitles.has(suggestion.title)) {
+        uniqueTitles.add(suggestion.title);
+        return true;
+      }
+      return false;
+    });
+  }, [suggestions]);
+  
   const handleSuggestionSelect = (message: string) => {
     if (chatProcessorRef.current) {
       addMessage({
@@ -158,9 +170,9 @@ export default function ChatView() {
             collaborationActive={collaborationActive || false}
           />
           
-          {suggestions.length > 0 && (
+          {uniqueSuggestions.length > 0 && (
             <div className="px-4 pb-4 mb-32 absolute bottom-0 left-0 right-0 z-10">
-              {suggestions.map((suggestion, index) => (
+              {uniqueSuggestions.map((suggestion, index) => (
                 <SuggestionBox
                   key={index}
                   title={suggestion.title}
