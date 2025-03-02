@@ -26,7 +26,7 @@ export function ChatMessages({
   return (
     <div 
       ref={chatContainerRef} 
-      className="flex-1 overflow-y-auto p-4 bg-blue-50/50"
+      className="flex-1 overflow-y-auto p-4 pb-24 bg-blue-50/50"
     >
       {messages.map((message, index) => (
         <ChatMessage key={index} {...message} />

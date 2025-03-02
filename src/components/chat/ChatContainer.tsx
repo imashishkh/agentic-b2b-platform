@@ -178,12 +178,12 @@ export function ChatContainer() {
   };
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <div className="flex-1 overflow-hidden">
         <ChatView />
       </div>
       
-      <div className="border-t bg-white py-2">
+      <div className="absolute bottom-0 left-0 right-0 bg-white/95 border-t backdrop-blur-sm py-2 shadow-md">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-between mb-1.5">
             <div className="flex items-center gap-1">

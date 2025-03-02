@@ -40,13 +40,13 @@ export default function ChatView() {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-background">
+    <div className="flex flex-col h-full overflow-hidden bg-background relative">
       <ChatHeader 
         setShowApiSettings={setShowApiSettings}
         showProjectPanel={showProjectPanel}
         setShowProjectPanel={setShowProjectPanel}
       />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-hidden">
         <ChatMessages 
           messages={messages} 
           isLoadingExample={isLoadingExample} 
@@ -55,7 +55,7 @@ export default function ChatView() {
         
         {/* Render suggestions after the chat messages */}
         {suggestions.length > 0 && (
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-4 mb-16">
             {suggestions.map((suggestion, index) => (
               <SuggestionBox
                 key={index}
