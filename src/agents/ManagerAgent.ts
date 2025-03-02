@@ -2,6 +2,7 @@ import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 import { createAgent } from "./AgentFactory";
 import { toast } from "sonner";
+import { recommendArchitecturalPatterns, recommendTechnologyStack, createArchitectureProposal } from "@/utils/architectureUtils";
 
 /**
  * DevManager Agent - Oversees project structure and coordinates between specialized agents
@@ -114,44 +115,50 @@ export class ManagerAgent extends BaseAgent {
     
     // Add the total number of tasks
     const totalTasks = extractedTasks.length;
-    const totalSubtasks = extractedTasks.reduce((count, task) => count + task.subtasks.length, 0);
+    const totalSubtasks = extractedTasks.reduce((count, task) => {
+      return count + (task.subtasks && Array.isArray(task.subtasks) ? task.subtasks.length : 0);
+    }, 0);
     
     summary.push(`I've analyzed your requirements document and extracted ${totalTasks} main tasks and ${totalSubtasks} subtasks with dependencies and priority information.\n`);
     
     // Add dependency information
     summary.push("## Task Dependencies\n");
-    summary.push(`I've identified dependencies between tasks. The dependency graph has ${dependencyGraph.nodes.length} nodes and ${dependencyGraph.edges.length} connections.\n`);
-    
-    // Add critical path information if there are enough dependencies
-    if (dependencyGraph.edges.length > 3) {
-      summary.push("### Critical Path\n");
-      summary.push("Tasks on the critical path that should be prioritized:\n");
+    if (dependencyGraph && dependencyGraph.nodes && dependencyGraph.edges) {
+      summary.push(`I've identified dependencies between tasks. The dependency graph has ${dependencyGraph.nodes.length} nodes and ${dependencyGraph.edges.length} connections.\n`);
       
-      // Find tasks with the most dependents (most blocking)
-      const dependentCounts = new Map<string, number>();
-      for (const edge of dependencyGraph.edges) {
-        if (edge.type === 'dependency') {
-          dependentCounts.set(edge.source, (dependentCounts.get(edge.source) || 0) + 1);
-        }
-      }
-      
-      // Get the top 3 most critical tasks
-      const criticalTasks = Array.from(dependentCounts.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3);
-      
-      if (criticalTasks.length > 0) {
-        for (const [taskId, dependentCount] of criticalTasks) {
-          const task = extractedTasks.find(t => t.id === taskId) || 
-                     extractedTasks.flatMap(t => t.subtasks).find(st => st.id === taskId);
-          
-          if (task) {
-            summary.push(`- **${task.title}** - Blocks ${dependentCount} other task(s)\n`);
+      // Add critical path information if there are enough dependencies
+      if (dependencyGraph.edges.length > 3) {
+        summary.push("### Critical Path\n");
+        summary.push("Tasks on the critical path that should be prioritized:\n");
+        
+        // Find tasks with the most dependents (most blocking)
+        const dependentCounts = new Map<string, number>();
+        for (const edge of dependencyGraph.edges) {
+          if (edge.type === 'dependency') {
+            dependentCounts.set(edge.source, (dependentCounts.get(edge.source) || 0) + 1);
           }
         }
-      } else {
-        summary.push("- No critical blocking tasks identified yet\n");
+        
+        // Get the top 3 most critical tasks
+        const criticalTasks = Array.from(dependentCounts.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3);
+        
+        if (criticalTasks.length > 0) {
+          for (const [taskId, dependentCount] of criticalTasks) {
+            const task = extractedTasks.find(t => t.id === taskId) || 
+                       extractedTasks.flatMap(t => t.subtasks || []).find(st => st.id === taskId);
+            
+            if (task) {
+              summary.push(`- **${task.title}** - Blocks ${dependentCount} other task(s)\n`);
+            }
+          }
+        } else {
+          summary.push("- No critical blocking tasks identified yet\n");
+        }
       }
+    } else {
+      summary.push("No dependencies were identified between tasks.\n");
     }
     
     // Add priority breakdown
@@ -183,7 +190,8 @@ export class ManagerAgent extends BaseAgent {
       summary.push(`### ${categoryName} (${tasks.length} tasks)\n`);
       
       // List up to 3 tasks per category
-      for (const task of tasks.slice(0, 3)) {
+      const tasksToShow = tasks.slice(0, 3);
+      for (const task of tasksToShow) {
         summary.push(`- ${task.title}\n`);
       }
       
@@ -194,17 +202,28 @@ export class ManagerAgent extends BaseAgent {
       summary.push("\n");
     }
     
+    // Add architecture recommendations based on requirements
+    summary.push("## Architecture Recommendations\n");
+    const patternRecommendations = recommendArchitecturalPatterns(this.projectRequirements);
+    const topPatterns = patternRecommendations.slice(0, 3);
+    
+    summary.push("Based on your requirements, I recommend these architectural patterns:\n");
+    topPatterns.forEach((rec, index) => {
+      summary.push(`${index + 1}. **${rec.pattern}** - ${rec.description}\n`);
+    });
+    summary.push("\n");
+    
     // Add next steps
     summary.push("## Next Steps\n");
     summary.push("I recommend we take the following steps:\n");
     summary.push("1. Review the identified tasks and dependencies\n");
     summary.push("2. Adjust priorities if needed\n");
     summary.push("3. Begin implementation planning for high-priority tasks\n");
-    summary.push("4. Set up technical architecture based on requirements\n\n");
+    summary.push("4. Set up technical architecture based on recommendations\n\n");
     
     summary.push("Would you like me to:\n");
     summary.push("1. Show you the detailed dependency graph?\n");
-    summary.push("2. Create a technical architecture proposal?\n");
+    summary.push("2. Create a technical architecture proposal based on the recommended patterns?\n");
     summary.push("3. Suggest a development timeline based on task dependencies?\n");
     summary.push("4. Something else?\n");
     
@@ -370,7 +389,9 @@ export class ManagerAgent extends BaseAgent {
     
     // Add the total number of tasks
     const totalTasks = this.parsedTasks.length;
-    const totalSubtasks = this.parsedTasks.reduce((count, task) => count + task.subtasks.length, 0);
+    const totalSubtasks = this.parsedTasks.reduce((count, task) => {
+      return count + (task.subtasks && Array.isArray(task.subtasks) ? task.subtasks.length : 0);
+    }, 0);
     summary.push(`I've analyzed your requirements document and extracted ${totalTasks} main tasks and ${totalSubtasks} subtasks.\n`);
     
     // Add the task assignments for each agent
@@ -430,7 +451,7 @@ export class ManagerAgent extends BaseAgent {
    * @returns boolean indicating whether this is an architecture proposal request
    */
   isArchitectureRequest(message: string): boolean {
-    return message.match(/architecture|system design|component|diagram|structure|high level design|technical architecture/i) !== null;
+    return message.match(/architecture|system design|component|diagram|structure|high level design|technical architecture|stack|technology choice/i) !== null;
   }
   
   /**
@@ -529,7 +550,7 @@ To add a resource, simply share a link with a brief description of what it conta
       `;
     }
     
-    // Handle architecture-related messages
+    // Handle architecture-related messages with enhanced architecture capabilities
     if (this.isArchitectureRequest(userMessage)) {
       return `
         As the Development Manager and system architect for this e-commerce project, you're being asked about system architecture.
@@ -540,8 +561,10 @@ To add a resource, simply share a link with a brief description of what it conta
         1. Outlines a high-level architecture appropriate for an e-commerce system
         2. Describes key components and their relationships
         3. Explains technical decisions and trade-offs
-        4. Recommends technologies for each component
-        5. Mentions that you can create a formal architecture proposal the user can view in the Project Features panel
+        4. Recommends specific technologies for each component
+        5. Suggests an appropriate architectural pattern (Microservices, Monolithic, Serverless, etc.)
+        6. Includes a visual representation or diagram of the architecture
+        7. Mentions how the architecture supports scalability, maintainability, and security
         
         Make your response detailed but accessible, explaining architectural concepts clearly.
       `;

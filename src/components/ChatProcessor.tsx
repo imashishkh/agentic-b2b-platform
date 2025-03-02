@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { ManagerAgent } from "@/agents/ManagerAgent";
 import { extractTasksWithDependencies, generateDependencyGraph } from "@/utils/markdownParser";
 
-// Define the correct interface with chatRef
 export interface ChatProcessorProps {
   chatRef: React.MutableRefObject<any>;
 }
@@ -35,7 +34,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     };
   }, []);
 
-  // Only send welcome message if no messages exist
   useEffect(() => {
     if (!chatRef.current) {
       chatRef.current = {
@@ -43,11 +41,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       };
     }
     
-    // Check if there are no messages and we haven't sent an initial message yet
     if (messages.length === 0 && !initialMessageSent.current) {
       initialMessageSent.current = true;
       
-      // Add typing indicator first
       setIsAgentTyping(true);
       
       setTimeout(() => {
@@ -59,7 +55,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             agentType: AgentType.MANAGER,
           });
           
-          // Add initial suggestions after welcome message
           addSuggestion({
             title: "Getting Started",
             description: "Here are some ways to get started with your project:",
@@ -126,7 +121,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   };
 
   const generateNextStepSuggestions = () => {
-    // Generate next step suggestions based on the user flow in knowledge base
     const nextStepSuggestions = [
       {
         id: "architecture-planning",
@@ -161,9 +155,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     return nextStepSuggestions;
   };
 
-  // Handle specific agent-related actions based on message content
   const handleSpecificActions = async (message: string): Promise<boolean> => {
-    // Architecture planning message
     if (message.toLowerCase().includes("architecture") && 
         message.toLowerCase().includes("planning")) {
       if (!isAgentTyping) {
@@ -180,7 +172,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
-    // Knowledge base message
     if (message.toLowerCase().includes("knowledge base")) {
       if (!isAgentTyping) {
         setIsAgentTyping(true);
@@ -196,7 +187,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
-    // Testing strategy message
     if (message.toLowerCase().includes("testing strategy")) {
       if (!isAgentTyping) {
         setIsAgentTyping(true);
@@ -212,7 +202,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
-    // Task prioritization message
     if (message.toLowerCase().includes("prioritize tasks")) {
       if (!isAgentTyping) {
         setIsAgentTyping(true);
@@ -228,7 +217,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
-    // Example project message
     if (message.toLowerCase().includes("example") && 
         message.toLowerCase().includes("project")) {
       if (!isAgentTyping) {
@@ -241,7 +229,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             agentType: AgentType.MANAGER,
           });
           
-          // Add follow-up suggestions
           addSuggestion({
             title: "Customize Example Project",
             description: "How would you like to customize this example project?",
@@ -281,7 +268,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
-    return false; // No specific action was taken
+    return false;
   };
 
   const processMessage = async (message: string, files?: File[]) => {
@@ -291,17 +278,14 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     setIsProcessing(true);
     
     try {
-      // Clear previous suggestions when processing a new message
       clearSuggestions();
       
-      // Check if this message should trigger a specific predefined action
       const isSpecificAction = await handleSpecificActions(message);
       if (isSpecificAction) {
         setIsProcessing(false);
         return;
       }
       
-      // If files were provided and it's a markdown file, process it
       let enhancedMessage = message;
       let fileContent = "";
       
@@ -311,46 +295,38 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         
         if (file.name.endsWith('.md') || file.type === 'text/markdown' || file.type === 'text/plain') {
           try {
-            // Show typing indicator before processing
             setIsAgentTyping(true);
             
-            // Process the file
-            fileContent = await processMarkdownFile(file);
+            const content = await processMarkdownFile(file);
             
-            if (!fileContent || fileContent.trim() === "") {
+            if (!content || content.trim() === "") {
               throw new Error("File content is empty");
             }
             
-            enhancedMessage = `${message}\n\nHere is the content of the file:\n\n${fileContent}`;
+            enhancedMessage = `${message}\n\nHere is the content of the file:\n\n${content}`;
             
-            // Add initial processing message
             addMessage({
               type: "agent",
               content: "I'm analyzing your requirements document. This may take a moment...",
               agentType: AgentType.MANAGER,
             });
             
-            // Use the manager agent's specialized markdown processor
-            console.log("Using manager agent's markdown processor");
             if (!managerAgent.current) {
               managerAgent.current = AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent;
             }
             
-            const managerResponse = await managerAgent.current.processMarkdownFile(fileContent);
+            const managerResponse = await managerAgent.current.processMarkdownFile(content);
             
             if (isMounted.current) {
-              // Add a slight delay to simulate processing
               setTimeout(() => {
                 setIsAgentTyping(false);
                 
-                // Add the manager's response
                 addMessage({
                   type: "agent",
                   content: managerResponse,
                   agentType: AgentType.MANAGER,
                 });
                 
-                // Generate and add next step suggestions
                 const suggestions = generateNextStepSuggestions();
                 addSuggestion({
                   title: "Next Steps",
@@ -358,7 +334,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
                   options: suggestions
                 });
                 
-                // Add guidance message for next steps
                 addMessage({
                   type: "agent",
                   content: "Now that I've analyzed your requirements, you can proceed with one of the suggested next steps above, or ask me any specific questions about the project.",
@@ -395,26 +370,21 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         }
       }
       
-      // Determine which agent should handle the message
       const agentType = AgentFactory.determineAgentType(enhancedMessage, []);
       console.log("Selected agent type:", agentType);
       
-      // Generate a response using the agent
       const agent = AgentFactory.createAgent(agentType);
       
-      // Generate knowledge-enhanced response if we have a knowledge base
       const generatedResponse = knowledgeBase && knowledgeBase.length > 0 
         ? await agent.generateKnowledgeEnhancedResponse(enhancedMessage, [], knowledgeBase)
         : await agent.generateResponse(enhancedMessage, []);
       
       if (isMounted.current) {
-        // Simulate typing delay for more natural interaction
-        const typingDelay = fileContent ? 2000 : 1000; // Longer delay for file processing
+        const typingDelay = fileContent ? 2000 : 1000;
         
         setTimeout(() => {
           setIsAgentTyping(false);
           
-          // Add agent response to chat with correct type
           addMessage({
             type: "agent",
             content: generatedResponse,
@@ -430,7 +400,6 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       
       if (isMounted.current) {
         setIsAgentTyping(false);
-        // Add error message with correct type
         addMessage({
           type: "agent",
           content: "I'm sorry, I encountered an error while processing your message. Please try again.",
@@ -441,5 +410,5 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     }
   };
 
-  return null; // This component doesn't render anything
+  return null;
 }

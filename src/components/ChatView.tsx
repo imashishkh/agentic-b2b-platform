@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
 import { ChatMessages } from "@/components/chat/ChatMessages";
@@ -36,7 +35,7 @@ export default function ChatView() {
         <ChatHeader />
         <div className="flex-1 overflow-auto relative pb-40">
           <ChatMessages 
-            messages={messages} 
+            messages={messages}
             isLoadingExample={isLoadingExample} 
             isAgentTyping={isAgentTyping} 
           />

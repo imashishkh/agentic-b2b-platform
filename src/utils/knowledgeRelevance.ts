@@ -56,3 +56,110 @@ Reference: ${resource.url}
     `.trim();
   }).join('\n\n');
 };
+
+/**
+ * Analyzes resource content for relevance to architecture
+ */
+export const extractArchitectureInsights = (
+  resources: KnowledgeBaseResource[]
+): {
+  patterns: string[];
+  technologies: string[];
+  bestPractices: string[];
+} => {
+  const patterns: string[] = [];
+  const technologies: string[] = [];
+  const bestPractices: string[] = [];
+  
+  // Common architectural patterns to look for
+  const patternKeywords = [
+    'microservices', 'monolithic', 'serverless', 'event-driven', 'layered',
+    'mvc', 'mvvm', 'jamstack', 'soa', 'ddd', 'cqrs'
+  ];
+  
+  // Common technology categories
+  const techCategories = [
+    'frontend', 'backend', 'database', 'api', 'server', 'cloud', 'container',
+    'framework', 'library', 'language', 'platform'
+  ];
+  
+  // Scan resources for relevant information
+  resources.forEach(resource => {
+    const content = resource.content || resource.description;
+    if (!content) return;
+    
+    const contentLower = content.toLowerCase();
+    
+    // Look for architectural patterns
+    patternKeywords.forEach(pattern => {
+      if (contentLower.includes(pattern) && !patterns.includes(pattern)) {
+        patterns.push(pattern);
+      }
+    });
+    
+    // Extract technology mentions
+    const techRegex = /\b(react|angular|vue|node|express|django|flask|laravel|spring|dotnet|sql|nosql|mongodb|postgresql|mysql|graphql|rest|docker|kubernetes|aws|azure|gcp)\b/gi;
+    const techMatches = content.match(techRegex);
+    
+    if (techMatches) {
+      techMatches.forEach(tech => {
+        const normalizedTech = tech.toLowerCase();
+        if (!technologies.includes(normalizedTech)) {
+          technologies.push(normalizedTech);
+        }
+      });
+    }
+    
+    // Extract best practices
+    if (contentLower.includes('best practice') || contentLower.includes('recommended') || contentLower.includes('guideline')) {
+      const sentenceRegex = /[^.!?]*(?:best practice|recommended|guideline)[^.!?]*[.!?]/gi;
+      const practiceMatches = content.match(sentenceRegex);
+      
+      if (practiceMatches) {
+        practiceMatches.forEach(practice => {
+          const trimmedPractice = practice.trim();
+          if (trimmedPractice && !bestPractices.includes(trimmedPractice)) {
+            bestPractices.push(trimmedPractice);
+          }
+        });
+      }
+    }
+  });
+  
+  return {
+    patterns: patterns.map(p => p.charAt(0).toUpperCase() + p.slice(1)),
+    technologies,
+    bestPractices: bestPractices.slice(0, 5) // Limit to top 5 best practices
+  };
+};
+
+/**
+ * Find architecture-related resources
+ */
+export const findArchitectureResources = (
+  knowledgeBase: KnowledgeBaseResource[]
+): KnowledgeBaseResource[] => {
+  if (!knowledgeBase.length) return [];
+  
+  // Keywords related to architecture
+  const architectureKeywords = [
+    'architecture', 'design', 'component', 'microservice', 'monolith',
+    'serverless', 'pattern', 'framework', 'structure', 'system'
+  ];
+  
+  // Filter resources that match architecture keywords
+  return knowledgeBase.filter(resource => {
+    const content = (resource.content || resource.description || '').toLowerCase();
+    const title = (resource.title || '').toLowerCase();
+    const category = (resource.category || '').toLowerCase();
+    const tags = (resource.tags || []).map(tag => tag.toLowerCase());
+    
+    // Check if resource contains architecture keywords
+    return architectureKeywords.some(keyword => 
+      content.includes(keyword) || 
+      title.includes(keyword) || 
+      category.includes(keyword) ||
+      tags.includes(keyword)
+    );
+  });
+};

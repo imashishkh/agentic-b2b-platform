@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -124,12 +123,11 @@ export const TestingStrategyCard: React.FC<TestingStrategyCardProps> = ({
         
         {/* Status indicator */}
         <div className="mt-4">
-          <Badge 
-            variant={strategy.approved ? "success" : "outline"}
-            className={strategy.approved ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
-          >
-            {strategy.approved ? "Approved" : "Pending Approval"}
-          </Badge>
+          {strategy.approved ? (
+            <Badge className="bg-green-100 text-green-800 border-green-300" variant="secondary">Approved</Badge>
+          ) : (
+            <Badge variant="outline">Proposed</Badge>
+          )}
         </div>
       </CardContent>
       

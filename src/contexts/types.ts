@@ -1,4 +1,3 @@
-
 import { AgentType } from "@/agents/AgentTypes";
 import { ChatMessageProps } from "@/components/ChatMessage";
 
@@ -17,6 +16,15 @@ export interface ArchitectureProposal {
   relationships?: any[];
   dateCreated?: string;
   status?: string;
+  pattern?: string;
+  patternDescription?: string;
+  appType?: string;  // Type of application (e-commerce, content, business, social)
+  techRecommendations?: {
+    frontend?: string[];
+    backend?: string[];
+    database?: string[];
+    devops?: string[];
+  };
 }
 
 // Testing strategy interface

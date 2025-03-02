@@ -13,18 +13,18 @@ import { ManagerAgent } from "./ManagerAgent";
 export const createAgent = (type: AgentType) => {
   switch (type) {
     case AgentType.FRONTEND:
-      return new FrontendAgent();
+      return new FrontendAgent(AgentType.FRONTEND);
     case AgentType.BACKEND:
-      return new BackendAgent();
+      return new BackendAgent(AgentType.BACKEND);
     case AgentType.DATABASE:
-      return new DatabaseAgent();
+      return new DatabaseAgent(AgentType.DATABASE);
     case AgentType.DEVOPS:
-      return new DevOpsAgent();
+      return new DevOpsAgent(AgentType.DEVOPS);
     case AgentType.UX:
-      return new UXAgent();
+      return new UXAgent(AgentType.UX);
     case AgentType.MANAGER:
     default:
-      return new ManagerAgent();
+      return new ManagerAgent(AgentType.MANAGER);
   }
 };
 

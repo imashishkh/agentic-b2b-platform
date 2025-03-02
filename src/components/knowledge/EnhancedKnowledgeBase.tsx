@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useChat } from "@/contexts/ChatContext";
 import { KnowledgeBaseResource } from "@/contexts/types";
@@ -105,7 +104,6 @@ export const EnhancedKnowledgeBase: React.FC = () => {
               setSearchTerm={setSearchTerm}
               sort={sort}
               setSort={setSort}
-              // Add new relevance sort option
               sortOptions={[
                 { value: 'newest', label: 'Newest' },
                 { value: 'oldest', label: 'Oldest' },
