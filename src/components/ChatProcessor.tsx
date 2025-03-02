@@ -36,10 +36,8 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     
     // Add user message to chat
     addMessage({
-      id: Date.now().toString(),
+      type: "user",
       content: message,
-      sender: "user",
-      timestamp: new Date(),
     });
     
     setIsAgentTyping(true);
@@ -55,23 +53,19 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       if (claudeResponse && isMounted.current) {
         // Add agent response to chat
         addMessage({
-          id: (Date.now() + 1).toString(),
+          type: "agent",
           content: claudeResponse,
-          sender: "agent",
           agentType: agentType,
-          timestamp: new Date(),
         });
       } else if (isMounted.current) {
-        // Fallback to simulated response if Claude API fails
+        // Fallback to agent response generation
         const agent = AgentFactory.createAgent(agentType);
-        const simulatedResponse = agent.simulateResponse(message, []);
+        const generatedResponse = await agent.generateResponse(message, []);
         
         addMessage({
-          id: (Date.now() + 1).toString(),
-          content: simulatedResponse,
-          sender: "agent",
+          type: "agent",
+          content: generatedResponse,
           agentType: agentType,
-          timestamp: new Date(),
         });
       }
     } catch (error) {
@@ -81,11 +75,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       if (isMounted.current) {
         // Add error message
         addMessage({
-          id: (Date.now() + 1).toString(),
+          type: "agent",
           content: "I'm sorry, I encountered an error while processing your message. Please try again.",
-          sender: "agent",
           agentType: AgentType.MANAGER,
-          timestamp: new Date(),
         });
       }
     } finally {
