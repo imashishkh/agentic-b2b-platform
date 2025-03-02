@@ -45,8 +45,8 @@ const IconComponent = ({ name }: { name: string }) => {
 
 export function SuggestionBox({ title, description, options, onSelect }: SuggestionBoxProps) {
   return (
-    <div className="bg-slate-50 rounded-lg p-4 mb-4">
-      <h3 className="text-sm font-semibold mb-1">{title}</h3>
+    <div className="bg-slate-50 rounded-lg p-4 mb-4 shadow-sm border border-slate-100">
+      <h3 className="text-sm font-semibold mb-1 text-slate-800">{title}</h3>
       <p className="text-sm text-slate-600 mb-3">{description}</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -55,11 +55,12 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
             key={option.id}
             variant="outline"
             size="sm"
-            className="justify-start bg-white hover:bg-slate-100 border-slate-200"
+            className="justify-start bg-white hover:bg-slate-100 border-slate-200 transition-all"
             onClick={() => onSelect(option.message)}
+            title={option.description || option.label}
           >
             <IconComponent name={option.icon} />
-            <span className="ml-2">{option.label}</span>
+            <span className="ml-2 truncate">{option.label}</span>
           </Button>
         ))}
       </div>

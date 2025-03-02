@@ -49,7 +49,9 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
       }
       
       // Reset the input so the same file can be uploaded again
-      e.target.value = '';
+      if (e.target) {
+        e.target.value = '';
+      }
     };
     
     return (

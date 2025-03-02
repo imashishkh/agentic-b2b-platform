@@ -256,6 +256,7 @@ export function ChatContainer() {
             uploadProgress={uploadProgress}
             handleFileUpload={handleFileUpload}
             isDisabled={isLoadingExample || isAgentTyping}
+            onExampleClick={handleStartWithExample}
           />
         </div>
       </div>

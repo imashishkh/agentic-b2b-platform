@@ -15,6 +15,7 @@ export interface ChatInputProps {
   uploadProgress?: number;
   handleFileUpload?: (files: File[]) => void;
   isDisabled?: boolean;
+  onExampleClick?: () => void;
 }
 
 export function ChatInput({
@@ -24,7 +25,8 @@ export function ChatInput({
   isUploading = false,
   uploadProgress = 0,
   handleFileUpload,
-  isDisabled = false
+  isDisabled = false,
+  onExampleClick
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
 
@@ -98,9 +100,9 @@ export function ChatInput({
         <Button
           size="sm"
           variant="outline"
-          onClick={() => {/* Example button clicked */}}
+          onClick={onExampleClick}
           disabled={isDisabled || isUploading}
-          className="text-xs"
+          className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
         >
           Example
         </Button>
