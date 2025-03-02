@@ -316,6 +316,127 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       }
     }
     
+    if (message.toLowerCase().includes("performance") && 
+        (message.toLowerCase().includes("monitor") || message.toLowerCase().includes("metric"))) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `# Performance Monitoring\n\nI'll help you set up performance monitoring for your project. Here are the key metrics we should track:\n\n## Frontend Metrics\n- First Contentful Paint (FCP)\n- Time to Interactive (TTI)\n- Largest Contentful Paint (LCP)\n- Total Blocking Time (TBT)\n- Cumulative Layout Shift (CLS)\n\n## Backend Metrics\n- API Response Time\n- Database Query Time\n- Memory Usage\n- CPU Usage\n- Error Rate\n\nWould you like me to help you set up integration with monitoring tools like Lighthouse, New Relic, or Datadog?`,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("benchmark") && 
+        (message.toLowerCase().includes("performance") || message.toLowerCase().includes("speed"))) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `# Performance Benchmarks\n\nI'll help you establish performance benchmarks for your project. We should create benchmarks for:\n\n1. **Development Environment**\n   - Establish baseline performance metrics\n   - Set performance budgets\n\n2. **Staging Environment**\n   - Compare with development benchmarks\n   - Identify environment-specific issues\n\n3. **Production Environment**\n   - Monitor real user metrics\n   - Set up alerts for performance degradation\n\nWould you like me to create baseline benchmarks for your development environment now?`,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("optimization") && 
+        (message.toLowerCase().includes("performance") || message.toLowerCase().includes("speed") || 
+         message.toLowerCase().includes("faster"))) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          addMessage({
+            type: "agent",
+            content: `# Performance Optimization Recommendations\n\nBased on common performance bottlenecks, here are key recommendations for optimizing your application:\n\n## Frontend Optimizations\n- Implement code splitting with React.lazy\n- Optimize images with WebP format and lazy loading\n- Minimize JavaScript bundle size\n- Use memoization for expensive calculations\n\n## Backend Optimizations\n- Implement API response caching\n- Optimize database queries\n- Use connection pooling\n- Consider serverless functions for scalability\n\n## Network Optimizations\n- Enable HTTP/2\n- Implement content compression\n- Use CDN for static assets\n- Optimize API payload size\n\nWould you like me to provide specific code examples for any of these optimizations?`,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("generate") && 
+        message.toLowerCase().includes("performance") && 
+        message.toLowerCase().includes("documentation")) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          
+          if (!managerAgent.current) {
+            managerAgent.current = AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent;
+          }
+          
+          managerAgent.current.definePerformanceMetrics();
+          const performanceReport = managerAgent.current.generatePerformanceOptimizations();
+          
+          addMessage({
+            type: "agent",
+            content: performanceReport,
+            agentType: AgentType.MANAGER,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("monitoring tool") || 
+        (message.toLowerCase().includes("tool") && message.toLowerCase().includes("integration"))) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setIsAgentTyping(false);
+          
+          if (!managerAgent.current) {
+            managerAgent.current = AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent;
+          }
+          
+          const toolDoc = managerAgent.current.generateMonitoringToolDoc('lighthouse');
+          
+          addMessage({
+            type: "agent",
+            content: toolDoc,
+            agentType: AgentType.DEVOPS,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
+    if (message.toLowerCase().includes("generate") && 
+        message.toLowerCase().includes("technical") && 
+        message.toLowerCase().includes("documentation")) {
+      if (!isAgentTyping) {
+        setIsAgentTyping(true);
+        setTimeout(async () => {
+          setIsAgentTyping(false);
+          
+          if (!managerAgent.current) {
+            managerAgent.current = AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent;
+          }
+          
+          const techDoc = await managerAgent.current.generateTechnicalDocumentation();
+          
+          addMessage({
+            type: "agent",
+            content: techDoc,
+            agentType: AgentType.MANAGER,
+          });
+        }, 3000);
+        return true;
+      }
+    }
+    
     return false;
   };
 

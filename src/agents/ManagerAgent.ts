@@ -1,9 +1,17 @@
+<lov-code>
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 import { createAgent } from "./AgentFactory";
 import { toast } from "sonner";
 import { recommendArchitecturalPatterns, recommendTechnologyStack, createArchitectureProposal } from "@/utils/architectureUtils";
 import { SecurityFinding, ComplianceRequirement } from "@/contexts/types";
+import { 
+  PerformanceMetric, 
+  OptimizationRecommendation, 
+  standardMetrics,
+  generatePerformanceReport,
+  monitoringToolIntegrations
+} from "@/utils/performanceMonitoring";
 
 /**
  * DevManager Agent - Oversees project structure and coordinates between specialized agents
@@ -23,6 +31,8 @@ export class ManagerAgent extends BaseAgent {
   private projectRequirements: string = "";
   private parsedTasks: any[] = [];
   private assignedTasks: Map<AgentType, any[]> = new Map();
+  private performanceMetrics: PerformanceMetric[] = [...standardMetrics];
+  private performanceRecommendations: OptimizationRecommendation[] = [];
   
   /**
    * Areas of expertise for the Development Manager
@@ -332,7 +342,7 @@ export class ManagerAgent extends BaseAgent {
     }
     
     // Database tasks
-    if (text.match(/database|schema|model|entity|table|column|field|relation|query|sql|nosql|migration|seed/)) {
+    if (text.match(/database|schema|model|entity|table|column|field|relation|query|sql|nosql|mongodb|postgresql|mysql|migration|seed/)) {
       return AgentType.DATABASE;
     }
     
@@ -787,14 +797,4 @@ To add a resource, simply share a link with a brief description of what it conta
       });
     }
     
-    return requirements;
-  }
-  
-  /**
-   * Generate a comprehensive security report based on findings
-   * 
-   * @param findings - The security findings
-   * @param complianceRequirements - The compliance requirements
-   * @returns A formatted security report
-   */
-  generateSecurityReport(findings: SecurityFinding[], complianceRequirements: ComplianceRequirement[]
+    

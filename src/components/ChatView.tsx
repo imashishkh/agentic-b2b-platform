@@ -7,7 +7,7 @@ import { ChatProcessor } from "@/components/ChatProcessor";
 import { useChat } from "@/contexts/ChatContext";
 import { SuggestionBox } from "@/components/chat/SuggestionBox";
 import { Button } from "@/components/ui/button";
-import { FileText, BookOpen, Code, Settings, ChevronDown } from "lucide-react";
+import { FileText, BookOpen, Code, Settings, ChevronDown, BarChart, Gauge, LineChart, Zap } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,12 +53,72 @@ export default function ChatView() {
       chatProcessorRef.current.processUserMessage(message);
     }
   };
+  
+  const handlePerformanceRequest = (requestType: string) => {
+    if (chatProcessorRef.current) {
+      let message = "";
+      
+      switch (requestType) {
+        case "metrics":
+          message = "Define performance metrics for our project";
+          break;
+        case "monitoring":
+          message = "Recommend monitoring tools for our project";
+          break;
+        case "benchmarks":
+          message = "Create performance benchmarks for our project";
+          break;
+        case "optimizations":
+          message = "Generate performance optimization recommendations";
+          break;
+        default:
+          message = "Help me with performance monitoring";
+      }
+      
+      addMessage({
+        content: message,
+        type: "user",
+      });
+      
+      chatProcessorRef.current.processUserMessage(message);
+    }
+  };
 
   return (
     <div className="flex h-full overflow-hidden bg-background relative">
       <div className="flex flex-col flex-1 overflow-hidden">
         <ChatHeader />
-        <div className="absolute top-16 right-4 z-10">
+        <div className="absolute top-16 right-4 z-10 flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <BarChart className="h-4 w-4" />
+                Performance
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Performance Monitoring</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("metrics")}>
+                <Gauge className="h-4 w-4 mr-2" />
+                Define Performance Metrics
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("monitoring")}>
+                <LineChart className="h-4 w-4 mr-2" />
+                Monitoring Tool Setup
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("benchmarks")}>
+                <BarChart className="h-4 w-4 mr-2" />
+                Create Performance Benchmarks
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handlePerformanceRequest("optimizations")}>
+                <Zap className="h-4 w-4 mr-2" />
+                Optimization Recommendations
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
