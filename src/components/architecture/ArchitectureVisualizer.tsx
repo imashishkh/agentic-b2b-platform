@@ -1,6 +1,7 @@
 
 import React from "react";
-import { useChat, ArchitectureProposal } from "@/contexts/ChatContext";
+import { useChat } from "@/contexts/ChatContext";
+import { ArchitectureProposal } from "@/contexts/types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

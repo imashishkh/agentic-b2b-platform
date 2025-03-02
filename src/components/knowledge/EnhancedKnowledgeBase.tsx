@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { KnowledgeBaseResource, useChat } from "@/contexts/ChatContext";
+import { useChat } from "@/contexts/ChatContext";
+import { KnowledgeBaseResource } from "@/contexts/types";
 import { ExternalLink, FilePlus, Search, Trash2, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 

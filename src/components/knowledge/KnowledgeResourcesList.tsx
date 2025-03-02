@@ -1,6 +1,7 @@
 
 import React from "react";
-import { useChat, KnowledgeBaseResource } from "@/contexts/ChatContext";
+import { useChat } from "@/contexts/ChatContext";
+import { KnowledgeBaseResource } from "@/contexts/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

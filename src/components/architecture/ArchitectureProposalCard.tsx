@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArchitectureProposal } from "@/contexts/ChatContext";
+import { ArchitectureProposal } from "@/contexts/types";
 import { CheckCircle, FileDown, FileText } from "lucide-react";
 
 interface ArchitectureProposalCardProps {

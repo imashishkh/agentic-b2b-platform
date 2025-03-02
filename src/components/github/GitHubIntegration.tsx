@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { GitHubRepository } from "@/contexts/ChatContext";
+import { GitHubRepository } from "@/contexts/types";
 import { AlertCircle, Check, Github, GitBranch, RefreshCw } from "lucide-react";
 import { useChat } from "@/contexts/ChatContext";
 import { toast } from "sonner";
