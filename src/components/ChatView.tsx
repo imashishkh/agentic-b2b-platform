@@ -7,6 +7,10 @@ import { ChatProcessor } from "@/components/ChatProcessor";
 import { useChat } from "@/contexts/ChatContext";
 import { SuggestionBox } from "@/components/chat/SuggestionBox";
 import { SetupWizardStep } from "@/contexts/types";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 /**
  * ChatView Component
@@ -32,6 +36,11 @@ export default function ChatView() {
   } = useChat();
   
   const chatProcessorRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [githubDialogOpen, setGithubDialogOpen] = React.useState(false);
+  const [githubRepo, setGithubRepo] = React.useState("");
+  const [docsDialogOpen, setDocsDialogOpen] = React.useState(false);
+  const [docUrl, setDocUrl] = React.useState("");
   
   // Generate wizard step suggestions based on the current step
   useEffect(() => {
@@ -154,6 +163,154 @@ export default function ChatView() {
   };
   
   /**
+   * Handle direct actions from the suggestion box
+   * @param actionType - The type of action to perform
+   * @param optionMessage - The original message from the option
+   */
+  const handleDirectAction = (actionType: string, optionMessage: string) => {
+    switch (actionType) {
+      case "upload-requirements":
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+        break;
+        
+      case "github-connect":
+        setGithubDialogOpen(true);
+        break;
+        
+      case "add-documentation":
+        setDocsDialogOpen(true);
+        break;
+        
+      case "upload-ui-components":
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+        break;
+        
+      case "add-resources":
+        setDocsDialogOpen(true);
+        break;
+        
+      default:
+        // For unhandled actions, use the default message flow
+        handleSuggestionSelect(optionMessage);
+        break;
+    }
+  };
+  
+  /**
+   * Handle file upload
+   */
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      if (currentWizardStep === SetupWizardStep.UPLOAD_REQUIREMENTS || 
+          currentWizardStep === SetupWizardStep.INITIAL) {
+        if (file.name.endsWith('.md') || file.type === 'text/markdown' || file.type === 'text/plain') {
+          // Add a message showing what was uploaded
+          addMessage({
+            content: `Uploaded requirements document: ${file.name}`,
+            type: "user",
+          });
+          
+          // Process the uploaded file
+          if (chatProcessorRef.current) {
+            chatProcessorRef.current.processUserMessage("I'd like to upload my project requirements document", [file]);
+          }
+          
+          // Update wizard step
+          setCurrentWizardStep(SetupWizardStep.REQUIREMENTS_UPLOADED);
+        } else {
+          toast.error("Please upload a markdown (.md) file for project requirements");
+        }
+      } else if (currentWizardStep === SetupWizardStep.UI_COMPONENTS_SETUP) {
+        // Handle UI components upload
+        addMessage({
+          content: `Uploaded UI components: ${file.name}`,
+          type: "user",
+        });
+        
+        // Process the uploaded file
+        if (chatProcessorRef.current) {
+          chatProcessorRef.current.processUserMessage("I want to upload my UI components and design assets", [file]);
+        }
+        
+        // Update wizard step
+        setCurrentWizardStep(SetupWizardStep.UI_COMPONENTS_ADDED);
+      }
+    }
+    
+    // Reset the input so the same file can be uploaded again
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
+  
+  /**
+   * Handle GitHub repository connection
+   */
+  const handleGithubConnect = () => {
+    if (githubRepo) {
+      // Add a message showing what was connected
+      addMessage({
+        content: `Connected GitHub repository: ${githubRepo}`,
+        type: "user",
+      });
+      
+      // Process the GitHub connection
+      if (chatProcessorRef.current) {
+        chatProcessorRef.current.processUserMessage(`I want to connect my GitHub repository: ${githubRepo}`);
+      }
+      
+      // Update wizard step
+      setCurrentWizardStep(SetupWizardStep.GITHUB_CONNECTED);
+      
+      // Close the dialog
+      setGithubDialogOpen(false);
+      setGithubRepo("");
+      
+      // Show success message
+      toast.success("GitHub repository connected successfully");
+    } else {
+      toast.error("Please enter a GitHub repository URL");
+    }
+  };
+  
+  /**
+   * Handle documentation addition
+   */
+  const handleAddDocumentation = () => {
+    if (docUrl) {
+      // Add a message showing what was added
+      addMessage({
+        content: `Added documentation resource: ${docUrl}`,
+        type: "user",
+      });
+      
+      // Process the documentation addition
+      if (chatProcessorRef.current) {
+        chatProcessorRef.current.processUserMessage(`I'd like to add documentation for my tech stack: ${docUrl}`);
+      }
+      
+      // Update wizard step
+      setCurrentWizardStep(SetupWizardStep.DOCUMENTATION_ADDED);
+      
+      // Close the dialog
+      setDocsDialogOpen(false);
+      setDocUrl("");
+      
+      // Show success message
+      toast.success("Documentation resource added successfully");
+    } else {
+      toast.error("Please enter a documentation URL");
+    }
+  };
+  
+  /**
    * Update the wizard step based on the user's message
    * @param message - The user's message
    */
@@ -237,11 +394,83 @@ export default function ChatView() {
                     options={suggestion.options}
                     onSelect={handleSuggestionSelect}
                     isWizardStep={true} // Enable wizard styling
+                    onDirectAction={handleDirectAction}
                   />
                 </div>
               ))}
             </div>
           )}
+          
+          {/* File input for uploading documents (hidden) */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileUpload}
+            accept=".md,.markdown,.txt,image/*,.pdf,.doc,.docx"
+          />
+          
+          {/* GitHub repository dialog */}
+          <Dialog open={githubDialogOpen} onOpenChange={setGithubDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Connect GitHub Repository</DialogTitle>
+                <DialogDescription>
+                  Enter the URL of your GitHub repository to connect it to your project.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Input
+                    id="githubRepo"
+                    value={githubRepo}
+                    onChange={(e) => setGithubRepo(e.target.value)}
+                    placeholder="https://github.com/username/repository"
+                    className="col-span-4"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="secondary" onClick={() => setGithubDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleGithubConnect}>
+                  Connect
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Documentation dialog */}
+          <Dialog open={docsDialogOpen} onOpenChange={setDocsDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Documentation Resource</DialogTitle>
+                <DialogDescription>
+                  Enter the URL of documentation resources for your tech stack.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Input
+                    id="docUrl"
+                    value={docUrl}
+                    onChange={(e) => setDocUrl(e.target.value)}
+                    placeholder="https://example.com/documentation"
+                    className="col-span-4"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="secondary" onClick={() => setDocsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleAddDocumentation}>
+                  Add Resource
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           
           {/* Chat processor - contains input field */}
           <ChatProcessor chatRef={chatProcessorRef} />
