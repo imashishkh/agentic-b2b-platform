@@ -1,204 +1,51 @@
 
 /**
- * This file contains common prompt templates that can be used by different agents
+ * Utility functions for creating agent prompts
  */
 
-// Create a prompt for Claude based on agent expertise, user message, and project context
-export const createPrompt = (userMessage: string, projectPhases: any[], expertise: string[], agentType: string, agentTitle: string): string => {
-  return `As ${agentTitle}, with expertise in ${expertise.join(', ')}, consider the following user message:
+/**
+ * Create a prompt for the agent based on the message and context
+ */
+export const createPrompt = (message: string, context: string = '', agentType: string = ''): string => {
+  const basePrompt = `You are a ${agentType || 'software development'} expert agent. Please help with the following request:`;
   
-  "${userMessage}"
+  let fullPrompt = basePrompt + '\n\n' + message;
   
-  Current project phases:
-  ${JSON.stringify(projectPhases, null, 2)}
+  if (context) {
+    fullPrompt += '\n\nContext:\n' + context;
+  }
   
-  Provide a helpful, informative response based on your expertise.`;
+  return fullPrompt;
 };
 
-// Create a search query based on the user message and project context
-export const createSearchQuery = (userMessage: string, projectPhases: any[], agentType: string): string => {
-  // Extract key terms from the user message
-  const messageTerms = userMessage.split(' ').filter(word => word.length > 3).join(' ');
+/**
+ * Create a search query for finding relevant information
+ */
+export const createSearchQuery = (message: string, agentType: string = ''): string => {
+  // Extract key terms from the message
+  const searchTerms = message
+    .replace(/[^\w\s]/gi, '') // Remove punctuation
+    .split(/\s+/) // Split by whitespace
+    .filter(term => term.length > 3) // Only keep terms with more than 3 characters
+    .slice(0, 6) // Take at most 6 terms
+    .join(' '); // Join with spaces
   
-  // Return a search query focused on the agent's specialty
-  return `${agentType.toLowerCase()} ${messageTerms}`;
-};
-
-// Create a code-specific search query
-export const createCodeSearchQuery = (userMessage: string, agentType: string): string => {
-  // Extract key terms from the user message
-  const messageTerms = userMessage.split(' ').filter(word => word.length > 3).join(' ');
+  // Add agent type context if available
+  const agentContext = agentType ? `${agentType} development ` : '';
   
-  // Return a code-focused search query
-  return `${agentType.toLowerCase()} code example ${messageTerms}`;
+  return `${agentContext}${searchTerms}`;
 };
 
-// Suggestions for common user actions after initial project analysis
-export const getProjectAnalysisSuggestions = () => {
-  return {
-    title: "Project Next Steps",
-    description: "Choose an action to continue developing your project",
-    options: [
-      {
-        id: "1",
-        label: "Create Architecture Proposal",
-        message: "Create a technical architecture proposal for our e-commerce system",
-        icon: "database"
-      },
-      {
-        id: "2",
-        label: "Develop Testing Strategy",
-        message: "Propose a comprehensive testing strategy for our project",
-        icon: "check-circle"
-      },
-      {
-        id: "3",
-        label: "Show Project Timeline",
-        message: "Show me a visual timeline of our project phases and milestones",
-        icon: "calendar"
-      },
-      {
-        id: "4",
-        label: "Task Visualization",
-        message: "Create a Gantt chart to visualize our project tasks and dependencies",
-        icon: "bar-chart"
-      }
-    ]
-  };
-};
-
-// Suggestions for knowledge base enhancement
-export const getKnowledgeBaseSuggestions = () => {
-  return {
-    title: "Knowledge Base Enhancement",
-    description: "Add resources to your project knowledge base",
-    options: [
-      {
-        id: "1",
-        label: "Add Technical Documentation",
-        message: "I want to add technical documentation to our knowledge base",
-        icon: "book-open"
-      },
-      {
-        id: "2",
-        label: "Add Industry Standards",
-        message: "I want to add industry standards and best practices to our knowledge base",
-        icon: "check-circle"
-      },
-      {
-        id: "3",
-        label: "Add Security Resources",
-        message: "I want to add security guidelines and resources to our knowledge base",
-        icon: "shield"
-      },
-      {
-        id: "4",
-        label: "Add Competitor Analysis",
-        message: "I want to add competitor analysis to our knowledge base",
-        icon: "users"
-      }
-    ]
-  };
-};
-
-// Suggestions for architecture development
-export const getArchitectureSuggestions = () => {
-  return {
-    title: "Architecture Development",
-    description: "Refine your project's architecture",
-    options: [
-      {
-        id: "1",
-        label: "Database Schema Design",
-        message: "Create a database schema design for our e-commerce platform",
-        icon: "database"
-      },
-      {
-        id: "2",
-        label: "Frontend Component Structure",
-        message: "Propose a component structure for our frontend application",
-        icon: "layout"
-      },
-      {
-        id: "3",
-        label: "API Design",
-        message: "Design the RESTful API structure for our application",
-        icon: "code"
-      },
-      {
-        id: "4",
-        label: "Authentication Flow",
-        message: "Design an authentication and authorization flow for our application",
-        icon: "shield"
-      }
-    ]
-  };
-};
-
-// Suggestions for project timeline management
-export const getTimelineSuggestions = () => {
-  return {
-    title: "Timeline Management",
-    description: "Manage your project timeline",
-    options: [
-      {
-        id: "1",
-        label: "Add Project Milestone",
-        message: "Add an important milestone to our project timeline",
-        icon: "milestone"
-      },
-      {
-        id: "2",
-        label: "View Critical Path",
-        message: "Show me the critical path of tasks in our project",
-        icon: "bar-chart"
-      },
-      {
-        id: "3",
-        label: "Adjust Task Dependencies",
-        message: "I need to adjust some task dependencies in our project",
-        icon: "clock"
-      },
-      {
-        id: "4",
-        label: "Generate Timeline Report",
-        message: "Generate a report of our current project timeline status",
-        icon: "file-code"
-      }
-    ]
-  };
-};
-
-// Suggestions for GitHub integration
-export const getGitHubSuggestions = () => {
-  return {
-    title: "GitHub Integration",
-    description: "Set up and manage your GitHub repository",
-    options: [
-      {
-        id: "1",
-        label: "Connect Repository",
-        message: "I want to connect my GitHub repository to this project",
-        icon: "git-branch"
-      },
-      {
-        id: "2",
-        label: "Set Up Branching Strategy",
-        message: "Recommend a branching strategy for our GitHub repository",
-        icon: "git-branch"
-      },
-      {
-        id: "3",
-        label: "Configure CI/CD Pipeline",
-        message: "Help me set up a CI/CD pipeline for our repository",
-        icon: "check-circle"
-      },
-      {
-        id: "4",
-        label: "Create Repository Structure",
-        message: "Create a recommended file and folder structure for our repository",
-        icon: "folder"
-      }
-    ]
-  };
+/**
+ * Create a search query specifically for code examples
+ */
+export const createCodeSearchQuery = (message: string, agentType: string = ''): string => {
+  // Construct a query focused on code examples
+  let query = createSearchQuery(message, agentType);
+  
+  // Add code-specific terms
+  const codeTerms = ['code example', 'implementation', 'function', 'class', 'component'];
+  const randomCodeTerm = codeTerms[Math.floor(Math.random() * codeTerms.length)];
+  
+  return `${query} ${randomCodeTerm}`;
 };

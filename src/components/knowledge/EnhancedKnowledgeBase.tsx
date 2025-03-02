@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useChat } from "@/contexts/ChatContext";
 import { KnowledgeBaseResource } from "@/contexts/types";
-import { AddResourceDialog } from './AddResourceDialog';
+import { EnhancedAddResourceDialog } from './EnhancedAddResourceDialog';
 import { ResourceFilters } from './ResourceFilters';
 import { CategoryTabs } from './CategoryTabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,7 +49,8 @@ export const EnhancedKnowledgeBase: React.FC = () => {
         searchTerm === "" || 
         resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (resource.tags && resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
+        (resource.tags && resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+        (resource.content && resource.content.toLowerCase().includes(searchTerm.toLowerCase()));
         
       const matchesCategory = 
         activeCategory === null || 
@@ -66,6 +67,9 @@ export const EnhancedKnowledgeBase: React.FC = () => {
         return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
       } else if (sort === 'oldest') {
         return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+      } else if (sort === 'relevance') {
+        // Sort by relevance score if available
+        return (b.relevanceScore || 0) - (a.relevanceScore || 0);
       } else {
         return a.category.localeCompare(b.category);
       }
@@ -85,7 +89,7 @@ export const EnhancedKnowledgeBase: React.FC = () => {
           Knowledge Base
           <Badge className="ml-2">{knowledgeBase.length}</Badge>
         </h2>
-        <AddResourceDialog onAddResource={addKnowledgeResource} />
+        <EnhancedAddResourceDialog onAddResource={addKnowledgeResource} />
       </div>
       
       <Tabs defaultValue="resources" className="w-full">
@@ -101,6 +105,13 @@ export const EnhancedKnowledgeBase: React.FC = () => {
               setSearchTerm={setSearchTerm}
               sort={sort}
               setSort={setSort}
+              // Add new relevance sort option
+              sortOptions={[
+                { value: 'newest', label: 'Newest' },
+                { value: 'oldest', label: 'Oldest' },
+                { value: 'category', label: 'Category' },
+                { value: 'relevance', label: 'Relevance' }
+              ]}
             />
             
             <div className="flex space-x-1">

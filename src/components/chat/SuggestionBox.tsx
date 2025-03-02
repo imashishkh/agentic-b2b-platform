@@ -48,7 +48,7 @@ const IconComponent = ({ name }: { name: string }) => {
     case "file-code": return <FileCode className="h-4 w-4" />;
     case "database": return <Database className="h-4 w-4" />;
     case "milestone": return <Milestone className="h-4 w-4" />;
-    case "gantt": return <BarChart className="h-4 w-4" />;
+    case "gantt": return <BarChart className="h-4 w-4" />; // Map to BarChart as fallback
     case "calendar": return <Calendar className="h-4 w-4" />;
     case "git-branch": return <GitBranch className="h-4 w-4" />;
     case "network": return <Network className="h-4 w-4" />;

@@ -44,6 +44,11 @@ export interface KnowledgeBaseResource {
   category: string;
   dateAdded: string;
   tags?: string[];
+  content?: string;            // Stored content from the URL
+  relevanceScore?: number;     // Relevance score (0.0-1.0)
+  lastAccessed?: string;       // Last time the resource was accessed/used
+  accessCount?: number;        // Number of times the resource was accessed
+  aiSummary?: string;          // AI-generated summary
 }
 
 // GitHub repository interface

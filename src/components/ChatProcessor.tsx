@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "@/contexts/ChatContext";
 import { AgentType } from "@/agents/AgentTypes";
@@ -19,7 +18,8 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     messages, 
     addSuggestion, 
     clearSuggestions,
-    isAgentTyping
+    isAgentTyping,
+    knowledgeBase
   } = useChat();
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -402,8 +402,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       // Generate a response using the agent
       const agent = AgentFactory.createAgent(agentType);
       
-      // If we have file content, provide it to the agent for processing
-      const generatedResponse = await agent.generateResponse(enhancedMessage, []);
+      // Generate knowledge-enhanced response if we have a knowledge base
+      const generatedResponse = knowledgeBase && knowledgeBase.length > 0 
+        ? await agent.generateKnowledgeEnhancedResponse(enhancedMessage, [], knowledgeBase)
+        : await agent.generateResponse(enhancedMessage, []);
       
       if (isMounted.current) {
         // Simulate typing delay for more natural interaction
