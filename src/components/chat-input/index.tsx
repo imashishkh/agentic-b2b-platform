@@ -53,17 +53,21 @@ export function ChatInput({
   };
 
   return (
-    <div className="px-4 py-3 bg-white border-t">
+    <div className="w-full">
       {files.length > 0 && (
-        <FilePreview files={files} onRemove={handleRemoveFile} disabled={isDisabled || isUploading} />
+        <div className="mb-2">
+          <FilePreview files={files} onRemove={handleRemoveFile} disabled={isDisabled || isUploading} />
+        </div>
       )}
       
       {isUploading && (
-        <FileUploadProgress 
-          fileName={files[0]?.name || "File"} 
-          progress={uploadProgress} 
-          isComplete={uploadProgress >= 100} 
-        />
+        <div className="mb-2">
+          <FileUploadProgress 
+            fileName={files[0]?.name || "File"} 
+            progress={uploadProgress} 
+            isComplete={uploadProgress >= 100} 
+          />
+        </div>
       )}
       
       <div className="flex gap-2 items-center">

@@ -25,7 +25,7 @@ export const SendButton: React.FC<SendButtonProps> = ({ disabled, onClick }) => 
       disabled={disabled}
       aria-label="Send message"
     >
-      <Send size={18} className={disabled ? "" : "transform -rotate-45"} />
+      <Send size={18} className={disabled ? "" : "transform rotate-45"} />
     </button>
   );
 };

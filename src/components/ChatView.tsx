@@ -75,13 +75,19 @@ export default function ChatView() {
 
   const handleStartWithExample = () => {
     // Implementation for example button
-    toast.info("Loading example requirements...");
+    toast({
+      title: "Loading example requirements",
+      description: "Please wait while the example is being loaded."
+    });
     // Add example implementation here
   };
 
   const handleClearChat = () => {
     // Implementation for clearing chat
-    toast.info("Chat history cleared");
+    toast({
+      title: "Chat history cleared",
+      description: "All messages have been removed from the chat."
+    });
     // Add clear chat implementation here
   };
 
