@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { GitHubRepository } from "@/contexts/ChatContext";
-import { AlertCircle, Check, GitHub, GitBranch, RefreshCw } from "lucide-react";
+import { AlertCircle, Check, Github, GitBranch, RefreshCw } from "lucide-react";
 import { useChat } from "@/contexts/ChatContext";
 import { toast } from "sonner";
 
@@ -85,7 +84,7 @@ export const GitHubIntegration: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <GitHub className="mr-2 h-5 w-5" />
+              <Github className="mr-2 h-5 w-5" />
               GitHub Integration
             </CardTitle>
             <CardDescription>
@@ -162,7 +161,7 @@ const ConnectedRepository: React.FC<ConnectedRepositoryProps> = ({
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="flex items-center">
-            <GitHub className="mr-2 h-5 w-5" />
+            <Github className="mr-2 h-5 w-5" />
             GitHub Integration
           </CardTitle>
           <span className="flex items-center text-sm text-green-600">
