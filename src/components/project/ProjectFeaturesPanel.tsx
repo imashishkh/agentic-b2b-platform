@@ -7,7 +7,7 @@ import { EnhancedKnowledgeBase } from '@/components/knowledge/EnhancedKnowledgeB
 import { GitHubIntegration } from '@/components/github/GitHubIntegration';
 import { ArrowDownToLine, BookOpen, Database, FolderKanban, Github, Lightbulb, Milestone, TestTube2 } from 'lucide-react';
 import { ArchitectureVisualizer } from '@/components/architecture/ArchitectureVisualizer';
-import { TestingStrategyCard } from '@/components/testing/TestingStrategyCard';
+import { TestingStrategyCard, ExtendedTestingStrategy } from '@/components/testing/TestingStrategyCard';
 import EnhancedProjectTimeline from './EnhancedProjectTimeline';
 import { Milestone as MilestoneType, ProjectPhase } from '@/contexts/types';
 import { format, addDays } from 'date-fns';
@@ -25,6 +25,28 @@ export const ProjectFeaturesPanel = () => {
   const [sampleMilestones, setSampleMilestones] = useState<MilestoneType[]>([]);
   const [formattedPhases, setFormattedPhases] = useState<ProjectPhase[]>([]);
   
+  // Convert testingStrategies to ExtendedTestingStrategy format
+  const formattedTestingStrategies: ExtendedTestingStrategy[] = testingStrategies.map(strategy => {
+    // Format approaches from string[] to the required structure
+    const formattedApproaches = strategy.approaches ? 
+      strategy.approaches.map(approach => {
+        // If it's already in the correct format
+        if (typeof approach === 'object' && approach !== null) {
+          return approach;
+        }
+        // If it's a string, convert to the required format
+        return {
+          name: approach,
+          tools: ['Jest', 'React Testing Library'] // Default tools
+        };
+      }) : [];
+      
+    return {
+      ...strategy,
+      approaches: formattedApproaches
+    };
+  });
+
   useEffect(() => {
     // Process project phases to ensure they have all required properties
     if (projectPhases && projectPhases.length > 0) {
@@ -355,9 +377,13 @@ export const ProjectFeaturesPanel = () => {
         
         <TabsContent value="testing" className="m-0 space-y-4 flex-grow">
           <div className="h-full overflow-auto pb-20">
-            {testingStrategies.length > 0 ? (
-              testingStrategies.map(strategy => (
-                <TestingStrategyCard key={strategy.id} strategy={strategy} />
+            {formattedTestingStrategies.length > 0 ? (
+              formattedTestingStrategies.map(strategy => (
+                <TestingStrategyCard 
+                  key={strategy.id} 
+                  strategy={strategy} 
+                  onApprove={() => {}} // Add your onApprove handler here if needed
+                />
               ))
             ) : (
               <div className="flex flex-col items-center justify-center h-[300px] text-center p-4">

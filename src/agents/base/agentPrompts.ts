@@ -3,6 +3,36 @@
  * This file contains common prompt templates that can be used by different agents
  */
 
+// Create a prompt for Claude based on agent expertise, user message, and project context
+export const createPrompt = (userMessage: string, projectPhases: any[], expertise: string[], agentType: string, agentTitle: string): string => {
+  return `As ${agentTitle}, with expertise in ${expertise.join(', ')}, consider the following user message:
+  
+  "${userMessage}"
+  
+  Current project phases:
+  ${JSON.stringify(projectPhases, null, 2)}
+  
+  Provide a helpful, informative response based on your expertise.`;
+};
+
+// Create a search query based on the user message and project context
+export const createSearchQuery = (userMessage: string, projectPhases: any[], agentType: string): string => {
+  // Extract key terms from the user message
+  const messageTerms = userMessage.split(' ').filter(word => word.length > 3).join(' ');
+  
+  // Return a search query focused on the agent's specialty
+  return `${agentType.toLowerCase()} ${messageTerms}`;
+};
+
+// Create a code-specific search query
+export const createCodeSearchQuery = (userMessage: string, agentType: string): string => {
+  // Extract key terms from the user message
+  const messageTerms = userMessage.split(' ').filter(word => word.length > 3).join(' ');
+  
+  // Return a code-focused search query
+  return `${agentType.toLowerCase()} code example ${messageTerms}`;
+};
+
 // Suggestions for common user actions after initial project analysis
 export const getProjectAnalysisSuggestions = () => {
   return {

@@ -5,15 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { TestingStrategy } from '@/contexts/types';
 
 // Define extended type for TestingStrategy
-interface ExtendedTestingStrategy {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  approved?: boolean;
-  dateCreated?: string | Date;
+export interface ExtendedTestingStrategy extends Omit<TestingStrategy, 'approaches'> {
   approaches?: Array<{
     name: string;
     type?: string;
@@ -26,12 +21,12 @@ interface ExtendedTestingStrategy {
 
 interface TestingStrategyCardProps {
   strategy: ExtendedTestingStrategy;
-  onApprove: (id: string) => void;
+  onApprove?: (id: string) => void;
 }
 
 export const TestingStrategyCard: React.FC<TestingStrategyCardProps> = ({ 
   strategy, 
-  onApprove 
+  onApprove = () => {} // Default empty function if not provided
 }) => {
   // Format date if it exists
   const formattedDate = strategy.dateCreated 

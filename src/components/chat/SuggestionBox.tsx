@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { SuggestionOption } from "@/contexts/types";
@@ -16,7 +15,6 @@ import {
   FileCode,
   Database,
   Milestone,
-  Gantt,
   Calendar,
   GitBranch
 } from "lucide-react";
