@@ -5,12 +5,8 @@ import { ChatContainer } from "@/components/chat/ChatContainer";
 import { useChat } from "@/contexts/ChatContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ClerkProvider } from "@clerk/clerk-react";
 
-// Default placeholder for publishable key
-// In a production environment, this should be properly configured
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_placeholder";
-
+// Remove the Clerk import and PUBLISHABLE_KEY since we're handling it at root level
 const IndexContent = () => {
   // Get current agent type from chat context
   const { currentAgentType, setCurrentAgentType } = useChat();
@@ -31,11 +27,9 @@ const IndexContent = () => {
 const Index = () => {
   return (
     <ErrorBoundary>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <ChatProvider>
-          <IndexContent />
-        </ChatProvider>
-      </ClerkProvider>
+      <ChatProvider>
+        <IndexContent />
+      </ChatProvider>
     </ErrorBoundary>
   );
 };
