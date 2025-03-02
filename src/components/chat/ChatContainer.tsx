@@ -11,7 +11,8 @@ export function ChatContainer() {
     addMessage, 
     clearMessages, 
     isAgentTyping, 
-    isLoadingExample 
+    isLoadingExample,
+    setIsAgentTyping
   } = useChat();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   
@@ -26,33 +27,90 @@ export function ChatContainer() {
         type: "user",
       });
       
-      // In a real implementation, you would process the message here
-      // For now, we'll just simulate a response
-      if (uploadedFiles.length > 0) {
-        toast.success(`Processing message with ${uploadedFiles.length} file(s)`);
-        setUploadedFiles([]);
-      }
+      // Simulate agent typing
+      setIsAgentTyping(true);
+      
+      // Simulate response after delay
+      setTimeout(() => {
+        addMessage({
+          type: "agent",
+          agentType: "manager",
+          content: "I'm processing your request. How can I assist you further with your project?"
+        });
+        setIsAgentTyping(false);
+        
+        if (uploadedFiles.length > 0) {
+          toast.success(`Processing message with ${uploadedFiles.length} file(s)`);
+          setUploadedFiles([]);
+        }
+      }, 2000);
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
+      setIsAgentTyping(false);
     }
   };
   
   const handleFileUpload = (files: File[]) => {
     if (files.length > 0) {
       setUploadedFiles(files);
-      toast.success(`${files.length} file(s) uploaded successfully`);
+      
+      // Add a user message about the file upload
+      addMessage({
+        type: "user",
+        content: `Uploaded ${files.map(f => f.name).join(", ")}`,
+      });
+      
+      // Simulate agent processing
+      setIsAgentTyping(true);
+      
+      // Simulate response after delay
+      setTimeout(() => {
+        addMessage({
+          type: "agent",
+          agentType: "manager",
+          content: "I've received your files. I'll analyze them and get back to you with my findings.",
+        });
+        setIsAgentTyping(false);
+        toast.success(`${files.length} file(s) processed successfully`);
+      }, 3000);
     }
   };
   
   const handleStartWithExample = () => {
     toast.info("Starting with example project");
-    // Implementation would go here
+    // Add example project message
+    addMessage({
+      type: "user",
+      content: "I want to start with an example e-commerce project",
+    });
+    
+    // Simulate agent typing
+    setIsAgentTyping(true);
+    
+    // Simulate response after delay
+    setTimeout(() => {
+      addMessage({
+        type: "agent",
+        agentType: "manager",
+        content: "I've loaded an example e-commerce project for you. This includes a standard product catalog, shopping cart, and checkout flow. Would you like me to explain the architecture or should we customize it to your needs?",
+      });
+      setIsAgentTyping(false);
+    }, 2500);
   };
   
   const handleClearChat = () => {
     clearMessages();
     toast.success("Chat cleared");
+    
+    // Add welcome message after clearing
+    setTimeout(() => {
+      addMessage({
+        type: "agent",
+        agentType: "manager",
+        content: "Hello! I'm DevManager, your AI project manager. How can I help you today?",
+      });
+    }, 300);
   };
   
   return (
@@ -60,14 +118,6 @@ export function ChatContainer() {
       <div className="flex-1 overflow-hidden">
         <ChatView />
       </div>
-      <ChatFooter 
-        onSendMessage={handleSendMessage}
-        handleFileUpload={handleFileUpload}
-        handleStartWithExample={handleStartWithExample}
-        handleClearChat={handleClearChat}
-        isLoadingExample={isLoadingExample}
-        isAgentTyping={isAgentTyping}
-      />
     </div>
   );
 }

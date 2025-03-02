@@ -13,6 +13,7 @@ export interface ChatInputProps {
   isUploading?: boolean;
   uploadProgress?: number;
   handleFileUpload?: () => void;
+  isDisabled?: boolean;
 }
 
 export function ChatInput({
@@ -21,7 +22,8 @@ export function ChatInput({
   onClearFiles,
   isUploading = false,
   uploadProgress = 0,
-  handleFileUpload
+  handleFileUpload,
+  isDisabled = false
 }: ChatInputProps) {
   const [message, setMessage] = React.useState("");
 
@@ -32,33 +34,53 @@ export function ChatInput({
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleSendMessage();
     }
   };
 
+  const handleRemoveFile = (index: number) => {
+    if (onClearFiles && files.length > 0) {
+      // We'll create a new array without the file at the given index
+      const newFiles = [...files];
+      newFiles.splice(index, 1);
+      
+      // For now we're just clearing all files as the onClearFiles function doesn't accept an index
+      onClearFiles();
+    }
+  };
+
   return (
     <div className="p-4 border-t bg-background">
       {files.length > 0 && (
-        <FilePreview files={files} onClearFiles={onClearFiles} />
+        <FilePreview files={files} onRemove={handleRemoveFile} disabled={isDisabled || isUploading} />
       )}
       
       {isUploading && (
-        <FileUploadProgress progress={uploadProgress} />
+        <FileUploadProgress 
+          fileName={files[0]?.name || "File"} 
+          progress={uploadProgress} 
+          isComplete={uploadProgress >= 100} 
+        />
       )}
       
       <div className="flex gap-2 items-end">
         <MessageInput
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={setMessage}
           onKeyDown={handleKeyDown}
+          disabled={isDisabled || isUploading}
         />
         
         <div className="flex gap-2">
-          <FileUploadButton onClick={handleFileUpload} />
-          <SendButton onClick={handleSendMessage} disabled={!message.trim()} />
+          <FileUploadButton onChange={(files) => {
+            if (handleFileUpload) {
+              handleFileUpload();
+            }
+          }} disabled={isDisabled || isUploading} />
+          <SendButton onClick={handleSendMessage} disabled={!message.trim() || isDisabled || isUploading} />
         </div>
       </div>
     </div>

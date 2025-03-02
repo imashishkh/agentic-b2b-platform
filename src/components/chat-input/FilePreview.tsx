@@ -26,7 +26,7 @@ export function FilePreview({ files, onRemove, disabled }: FilePreviewProps) {
   if (files.length === 0) return null;
   
   return (
-    <div className="flex flex-wrap gap-2 p-2">
+    <div className="flex flex-wrap gap-2 p-2 mb-2">
       {files.length === 1 ? (
         // Single file inline display
         <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
@@ -43,7 +43,7 @@ export function FilePreview({ files, onRemove, disabled }: FilePreviewProps) {
         </div>
       ) : (
         // Multiple files display
-        <div className="w-full space-y-2 mt-2">
+        <div className="w-full space-y-2">
           <div className="text-sm font-medium">Selected files:</div>
           <div className="space-y-1">
             {files.map((file, index) => (

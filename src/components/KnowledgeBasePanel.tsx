@@ -1,88 +1,83 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { KnowledgeResourcesList } from "@/components/knowledge/KnowledgeResourcesList";
 import { useChat } from "@/contexts/ChatContext";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
-import { EnhancedKnowledgeBase } from "./knowledge/EnhancedKnowledgeBase";
+import { KnowledgeBaseResource } from "@/contexts/types";
 
 export function KnowledgeBasePanel() {
-  const { knowledgeBase, addKnowledgeResource } = useChat();
-  const [resourceUrl, setResourceUrl] = useState("");
-  const [resourceTitle, setResourceTitle] = useState("");
-  const [resourceType, setResourceType] = useState("documentation");
+  const { knowledgeBase, addKnowledgeResource, removeKnowledgeResource } = useChat();
+  const [newResource, setNewResource] = useState({
+    title: "",
+    url: "",
+  });
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleAddResource = () => {
-    if (resourceUrl && resourceTitle) {
+    if (newResource.title && newResource.url) {
       addKnowledgeResource({
-        id: crypto.randomUUID(),
-        title: resourceTitle,
-        url: resourceUrl,
-        category: resourceType,
-        description: "",
-        dateAdded: new Date(),
-        tags: [],
-        priority: "medium",
-        isIndexed: false
+        id: Date.now().toString(),
+        title: newResource.title,
+        url: newResource.url,
+        type: "url",
+        dateAdded: new Date().toISOString(),
       });
-      setResourceUrl("");
-      setResourceTitle("");
+      
+      setNewResource({
+        title: "",
+        url: "",
+      });
+      
+      setIsAdding(false);
     }
   };
 
+  const handleRemoveResource = (id: string) => {
+    removeKnowledgeResource(id);
+  };
+
   return (
-    <Card className="h-full overflow-hidden flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex justify-between items-center">
-          Knowledge Base
-        </CardTitle>
-        <CardDescription>
-          Add external resources to enhance the AI's knowledge
-        </CardDescription>
-      </CardHeader>
-      <Tabs defaultValue="resources" className="flex-1 overflow-hidden flex flex-col">
-        <TabsList className="px-6">
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="enhance">Enhanced View</TabsTrigger>
-        </TabsList>
-        <TabsContent value="resources" className="flex-1 overflow-hidden flex flex-col">
-          <CardContent className="pt-3 flex-1 overflow-hidden flex flex-col">
-            <div className="space-y-2 mb-4">
-              <Input
-                placeholder="Resource Title"
-                value={resourceTitle}
-                onChange={(e) => setResourceTitle(e.target.value)}
-              />
-              <Input
-                placeholder="URL (https://...)"
-                value={resourceUrl}
-                onChange={(e) => setResourceUrl(e.target.value)}
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  className="w-auto flex items-center gap-1 flex-1"
-                  onClick={handleAddResource}
-                >
-                  <Plus className="h-4 w-4" /> Add Resource
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto pr-2">
-              {/* Pass the knowledgeBase as resources prop to KnowledgeResourcesList */}
-              <KnowledgeResourcesList resources={knowledgeBase} />
-            </div>
-          </CardContent>
-        </TabsContent>
-        <TabsContent value="enhance" className="flex-1 overflow-auto">
-          <EnhancedKnowledgeBase />
-        </TabsContent>
-      </Tabs>
-    </Card>
+    <div className="h-full flex flex-col bg-background p-4 overflow-y-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Knowledge Base</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setIsAdding(!isAdding)}
+        >
+          {isAdding ? "Cancel" : "Add Resource"}
+        </Button>
+      </div>
+      
+      {isAdding && (
+        <div className="bg-muted/30 p-3 rounded-md mb-4 space-y-3">
+          <Input
+            placeholder="Resource Title"
+            value={newResource.title}
+            onChange={(e) => setNewResource(prev => ({ ...prev, title: e.target.value }))}
+          />
+          <Input
+            placeholder="URL or Reference"
+            value={newResource.url}
+            onChange={(e) => setNewResource(prev => ({ ...prev, url: e.target.value }))}
+          />
+          <div className="flex justify-end">
+            <Button size="sm" onClick={handleAddResource} disabled={!newResource.title || !newResource.url}>
+              Add
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {knowledgeBase.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p className="mb-2">No resources added yet</p>
+          <p className="text-sm">Add documentation links or reference materials to enhance the AI's knowledge</p>
+        </div>
+      ) : (
+        <KnowledgeResourcesList resources={knowledgeBase} onRemove={handleRemoveResource} />
+      )}
+    </div>
   );
 }
