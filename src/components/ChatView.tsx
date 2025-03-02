@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -14,7 +14,7 @@ import { SuggestionBox } from "@/components/chat/SuggestionBox";
  * This component orchestrates the chat experience with the following features:
  * 
  * - Message display area showing the conversation history
- * - Suggestion boxes for common user actions
+ * - Chat bubble suggestions for quick actions
  * - Integration with the chat processor for handling messages
  */
 export default function ChatView() {
@@ -65,7 +65,7 @@ export default function ChatView() {
         
         {/* Main chat message area */}
         <div className="relative flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto p-4">
+          <div className="h-full overflow-y-auto pb-20 px-4">
             <ChatMessages 
               messages={messages}
               isLoadingExample={isLoadingExample} 
@@ -74,27 +74,27 @@ export default function ChatView() {
               collaborationActive={collaborationActive || false}
             />
           </div>
-          
-          {/* Suggestion boxes - displayed above the chat input but not overlapping messages */}
+        </div>
+        
+        {/* Chat input area with suggestions */}
+        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background to-transparent py-3">
+          {/* Chat bubble suggestions - positioned above input */}
           {uniqueSuggestions.length > 0 && (
-            <div className="fixed bottom-[4.5rem] left-0 right-0 z-10 px-4 pointer-events-none">
-              <div className="max-w-2xl mx-auto space-y-1.5 pointer-events-auto">
-                {uniqueSuggestions.map((suggestion, index) => (
+            <div className="max-w-2xl mx-auto px-4 mb-3">
+              {uniqueSuggestions.map((suggestion, index) => (
+                <div key={index} className="mb-2 animate-fade-in">
                   <SuggestionBox
-                    key={index}
                     title={suggestion.title}
                     description={suggestion.description}
                     options={suggestion.options}
                     onSelect={handleSuggestionSelect}
                   />
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
-        </div>
-        
-        {/* Chat input area with gradient background */}
-        <div className="sticky bottom-0 z-20 bg-gradient-to-t from-background via-background/90 to-transparent pt-6 pb-1">
+          
+          {/* Chat processor - contains input field */}
           <ChatProcessor chatRef={chatProcessorRef} />
         </div>
       </div>

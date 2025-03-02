@@ -66,28 +66,24 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
               description: "Here are some ways to get started with your project:",
               options: [
                 {
-                  id: "upload-requirements",
                   label: "Upload requirements document",
                   message: "I'd like to upload a project requirements document",
                   icon: "file-code",
                   description: "Upload a markdown file with your project requirements"
                 },
                 {
-                  id: "example-project",
                   label: "Start with example project",
                   message: "I want to start with an example e-commerce project",
                   icon: "layout",
                   description: "Use a pre-configured e-commerce project template"
                 },
                 {
-                  id: "knowledge-base",
                   label: "Create knowledge base",
                   message: "Let's set up a knowledge base for the project",
                   icon: "book-open",
                   description: "Add documentation and resources to inform development"
                 },
                 {
-                  id: "custom-requirements",
                   label: "Describe project manually",
                   message: "I want to describe my project requirements manually",
                   icon: "users",
@@ -130,28 +126,24 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
   const generateNextStepSuggestions = () => {
     const nextStepSuggestions = [
       {
-        id: "architecture-planning",
         label: "Architecture Planning",
         message: "I'd like to start planning the system architecture for this project",
         icon: "layout",
         description: "Begin designing the technical architecture for your project"
       },
       {
-        id: "knowledge-base",
         label: "Enhance Knowledge Base",
         message: "Let's add resources to the knowledge base for this project",
         icon: "book-open",
         description: "Add technical documentation and resources to inform development"
       },
       {
-        id: "testing-strategy",
         label: "Testing Strategy",
         message: "Let's develop a testing strategy for the project",
         icon: "check-circle",
         description: "Create a comprehensive testing approach for quality assurance"
       },
       {
-        id: "prioritize-tasks",
         label: "Prioritize Tasks",
         message: "Help me prioritize the tasks we've identified",
         icon: "list-ordered",
@@ -241,28 +233,24 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             description: "How would you like to customize this example project?",
             options: [
               {
-                id: "product-catalog",
                 label: "Customize product catalog",
                 message: "I'd like to customize the product catalog structure",
                 icon: "database",
                 description: "Define product categories and attributes"
               },
               {
-                id: "payment-integration",
                 label: "Payment integration",
                 message: "Let's configure the payment processing system",
                 icon: "shield",
                 description: "Set up secure payment processing"
               },
               {
-                id: "ui-customization",
                 label: "UI customization",
                 message: "I want to customize the UI design",
                 icon: "layout",
                 description: "Personalize the look and feel of the application"
               },
               {
-                id: "deployment",
                 label: "Deployment setup",
                 message: "Help me set up deployment for this project",
                 icon: "code",
