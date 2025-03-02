@@ -1,3 +1,4 @@
+
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 import { createAgent } from "./AgentFactory";
@@ -140,18 +141,23 @@ export class ManagerAgent extends BaseAgent {
     // Add dependency information
     summary.push("## Task Dependencies\n");
     if (dependencyGraph && dependencyGraph.nodes && dependencyGraph.edges) {
-      summary.push(`I've identified dependencies between tasks. The dependency graph has ${dependencyGraph.nodes.length} nodes and ${dependencyGraph.edges.length} connections.\n`);
+      const nodesLength = Array.isArray(dependencyGraph.nodes) ? dependencyGraph.nodes.length : 0;
+      const edgesLength = Array.isArray(dependencyGraph.edges) ? dependencyGraph.edges.length : 0;
+      
+      summary.push(`I've identified dependencies between tasks. The dependency graph has ${nodesLength} nodes and ${edgesLength} connections.\n`);
       
       // Add critical path information if there are enough dependencies
-      if (dependencyGraph.edges.length > 3) {
+      if (edgesLength > 3) {
         summary.push("### Critical Path\n");
         summary.push("Tasks on the critical path that should be prioritized:\n");
         
         // Find tasks with the most dependents (most blocking)
         const dependentCounts = new Map<string, number>();
-        for (const edge of dependencyGraph.edges) {
-          if (edge.type === 'dependency') {
-            dependentCounts.set(edge.source, (dependentCounts.get(edge.source) || 0) + 1);
+        if (Array.isArray(dependencyGraph.edges)) {
+          for (const edge of dependencyGraph.edges) {
+            if (edge.type === 'dependency') {
+              dependentCounts.set(edge.source, (dependentCounts.get(edge.source) || 0) + 1);
+            }
           }
         }
         
@@ -796,3 +802,653 @@ To add a resource, simply share a link with a brief description of what it conta
     
     return requirements;
   }
+  
+  /**
+   * Generate a security report based on compliance checks
+   * 
+   * @param code - The code to check
+   * @returns A formatted security report
+   */
+  async generateSecurityReport(code: string): Promise<string> {
+    const findings = await this.performSecurityScan(code);
+    const owasp = await this.performComplianceCheck(code, "owasp");
+    const gdpr = await this.performComplianceCheck(code, "gdpr");
+    
+    const report = ["# Security Assessment Report\n\n"];
+    
+    // Summary
+    const criticalVulnerabilities = findings.filter(f => f.severity === "critical").length;
+    const highVulnerabilities = findings.filter(f => f.severity === "high").length;
+    const mediumVulnerabilities = findings.filter(f => f.severity === "medium").length;
+    const lowVulnerabilities = findings.filter(f => f.severity === "low").length;
+    
+    const owaspFailed = owasp.filter(r => r.status === "failed").length;
+    const owaspWarning = owasp.filter(r => r.status === "warning").length;
+    const gdprFailed = gdpr.filter(r => r.status === "failed").length;
+    const gdprWarning = gdpr.filter(r => r.status === "warning").length;
+    
+    report.push("## Executive Summary\n\n");
+    report.push("This security assessment identified:\n\n");
+    report.push(`- **${criticalVulnerabilities}** critical vulnerabilities\n`);
+    report.push(`- **${highVulnerabilities}** high-severity vulnerabilities\n`);
+    report.push(`- **${mediumVulnerabilities}** medium-severity vulnerabilities\n`);
+    report.push(`- **${lowVulnerabilities}** low-severity vulnerabilities\n\n`);
+    
+    report.push("### Compliance Status\n\n");
+    report.push(`- **OWASP Top 10:** ${owaspFailed} failures, ${owaspWarning} warnings\n`);
+    report.push(`- **GDPR:** ${gdprFailed} failures, ${gdprWarning} warnings\n\n`);
+    
+    // Detailed findings
+    if (findings.length > 0) {
+      report.push("## Detailed Vulnerability Findings\n\n");
+      
+      // Group by severity
+      const criticals = findings.filter(f => f.severity === "critical");
+      const highs = findings.filter(f => f.severity === "high");
+      const mediums = findings.filter(f => f.severity === "medium");
+      const lows = findings.filter(f => f.severity === "low");
+      
+      if (criticals.length > 0) {
+        report.push("### Critical Vulnerabilities\n\n");
+        criticals.forEach(f => {
+          report.push(`#### ${f.description}\n`);
+          report.push(`- **Location:** ${f.codeLocation}\n`);
+          report.push(`- **Recommendation:** ${f.recommendation}\n\n`);
+        });
+      }
+      
+      if (highs.length > 0) {
+        report.push("### High Vulnerabilities\n\n");
+        highs.forEach(f => {
+          report.push(`#### ${f.description}\n`);
+          report.push(`- **Location:** ${f.codeLocation}\n`);
+          report.push(`- **Recommendation:** ${f.recommendation}\n\n`);
+        });
+      }
+      
+      if (mediums.length > 0) {
+        report.push("### Medium Vulnerabilities\n\n");
+        mediums.forEach(f => {
+          report.push(`#### ${f.description}\n`);
+          report.push(`- **Location:** ${f.codeLocation}\n`);
+          report.push(`- **Recommendation:** ${f.recommendation}\n\n`);
+        });
+      }
+      
+      if (lows.length > 0) {
+        report.push("### Low Vulnerabilities\n\n");
+        lows.forEach(f => {
+          report.push(`#### ${f.description}\n`);
+          report.push(`- **Location:** ${f.codeLocation}\n`);
+          report.push(`- **Recommendation:** ${f.recommendation}\n\n`);
+        });
+      }
+    }
+    
+    // Compliance details
+    report.push("## Compliance Details\n\n");
+    
+    report.push("### OWASP Top 10 Compliance\n\n");
+    owasp.forEach(r => {
+      const statusEmoji = r.status === "passed" ? "✅" : r.status === "warning" ? "⚠️" : "❌";
+      report.push(`#### ${statusEmoji} ${r.name}\n`);
+      report.push(`- **Description:** ${r.description}\n`);
+      report.push(`- **Status:** ${r.status}\n`);
+      report.push(`- **Recommendation:** ${r.recommendation}\n\n`);
+    });
+    
+    report.push("### GDPR Compliance\n\n");
+    gdpr.forEach(r => {
+      const statusEmoji = r.status === "passed" ? "✅" : r.status === "warning" ? "⚠️" : "❌";
+      report.push(`#### ${statusEmoji} ${r.name}\n`);
+      report.push(`- **Description:** ${r.description}\n`);
+      report.push(`- **Status:** ${r.status}\n`);
+      report.push(`- **Recommendation:** ${r.recommendation}\n\n`);
+    });
+    
+    // Recommendations
+    const requirements = [...owasp, ...gdpr];
+    const failed = requirements.filter(r => r.status === "failed");
+    
+    report.push("## Priority Recommendations\n\n");
+    
+    if (failed.length > 0) {
+      report.push("### Highest Priority\n\n");
+      failed.forEach(r => {
+        report.push(`- ${r.recommendation}\n`);
+      });
+      report.push("\n");
+    }
+    
+    report.push("### General Recommendations\n\n");
+    report.push("1. Implement secure coding practices across the development team\n");
+    report.push("2. Establish regular security review checkpoints\n");
+    report.push("3. Integrate automated security scanning in the CI/CD pipeline\n");
+    report.push("4. Conduct regular penetration testing\n");
+    report.push("5. Maintain up-to-date dependencies and apply security patches promptly\n");
+    
+    return report.join("");
+  }
+  
+  /**
+   * Add a performance metric to the metrics collection
+   * 
+   * @param metric - The performance metric to add
+   */
+  addPerformanceMetric(metric: PerformanceMetric): void {
+    this.performanceMetrics.push(metric);
+  }
+  
+  /**
+   * Get all performance metrics
+   * 
+   * @returns Array of performance metrics
+   */
+  getPerformanceMetrics(): PerformanceMetric[] {
+    return this.performanceMetrics;
+  }
+  
+  /**
+   * Add a performance optimization recommendation
+   * 
+   * @param recommendation - The optimization recommendation to add
+   */
+  addOptimizationRecommendation(recommendation: OptimizationRecommendation): void {
+    this.performanceRecommendations.push(recommendation);
+  }
+  
+  /**
+   * Get all performance optimization recommendations
+   * 
+   * @returns Array of optimization recommendations
+   */
+  getOptimizationRecommendations(): OptimizationRecommendation[] {
+    return this.performanceRecommendations;
+  }
+  
+  /**
+   * Generate a performance monitoring plan
+   * 
+   * @returns A formatted performance monitoring plan
+   */
+  generatePerformanceMonitoringPlan(): string {
+    const plan = ["# Performance Monitoring Plan\n\n"];
+    
+    plan.push("## Key Performance Indicators\n\n");
+    
+    // Group metrics by category
+    const frontendMetrics = this.performanceMetrics.filter(m => m.category === 'frontend');
+    const backendMetrics = this.performanceMetrics.filter(m => m.category === 'backend');
+    const databaseMetrics = this.performanceMetrics.filter(m => m.category === 'database');
+    const networkMetrics = this.performanceMetrics.filter(m => m.category === 'network');
+    const memoryMetrics = this.performanceMetrics.filter(m => m.category === 'memory');
+    
+    if (frontendMetrics.length > 0) {
+      plan.push("### Frontend Performance\n\n");
+      frontendMetrics.forEach(metric => {
+        plan.push(`#### ${metric.name}\n`);
+        plan.push(`- **Description:** ${metric.description}\n`);
+        plan.push(`- **Target Value:** ${metric.target || 'Not defined'} ${metric.unit}\n`);
+        plan.push(`- **Threshold - Warning:** ${metric.threshold.warning} ${metric.unit}\n`);
+        plan.push(`- **Threshold - Critical:** ${metric.threshold.critical} ${metric.unit}\n`);
+        if (metric.measurementMethod) {
+          plan.push(`- **Measurement Method:** ${metric.measurementMethod}\n`);
+        }
+        plan.push("\n");
+      });
+    }
+    
+    if (backendMetrics.length > 0) {
+      plan.push("### Backend Performance\n\n");
+      backendMetrics.forEach(metric => {
+        plan.push(`#### ${metric.name}\n`);
+        plan.push(`- **Description:** ${metric.description}\n`);
+        plan.push(`- **Target Value:** ${metric.target || 'Not defined'} ${metric.unit}\n`);
+        plan.push(`- **Threshold - Warning:** ${metric.threshold.warning} ${metric.unit}\n`);
+        plan.push(`- **Threshold - Critical:** ${metric.threshold.critical} ${metric.unit}\n`);
+        if (metric.measurementMethod) {
+          plan.push(`- **Measurement Method:** ${metric.measurementMethod}\n`);
+        }
+        plan.push("\n");
+      });
+    }
+    
+    if (databaseMetrics.length > 0) {
+      plan.push("### Database Performance\n\n");
+      databaseMetrics.forEach(metric => {
+        plan.push(`#### ${metric.name}\n`);
+        plan.push(`- **Description:** ${metric.description}\n`);
+        plan.push(`- **Target Value:** ${metric.target || 'Not defined'} ${metric.unit}\n`);
+        plan.push(`- **Threshold - Warning:** ${metric.threshold.warning} ${metric.unit}\n`);
+        plan.push(`- **Threshold - Critical:** ${metric.threshold.critical} ${metric.unit}\n`);
+        if (metric.measurementMethod) {
+          plan.push(`- **Measurement Method:** ${metric.measurementMethod}\n`);
+        }
+        plan.push("\n");
+      });
+    }
+    
+    // Monitoring tools
+    plan.push("## Recommended Monitoring Tools\n\n");
+    
+    if (typeof monitoringToolIntegrations === 'object') {
+      Object.entries(monitoringToolIntegrations).forEach(([key, tool]) => {
+        if (typeof tool === 'object' && tool !== null) {
+          // @ts-ignore - Handle potentially missing properties
+          const toolName = tool.name || key;
+          // @ts-ignore - Handle potentially missing properties
+          const toolDesc = tool.description || '';
+          // @ts-ignore - Handle potentially missing properties
+          const toolSetup = tool.setupInstructions || '';
+          
+          plan.push(`### ${toolName}\n\n`);
+          plan.push(`${toolDesc}\n\n`);
+          plan.push("#### Setup Instructions\n\n");
+          plan.push(`${toolSetup}\n\n`);
+        }
+      });
+    }
+    
+    // Implementation plan
+    plan.push("## Implementation Timeline\n\n");
+    plan.push("### Phase 1: Core Metrics Setup (Week 1-2)\n\n");
+    plan.push("1. Set up monitoring for critical frontend performance metrics\n");
+    plan.push("2. Implement API response time tracking\n");
+    plan.push("3. Configure basic database performance monitoring\n\n");
+    
+    plan.push("### Phase 2: Advanced Monitoring (Week 3-4)\n\n");
+    plan.push("1. Set up real user monitoring (RUM)\n");
+    plan.push("2. Implement detailed database query analysis\n");
+    plan.push("3. Configure network performance tracking\n\n");
+    
+    plan.push("### Phase 3: Alerting and Dashboards (Week 5-6)\n\n");
+    plan.push("1. Configure alerting based on established thresholds\n");
+    plan.push("2. Create performance dashboards for different stakeholders\n");
+    plan.push("3. Implement automated performance reporting\n\n");
+    
+    // Optimization recommendations
+    if (this.performanceRecommendations.length > 0) {
+      plan.push("## Optimization Recommendations\n\n");
+      
+      // Group by priority
+      const highPriority = this.performanceRecommendations.filter(r => r.priority === 'high');
+      const mediumPriority = this.performanceRecommendations.filter(r => r.priority === 'medium');
+      const lowPriority = this.performanceRecommendations.filter(r => r.priority === 'low');
+      
+      if (highPriority.length > 0) {
+        plan.push("### High Priority Optimizations\n\n");
+        highPriority.forEach(rec => {
+          plan.push(`#### ${rec.title}\n`);
+          plan.push(`- **Description:** ${rec.description}\n`);
+          plan.push(`- **Impact:** ${rec.impact}\n`);
+          plan.push(`- **Effort:** ${rec.effort}\n`);
+          if (rec.estimatedImpact) {
+            plan.push(`- **Estimated Impact:** ${rec.estimatedImpact}\n`);
+          }
+          plan.push("\n");
+        });
+      }
+      
+      if (mediumPriority.length > 0) {
+        plan.push("### Medium Priority Optimizations\n\n");
+        mediumPriority.forEach(rec => {
+          plan.push(`#### ${rec.title}\n`);
+          plan.push(`- **Description:** ${rec.description}\n`);
+          plan.push(`- **Impact:** ${rec.impact}\n`);
+          plan.push(`- **Effort:** ${rec.effort}\n`);
+          if (rec.estimatedImpact) {
+            plan.push(`- **Estimated Impact:** ${rec.estimatedImpact}\n`);
+          }
+          plan.push("\n");
+        });
+      }
+    }
+    
+    return plan.join("");
+  }
+  
+  /**
+   * Generate a technical documentation
+   * 
+   * @param docType - The type of documentation to generate
+   * @returns A formatted technical documentation
+   */
+  generateTechnicalDocumentation(docType: string): string {
+    switch (docType.toLowerCase()) {
+      case 'api':
+        return this.generateApiDocumentation();
+      case 'user':
+        return this.generateUserGuide();
+      case 'technical':
+        return this.generateTechnicalGuide();
+      case 'maintenance':
+        return this.generateMaintenanceGuide();
+      default:
+        return "Documentation type not supported. Please specify 'API', 'user', 'technical', or 'maintenance'.";
+    }
+  }
+  
+  /**
+   * Generate API documentation
+   * 
+   * @returns Formatted API documentation
+   */
+  private generateApiDocumentation(): string {
+    const doc = ["# API Documentation\n\n"];
+    
+    doc.push("## Overview\n\n");
+    doc.push("This document provides detailed information about the API endpoints available in the e-commerce system.\n\n");
+    
+    doc.push("## Authentication\n\n");
+    doc.push("Most API endpoints require authentication. Use the following methods to authenticate your requests:\n\n");
+    doc.push("### Bearer Token Authentication\n\n");
+    doc.push("```\nAuthorization: Bearer {your_token}\n```\n\n");
+    
+    doc.push("## API Endpoints\n\n");
+    
+    // Products
+    doc.push("### Products\n\n");
+    
+    doc.push("#### Get All Products\n\n");
+    doc.push("```\nGET /api/products\n```\n\n");
+    doc.push("**Query Parameters:**\n\n");
+    doc.push("- `page` (optional): Page number (default: 1)\n");
+    doc.push("- `limit` (optional): Items per page (default: 20)\n");
+    doc.push("- `category` (optional): Filter by category\n");
+    doc.push("- `search` (optional): Search term\n\n");
+    
+    doc.push("**Response:**\n\n");
+    doc.push("```json\n{\n  \"data\": [\n    {\n      \"id\": \"string\",\n      \"name\": \"string\",\n      \"description\": \"string\",\n      \"price\": \"number\",\n      \"category\": \"string\",\n      \"imageUrl\": \"string\"\n    }\n  ],\n  \"meta\": {\n    \"currentPage\": \"number\",\n    \"totalPages\": \"number\",\n    \"totalItems\": \"number\"\n  }\n}\n```\n\n");
+    
+    doc.push("#### Get Product by ID\n\n");
+    doc.push("```\nGET /api/products/{id}\n```\n\n");
+    
+    doc.push("**Response:**\n\n");
+    doc.push("```json\n{\n  \"id\": \"string\",\n  \"name\": \"string\",\n  \"description\": \"string\",\n  \"price\": \"number\",\n  \"category\": \"string\",\n  \"imageUrl\": \"string\",\n  \"attributes\": {\n    \"key\": \"value\"\n  }\n}\n```\n\n");
+    
+    // Additional endpoints would be added here
+    
+    doc.push("## Error Handling\n\n");
+    doc.push("The API uses conventional HTTP response codes to indicate the success or failure of requests:\n\n");
+    doc.push("- `200 OK`: The request was successful\n");
+    doc.push("- `400 Bad Request`: The request was invalid\n");
+    doc.push("- `401 Unauthorized`: Authentication failed\n");
+    doc.push("- `403 Forbidden`: The authenticated user doesn't have permission\n");
+    doc.push("- `404 Not Found`: The requested resource was not found\n");
+    doc.push("- `500 Internal Server Error`: An error occurred on the server\n\n");
+    
+    doc.push("## Rate Limiting\n\n");
+    doc.push("The API implements rate limiting to prevent abuse. Clients are limited to 100 requests per minute.\n\n");
+    
+    return doc.join("");
+  }
+  
+  /**
+   * Generate user guide
+   * 
+   * @returns Formatted user guide
+   */
+  private generateUserGuide(): string {
+    const doc = ["# User Guide\n\n"];
+    
+    doc.push("## Introduction\n\n");
+    doc.push("Welcome to the e-commerce platform user guide. This document will help you understand how to use the system effectively.\n\n");
+    
+    doc.push("## Getting Started\n\n");
+    doc.push("### Creating an Account\n\n");
+    doc.push("1. Navigate to the sign-up page by clicking 'Create Account' in the top right corner\n");
+    doc.push("2. Fill in your details including name, email, and password\n");
+    doc.push("3. Verify your email address by clicking the link sent to your inbox\n");
+    doc.push("4. Complete your profile by adding shipping address and payment methods\n\n");
+    
+    doc.push("### Logging In\n\n");
+    doc.push("1. Click 'Login' in the top right corner\n");
+    doc.push("2. Enter your email and password\n");
+    doc.push("3. Use the 'Remember Me' option for convenience on trusted devices\n\n");
+    
+    doc.push("## Browsing Products\n\n");
+    doc.push("### Search Functionality\n\n");
+    doc.push("- Use the search bar at the top of any page\n");
+    doc.push("- Filter results by category, price range, and other attributes\n");
+    doc.push("- Sort results by relevance, price, or newest arrivals\n\n");
+    
+    doc.push("### Product Categories\n\n");
+    doc.push("- Browse products by category using the main navigation menu\n");
+    doc.push("- Click category names to see all products within that category\n");
+    doc.push("- Use breadcrumbs to navigate back to previous categories\n\n");
+    
+    // Additional sections would be added here
+    
+    doc.push("## Customer Support\n\n");
+    doc.push("### Contact Methods\n\n");
+    doc.push("- Email: support@example.com\n");
+    doc.push("- Phone: 1-800-123-4567 (Monday-Friday, 9am-5pm EST)\n");
+    doc.push("- Live Chat: Available from the help section when logged in\n\n");
+    
+    doc.push("### FAQs\n\n");
+    doc.push("Visit our FAQ section at example.com/faq for answers to common questions.\n\n");
+    
+    return doc.join("");
+  }
+  
+  /**
+   * Generate technical guide
+   * 
+   * @returns Formatted technical guide
+   */
+  private generateTechnicalGuide(): string {
+    const doc = ["# Technical Documentation\n\n"];
+    
+    doc.push("## System Architecture\n\n");
+    doc.push("The e-commerce platform is built using a microservices architecture with the following components:\n\n");
+    doc.push("- **Frontend**: React.js application with Redux for state management\n");
+    doc.push("- **Backend API**: Node.js with Express, implementing RESTful endpoints\n");
+    doc.push("- **Authentication Service**: Handles user authentication and authorization\n");
+    doc.push("- **Product Service**: Manages product catalog and inventory\n");
+    doc.push("- **Order Service**: Processes orders and payments\n");
+    doc.push("- **Database**: PostgreSQL for relational data and MongoDB for product catalog\n");
+    doc.push("- **Search**: Elasticsearch for product search functionality\n");
+    doc.push("- **Caching**: Redis for performance optimization\n\n");
+    
+    doc.push("## Development Environment Setup\n\n");
+    doc.push("### Prerequisites\n\n");
+    doc.push("- Node.js (v14 or later)\n");
+    doc.push("- Docker and Docker Compose\n");
+    doc.push("- Git\n");
+    doc.push("- PostgreSQL client\n");
+    doc.push("- MongoDB client\n\n");
+    
+    doc.push("### Installation Steps\n\n");
+    doc.push("1. Clone the repository: `git clone https://github.com/example/ecommerce.git`\n");
+    doc.push("2. Navigate to the project directory: `cd ecommerce`\n");
+    doc.push("3. Install dependencies: `npm install`\n");
+    doc.push("4. Set up environment variables: Copy `.env.example` to `.env` and update values\n");
+    doc.push("5. Start the development environment: `docker-compose up -d`\n");
+    doc.push("6. Run database migrations: `npm run migrate`\n");
+    doc.push("7. Start the development server: `npm run dev`\n\n");
+    
+    // Additional sections would be added here
+    
+    doc.push("## Deployment\n\n");
+    doc.push("### Production Environment\n\n");
+    doc.push("The application is deployed using Kubernetes with the following components:\n\n");
+    doc.push("- Kubernetes cluster on AWS EKS\n");
+    doc.push("- CI/CD pipeline using GitHub Actions\n");
+    doc.push("- AWS RDS for PostgreSQL database\n");
+    doc.push("- AWS ElastiCache for Redis caching\n");
+    doc.push("- AWS S3 for static assets and media storage\n");
+    doc.push("- AWS CloudFront as CDN\n\n");
+    
+    doc.push("### Deployment Process\n\n");
+    doc.push("1. Merge changes to the main branch\n");
+    doc.push("2. CI/CD pipeline runs tests and builds Docker images\n");
+    doc.push("3. Images are pushed to AWS ECR\n");
+    doc.push("4. Kubernetes manifests are updated\n");
+    doc.push("5. Deployment is applied to the Kubernetes cluster\n");
+    doc.push("6. Health checks confirm successful deployment\n\n");
+    
+    return doc.join("");
+  }
+  
+  /**
+   * Generate maintenance guide
+   * 
+   * @returns Formatted maintenance guide
+   */
+  private generateMaintenanceGuide(): string {
+    const doc = ["# Maintenance Guide\n\n"];
+    
+    doc.push("## Routine Maintenance Tasks\n\n");
+    doc.push("### Daily Maintenance\n\n");
+    doc.push("- Monitor system logs for errors and warnings\n");
+    doc.push("- Check server health and resource utilization\n");
+    doc.push("- Verify backup processes completed successfully\n");
+    doc.push("- Review security alerts and potential threats\n\n");
+    
+    doc.push("### Weekly Maintenance\n\n");
+    doc.push("- Analyze performance metrics and address any degradation\n");
+    doc.push("- Review database query performance\n");
+    doc.push("- Check for outdated dependencies and security patches\n");
+    doc.push("- Perform database optimization tasks\n\n");
+    
+    doc.push("### Monthly Maintenance\n\n");
+    doc.push("- Apply security patches and system updates\n");
+    doc.push("- Conduct thorough security scan\n");
+    doc.push("- Verify disaster recovery procedures\n");
+    doc.push("- Analyze user behavior patterns and optimize accordingly\n\n");
+    
+    doc.push("## Troubleshooting\n\n");
+    doc.push("### Common Issues and Solutions\n\n");
+    
+    doc.push("#### API Response Times Degraded\n\n");
+    doc.push("1. Check database query performance\n");
+    doc.push("2. Review caching effectiveness\n");
+    doc.push("3. Monitor external service dependencies\n");
+    doc.push("4. Check for increased traffic or DDoS attacks\n");
+    doc.push("5. Verify server resource utilization\n\n");
+    
+    doc.push("#### Database Connection Failures\n\n");
+    doc.push("1. Verify database server is running\n");
+    doc.push("2. Check connection pool settings\n");
+    doc.push("3. Review network connectivity\n");
+    doc.push("4. Check for connection limits reached\n");
+    doc.push("5. Verify credentials are correct\n\n");
+    
+    // Additional sections would be added here
+    
+    doc.push("## Scaling Considerations\n\n");
+    doc.push("### Horizontal Scaling\n\n");
+    doc.push("- Add more application servers when CPU utilization consistently exceeds 70%\n");
+    doc.push("- Implement read replicas for the database when read operations become a bottleneck\n");
+    doc.push("- Scale the Elasticsearch cluster when search response times exceed 200ms\n\n");
+    
+    doc.push("### Vertical Scaling\n\n");
+    doc.push("- Upgrade database instance when approaching memory or CPU limits\n");
+    doc.push("- Increase cache instance size when eviction rate increases\n");
+    doc.push("- Upgrade API servers when processing complex requests with high latency\n\n");
+    
+    return doc.join("");
+  }
+  
+  /**
+   * Generate documentation about a monitoring tool
+   * 
+   * @param toolName - The name of the monitoring tool
+   * @returns Information about the monitoring tool
+   */
+  generateMonitoringToolDoc(toolName: string): string {
+    const normalizedToolName = toolName.toLowerCase();
+    let toolInfo = null;
+    
+    if (typeof monitoringToolIntegrations === 'object') {
+      // Try to find the tool by name
+      for (const [key, tool] of Object.entries(monitoringToolIntegrations)) {
+        if (typeof tool === 'object' && tool !== null) {
+          // @ts-ignore - Handle potentially missing properties
+          const name = (tool.name || key).toLowerCase();
+          if (name.includes(normalizedToolName)) {
+            toolInfo = tool;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (!toolInfo) {
+      return `No information available for the monitoring tool: ${toolName}`;
+    }
+    
+    // @ts-ignore - Handle potentially missing properties
+    const doc = [`# ${toolInfo.name || toolName} Integration Guide\n\n`];
+    
+    // @ts-ignore - Handle potentially missing properties
+    if (toolInfo.description) {
+      doc.push("## Overview\n\n");
+      // @ts-ignore - Handle potentially missing properties
+      doc.push(`${toolInfo.description}\n\n`);
+    }
+    
+    // @ts-ignore - Handle potentially missing properties
+    if (toolInfo.purpose) {
+      doc.push("## Purpose\n\n");
+      // @ts-ignore - Handle potentially missing properties
+      doc.push(`${toolInfo.purpose}\n\n`);
+    }
+    
+    // @ts-ignore - Handle potentially missing properties
+    if (toolInfo.features && Array.isArray(toolInfo.features)) {
+      doc.push("## Key Features\n\n");
+      // @ts-ignore - Handle potentially missing properties
+      toolInfo.features.forEach(feature => {
+        doc.push(`- ${feature}\n`);
+      });
+      doc.push("\n");
+    }
+    
+    // @ts-ignore - Handle potentially missing properties
+    if (toolInfo.setupInstructions) {
+      doc.push("## Setup Instructions\n\n");
+      // @ts-ignore - Handle potentially missing properties
+      doc.push(`${toolInfo.setupInstructions}\n\n`);
+    }
+    
+    // @ts-ignore - Handle potentially missing properties
+    if (toolInfo.metricsMapping && typeof toolInfo.metricsMapping === 'object') {
+      doc.push("## Metrics Mapping\n\n");
+      doc.push("The following metrics are tracked by this tool:\n\n");
+      
+      doc.push("| Metric Name | Description |\n");
+      doc.push("| ----------- | ----------- |\n");
+      // @ts-ignore - Handle potentially missing properties
+      for (const [key, value] of Object.entries(toolInfo.metricsMapping)) {
+        doc.push(`| ${key} | ${value} |\n`);
+      }
+      doc.push("\n");
+    }
+    
+    doc.push("## Integration Example\n\n");
+    doc.push("```javascript\n");
+    doc.push("// Example code for integrating with this monitoring tool\n");
+    // @ts-ignore - Handle potentially missing properties
+    doc.push(`// Initialize ${toolInfo.name || toolName}\n`);
+    doc.push("import monitoringTool from 'monitoring-tool-package';\n\n");
+    doc.push("// Configure the tool\n");
+    doc.push("monitoringTool.init({\n");
+    doc.push("  apiKey: process.env.MONITORING_API_KEY,\n");
+    doc.push("  serviceName: 'e-commerce-app',\n");
+    doc.push("  environment: process.env.NODE_ENV\n");
+    doc.push("});\n\n");
+    doc.push("// Track a custom metric\n");
+    doc.push("monitoringTool.trackMetric('checkout_time', 1250);\n");
+    doc.push("```\n\n");
+    
+    doc.push("## Best Practices\n\n");
+    doc.push("1. Set appropriate alert thresholds to avoid alert fatigue\n");
+    doc.push("2. Focus on monitoring business-critical paths first\n");
+    doc.push("3. Correlate metrics with business outcomes\n");
+    doc.push("4. Regularly review and adjust monitoring configuration\n");
+    doc.push("5. Ensure proper error handling in the monitoring integration\n\n");
+    
+    return doc.join("");
+  }
+}

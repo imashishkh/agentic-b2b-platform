@@ -199,9 +199,9 @@ export interface PerformanceMetric {
   benchmarkValue?: number;
   trending?: 'improving' | 'stable' | 'degrading';
   lastUpdated?: string;
-  priority?: 'low' | 'medium' | 'high'; // Added missing property
-  target?: number; // Added missing property
-  measurementMethod?: string; // Added missing property
+  priority?: 'low' | 'medium' | 'high';
+  target?: number;
+  measurementMethod?: string;
 }
 
 /**
@@ -216,8 +216,8 @@ export interface OptimizationRecommendation {
   effort: 'low' | 'medium' | 'high';
   codeSnippet?: string;
   resources?: string[];
-  priority?: 'low' | 'medium' | 'high'; // Added missing property
-  estimatedImpact?: string; // Added missing property
+  priority?: 'low' | 'medium' | 'high';
+  estimatedImpact?: string;
 }
 
 /**
@@ -256,7 +256,7 @@ export interface ChatContextType {
   complianceChecks: ComplianceCheck[];
   vulnerabilityAssessments: any[];
   bestPracticesViolations: any[];
-  collaborationActive?: boolean; // Added missing property
+  collaborationActive: boolean;
   addMessage: (message: any) => void;
   clearMessages: () => void;
   setIsAgentTyping: (isTyping: boolean) => void;
@@ -283,5 +283,5 @@ export interface ChatContextType {
   updateComplianceCheck: (id: string, check: Partial<ComplianceCheck>) => void;
   addVulnerabilityAssessment: (assessment: any) => void;
   addBestPracticesViolation: (violation: any) => void;
-  setCollaborationActive?: (isActive: boolean) => void; // Added missing method
+  setCollaborationActive: (isActive: boolean) => void;
 }
