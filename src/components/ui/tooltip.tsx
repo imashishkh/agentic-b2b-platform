@@ -9,11 +9,16 @@ import {
 
 export interface TooltipProps {
   children: React.ReactNode;
-  tooltip: string;
+  tooltip?: string; // Make tooltip optional
   className?: string;
 }
 
 export function Tooltip({ children, tooltip, className }: TooltipProps) {
+  // Only render the tooltip if the tooltip prop is provided
+  if (!tooltip) {
+    return <>{children}</>;
+  }
+
   return (
     <TooltipProvider>
       <TooltipPrimitive>
