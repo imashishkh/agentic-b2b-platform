@@ -59,7 +59,7 @@ export interface GitHubRepository {
 // Suggestion option interface
 export interface SuggestionOption {
   id?: string;
-  label?: string;
+  label: string;
   message: string;
   icon?: string;
   description?: string;
@@ -70,6 +70,31 @@ export interface SuggestionProps {
   title: string;
   description: string;
   options: SuggestionOption[];
+}
+
+// Task interface
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'pending' | 'in-progress' | 'completed' | 'approved' | 'rejected';
+  assignedTo: AgentType;
+  dependencies?: string[];
+  startDate?: string;
+  endDate?: string;
+  subtasks?: Task[];
+}
+
+// Project phase interface
+export interface ProjectPhase {
+  id: string;
+  name: string;
+  description: string;
+  tasks: Task[];
+  startDate?: string;
+  endDate?: string;
+  status: 'planned' | 'in-progress' | 'completed';
 }
 
 // Chat context interface
@@ -87,6 +112,7 @@ export interface ChatContextType {
   testingStrategies: TestingStrategy[];
   gitHubRepository: GitHubRepository | null;
   suggestions: SuggestionProps[];
+  lastProcessedSuggestion: string | null;
   
   addMessage: (message: ChatMessageProps) => void;
   clearMessages: () => void;
@@ -106,4 +132,5 @@ export interface ChatContextType {
   setGitHubRepository: (repo: GitHubRepository | null) => void;
   addSuggestion: (suggestion: SuggestionProps) => void;
   clearSuggestions: () => void;
+  setProcessedSuggestion: (message: string) => void;
 }

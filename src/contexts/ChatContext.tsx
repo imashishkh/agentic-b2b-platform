@@ -39,6 +39,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [testingStrategies, setTestingStrategies] = useState<TestingStrategy[]>([]);
   const [gitHubRepository, setGitHubRepo] = useState<GitHubRepository | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestionProps[]>([]);
+  const [lastProcessedSuggestion, setLastProcessedSuggestion] = useState<string | null>(null);
 
   /**
    * Add a new message to the chat history
@@ -70,6 +71,15 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
    */
   const clearSuggestions = () => {
     setSuggestions([]);
+  };
+
+  /**
+   * Set the last processed suggestion for tracking
+   * 
+   * @param message - The suggestion message that was processed
+   */
+  const setProcessedSuggestion = (message: string) => {
+    setLastProcessedSuggestion(message);
   };
 
   /**
@@ -157,6 +167,7 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       testingStrategies,
       gitHubRepository,
       suggestions,
+      lastProcessedSuggestion,
       addMessage,
       clearMessages,
       setIsAgentTyping,
@@ -174,7 +185,8 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       updateTestingStrategy,
       setGitHubRepository,
       addSuggestion,
-      clearSuggestions
+      clearSuggestions,
+      setProcessedSuggestion
     }}>
       {children}
     </ChatContext.Provider>

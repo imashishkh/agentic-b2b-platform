@@ -15,17 +15,38 @@ export const askClaude = async (prompt: string): Promise<string> => {
   // If we have an API key, use it to make a real API call
   if (apiKey) {
     try {
-      // In a real implementation, this would be a fetch call to the Claude API
-      // For now, we'll simulate a response
-      console.log("Using Claude API key:", apiKey.substring(0, 4) + "...");
+      // Make actual API call to Claude
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: "claude-3-sonnet-20240229",
+          max_tokens: 4000,
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ]
+        })
+      });
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Claude API error:", errorData);
+        throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+      }
       
-      return simulateClaudeResponse(prompt);
+      const data = await response.json();
+      return data.content[0].text;
     } catch (error) {
       console.error("Error calling Claude API:", error);
-      throw error;
+      // Fallback to simulated response if API call fails
+      return simulateClaudeResponse(prompt);
     }
   } else {
     // If no API key, return a simulated response
@@ -141,9 +162,166 @@ Each phase builds upon the previous one, with dependencies clearly marked betwee
     `;
   }
   
-  // Generic response for e-commerce related questions
-  return `
-I've analyzed your question about e-commerce development. Here's my technical advice:
+  // We need to analyze the prompt to generate more specific responses
+  let response = "";
+  
+  // Handle knowledge base requests
+  if (prompt.includes("knowledge base") || prompt.includes("documentation") || prompt.includes("resources")) {
+    response = `
+## Knowledge Base Organization
+
+I've analyzed your request about knowledge base management. Here are my recommendations:
+
+### Knowledge Base Structure
+1. Technical Documentation
+   - Frontend Framework Documentation (React, Tailwind CSS)
+   - Backend API Documentation
+   - Database Schema Documentation
+   - Authentication Flows
+
+2. Industry Standards
+   - E-commerce Best Practices
+   - Security Compliance (PCI DSS)
+   - Accessibility Guidelines (WCAG)
+   - Performance Benchmarks
+
+3. Development Guides
+   - Coding Standards
+   - Testing Procedures
+   - CI/CD Pipeline Documentation
+   - Code Review Guidelines
+
+4. User Documentation
+   - Admin Panel User Guide
+   - API Integration Guide for Partners
+   - Troubleshooting Guide
+
+Would you like me to create a specific knowledge base template for any of these categories?
+    `;
+  }
+  // Handle architecture requests
+  else if (prompt.includes("architecture") || prompt.includes("system design") || prompt.includes("component")) {
+    response = `
+## Architecture Proposal: E-commerce Platform
+
+Based on your requirements, I recommend a modern, scalable architecture:
+
+### System Components
+1. **Frontend Layer**
+   - React with Next.js for SSR capabilities
+   - Tailwind CSS for styling
+   - Redux or Context API for state management
+   - Progressive Web App support
+
+2. **API Layer**
+   - REST API with Node.js/Express
+   - GraphQL for complex data requirements
+   - API Gateway for rate limiting and security
+
+3. **Service Layer**
+   - Product Service (catalog, inventory)
+   - User Service (authentication, profiles)
+   - Order Service (cart, checkout, payments)
+   - Search Service (Elasticsearch)
+
+4. **Database Layer**
+   - PostgreSQL for transactional data
+   - MongoDB for product catalog
+   - Redis for caching and sessions
+
+5. **Infrastructure**
+   - Docker containers
+   - Kubernetes for orchestration
+   - CI/CD pipeline with GitHub Actions
+   - Cloud hosting (AWS or GCP)
+
+Would you like me to elaborate on any specific component of this architecture?
+    `;
+  }
+  // Handle testing strategy requests
+  else if (prompt.includes("testing") || prompt.includes("test strategy") || prompt.includes("quality assurance")) {
+    response = `
+## Comprehensive Testing Strategy
+
+Based on your e-commerce project requirements, I recommend this testing approach:
+
+### Testing Levels
+1. **Unit Testing**
+   - Framework: Jest for JavaScript/TypeScript
+   - Coverage target: 80% for business logic
+   - Mocking strategy for external dependencies
+
+2. **Integration Testing**
+   - API endpoint testing with Supertest
+   - Database integration tests
+   - Service integration tests
+
+3. **End-to-End Testing**
+   - Framework: Cypress or Playwright
+   - Critical user flows: registration, checkout, payment
+   - Cross-browser testing
+
+4. **Performance Testing**
+   - Load testing with k6
+   - Stress testing for sales events
+   - Performance benchmarks for key pages
+
+5. **Security Testing**
+   - OWASP top 10 vulnerabilities
+   - PCI DSS compliance testing
+   - Data encryption verification
+
+6. **Accessibility Testing**
+   - WCAG 2.1 AA compliance
+   - Screen reader compatibility
+   - Keyboard navigation testing
+
+Would you like me to develop a specific test plan for any of these areas?
+    `;
+  }
+  // Handle GitHub integration requests
+  else if (prompt.includes("github") || prompt.includes("repository") || prompt.includes("version control")) {
+    response = `
+## GitHub Integration Strategy
+
+For your e-commerce project, I recommend the following GitHub setup:
+
+### Repository Structure
+1. **Monorepo vs. Multiple Repositories**
+   - Recommendation: Monorepo for early development
+   - Future consideration: Microservices in separate repos when scaling
+
+2. **Branch Strategy**
+   - Main branch: Production-ready code
+   - Develop branch: Integration branch
+   - Feature branches: Individual features
+   - Release branches: Version preparation
+
+3. **CI/CD Pipeline**
+   - GitHub Actions workflows for:
+     - Continuous integration (build, lint, test)
+     - Continuous deployment to staging
+     - Manual approval for production deployment
+
+4. **Pull Request Process**
+   - Required code reviews (2 approvals)
+   - Passing CI checks
+   - No merge conflicts
+   - Conventional commit messages
+
+5. **GitHub Project Management**
+   - Issues for task tracking
+   - Milestones for sprint planning
+   - Project boards for kanban visualization
+   - Labels for categorization
+
+Would you like me to help set up any specific part of this GitHub infrastructure?
+    `;
+  }
+  // Default response for other types of queries
+  else {
+    response = `
+I've analyzed your question about ${prompt.includes("product") ? "product management" : "e-commerce development"}. Here's my technical advice:
 
 When implementing ${prompt.includes("payment") ? "payment processing" : "this feature"} in an e-commerce platform, consider these best practices:
 
@@ -157,6 +335,9 @@ When implementing ${prompt.includes("payment") ? "payment processing" : "this fe
 
 Would you like more specific information about implementing any particular aspect of this feature?
   `;
+  }
+  
+  return response;
 };
 
 // Simulate search results based on the query

@@ -16,6 +16,7 @@ import {
   FileCode,
   Database
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface SuggestionBoxProps {
   title: string;
@@ -44,6 +45,14 @@ const IconComponent = ({ name }: { name: string }) => {
 };
 
 export function SuggestionBox({ title, description, options, onSelect }: SuggestionBoxProps) {
+  const handleSelectOption = (message: string) => {
+    // Show a toast notification when an option is selected
+    toast.info(`Processing: ${message.split('\n')[0]}...`);
+    
+    // Call the onSelect handler with the message
+    onSelect(message);
+  };
+
   return (
     <div className="bg-slate-50 rounded-lg p-4 mb-4 shadow-sm border border-slate-100">
       <h3 className="text-sm font-semibold mb-1 text-slate-800">{title}</h3>
@@ -56,7 +65,7 @@ export function SuggestionBox({ title, description, options, onSelect }: Suggest
             variant="outline"
             size="sm"
             className="justify-start bg-white hover:bg-slate-100 border-slate-200 transition-all"
-            onClick={() => onSelect(option.message)}
+            onClick={() => handleSelectOption(option.message)}
             title={option.description || option.label}
           >
             <IconComponent name={option.icon} />

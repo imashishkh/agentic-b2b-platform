@@ -75,7 +75,7 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
-          accept=".md,.markdown,.txt,.pdf"
+          accept=".md,.markdown,.txt"
           disabled={disabled}
         />
       </>
