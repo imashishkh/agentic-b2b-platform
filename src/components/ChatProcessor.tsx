@@ -12,7 +12,7 @@ export interface ChatProcessorProps {
 }
 
 export function ChatProcessor({ chatRef }: ChatProcessorProps) {
-  const { addMessage, setIsAgentTyping, messages, addSuggestion } = useChat();
+  const { addMessage, setIsAgentTyping, messages, addSuggestion, clearSuggestions } = useChat();
   const [isProcessing, setIsProcessing] = useState(false);
   const isMounted = useRef(true);
   const initialMessageSent = useRef(false);
@@ -28,7 +28,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
 
   // Only send welcome message if no messages exist
   useEffect(() => {
-    if (chatRef && chatRef.current) {
+    if (!chatRef.current) {
       chatRef.current = {
         processUserMessage: processMessage
       };
@@ -123,6 +123,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     setIsProcessing(true);
     
     try {
+      // Clear previous suggestions when processing a new message
+      clearSuggestions();
+      
       // If files were provided and it's a markdown file, process it
       let enhancedMessage = message;
       let fileContent = "";
@@ -138,6 +141,11 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             
             // Process the file
             fileContent = await processMarkdownFile(file);
+            
+            if (!fileContent || fileContent.trim() === "") {
+              throw new Error("File content is empty");
+            }
+            
             enhancedMessage = `${message}\n\nHere is the content of the file:\n\n${fileContent}`;
             
             // Add initial processing message
@@ -149,6 +157,10 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
             
             // Use the manager agent's specialized markdown processor
             console.log("Using manager agent's markdown processor");
+            if (!managerAgent.current) {
+              managerAgent.current = AgentFactory.createAgent(AgentType.MANAGER) as ManagerAgent;
+            }
+            
             const managerResponse = await managerAgent.current.processMarkdownFile(fileContent);
             
             if (isMounted.current) {

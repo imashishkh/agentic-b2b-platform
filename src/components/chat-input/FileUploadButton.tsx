@@ -42,7 +42,7 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
         if (markdownFile) {
           console.log("Markdown file selected:", markdownFile.name);
           toast.success(`Selected ${markdownFile.name} for processing`);
-          onChange([markdownFile]); // Only pass the markdown file
+          onChange([markdownFile]); // Pass the markdown file to parent
         } else {
           toast.error("Please upload a markdown (.md) file for project requirements");
         }
@@ -59,7 +59,7 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
           onClick={handleButtonClick}
           ref={ref}
           className={cn(
-            "p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 focus:outline-none",
+            "p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
             disabled && "cursor-not-allowed opacity-60 hover:bg-gray-100"
           )}
           disabled={disabled}

@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import ChatView from "@/components/ChatView";
 import { useChat } from "@/contexts/ChatContext";
@@ -98,29 +99,50 @@ export function ChatContainer() {
     }
   };
   
-  const handleFileUpload = (files: File[]) => {
-    if (files.length > 0) {
-      addMessage({
-        type: "user",
-        content: `Uploaded ${files.map(f => f.name).join(", ")}`,
-      });
+  const handleFileUpload = (selectedFiles: File[]) => {
+    if (selectedFiles.length > 0) {
+      setFiles(selectedFiles);
+      setIsUploading(true);
       
-      // Process the file with minimal message text
-      if (chatRef.current) {
-        chatRef.current.processUserMessage("Please analyze this file.", files);
-      } else {
-        // Fallback if ChatProcessor isn't available
-        setIsAgentTyping(true);
-        setTimeout(() => {
-          addMessage({
-            type: "agent",
-            agentType: AgentType.MANAGER,
-            content: "I've received your files. I'll analyze them and get back to you with my findings.",
-          });
-          setIsAgentTyping(false);
-          toast.success(`${files.length} file(s) received`);
-        }, 3000);
-      }
+      // Simulate file upload progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setUploadProgress(progress);
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            // Add message about upload
+            addMessage({
+              type: "user",
+              content: `Uploaded ${selectedFiles.map(f => f.name).join(", ")}`,
+            });
+            
+            // Process the file with minimal message text
+            if (chatRef.current) {
+              console.log("Processing file via chatRef:", selectedFiles);
+              chatRef.current.processUserMessage("Please analyze this file.", selectedFiles);
+            } else {
+              console.error("ChatProcessor reference is not available");
+              // Fallback if ChatProcessor isn't available
+              setIsAgentTyping(true);
+              setTimeout(() => {
+                addMessage({
+                  type: "agent",
+                  agentType: AgentType.MANAGER,
+                  content: "I've received your files. I'll analyze them and get back to you with my findings.",
+                });
+                setIsAgentTyping(false);
+                toast.success(`${selectedFiles.length} file(s) received`);
+              }, 3000);
+            }
+            
+            setIsUploading(false);
+            setUploadProgress(0);
+          }, 500);
+        }
+      }, 200);
     }
   };
   
@@ -166,8 +188,11 @@ export function ChatContainer() {
     toast.info("Downloading chat history");
     
     // Create a text file with current conversation
-    const text = "Chat Export\n\n" + new Date().toLocaleString();
-    const blob = new Blob([text], { type: "text/plain" });
+    const text = messages.map(m => 
+      `[${m.type}]${m.type === 'agent' ? ` [${m.agentType}]` : ''}: ${m.content}`
+    ).join('\n\n');
+    
+    const blob = new Blob([`Chat Export - ${new Date().toLocaleString()}\n\n${text}`], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -190,7 +215,7 @@ export function ChatContainer() {
         <ChatView />
       </div>
       
-      <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background pt-2 pb-4 border-t border-border">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-between mb-1.5">
             <div className="flex items-center gap-1">
@@ -229,24 +254,8 @@ export function ChatContainer() {
             onClearFiles={handleClearFiles}
             isUploading={isUploading}
             uploadProgress={uploadProgress}
-            handleFileUpload={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.click();
-              }
-            }}
+            handleFileUpload={handleFileUpload}
             isDisabled={isLoadingExample || isAgentTyping}
-          />
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                handleFileInputChange(Array.from(e.target.files));
-              }
-            }}
-            className="hidden"
-            multiple
-            accept=".md,.markdown,.txt,.pdf"
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MessageInput } from "./MessageInput";
 import { SendButton } from "./SendButton";
 import { FileUploadButton } from "./FileUploadButton";
@@ -13,7 +13,7 @@ export interface ChatInputProps {
   onClearFiles?: () => void;
   isUploading?: boolean;
   uploadProgress?: number;
-  handleFileUpload?: () => void;
+  handleFileUpload?: (files: File[]) => void;
   isDisabled?: boolean;
 }
 
@@ -26,7 +26,7 @@ export function ChatInput({
   handleFileUpload,
   isDisabled = false
 }: ChatInputProps) {
-  const [message, setMessage] = React.useState("");
+  const [message, setMessage] = useState("");
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -50,6 +50,12 @@ export function ChatInput({
       
       // For now we're just clearing all files as the onClearFiles function doesn't accept an index
       onClearFiles();
+    }
+  };
+
+  const handleFileSelection = (selectedFiles: File[]) => {
+    if (handleFileUpload && selectedFiles.length > 0) {
+      handleFileUpload(selectedFiles);
     }
   };
 
@@ -81,11 +87,7 @@ export function ChatInput({
         
         <div className="flex items-center gap-2">
           <FileUploadButton 
-            onChange={() => {
-              if (handleFileUpload) {
-                handleFileUpload();
-              }
-            }} 
+            onChange={handleFileSelection} 
             disabled={isDisabled || isUploading} 
           />
           <SendButton onClick={handleSendMessage} disabled={!message.trim() || isDisabled || isUploading} />
