@@ -15,7 +15,8 @@ export default function ChatView() {
     isLoadingExample, 
     suggestions,
     addMessage,
-    securityReviewActive
+    securityReviewActive,
+    collaborationActive
   } = useChat();
   
   const chatProcessorRef = useRef<any>(null);
@@ -41,6 +42,7 @@ export default function ChatView() {
             isLoadingExample={isLoadingExample} 
             isAgentTyping={isAgentTyping}
             securityReviewActive={securityReviewActive}
+            collaborationActive={collaborationActive}
           />
           
           {suggestions.length > 0 && (

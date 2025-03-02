@@ -10,13 +10,15 @@ interface ChatMessagesProps {
   isLoadingExample: boolean;  
   isAgentTyping: boolean;
   securityReviewActive?: boolean;
+  collaborationActive?: boolean;
 }
 
 export function ChatMessages({ 
   messages, 
   isLoadingExample, 
   isAgentTyping,
-  securityReviewActive
+  securityReviewActive,
+  collaborationActive
 }: ChatMessagesProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4">
@@ -28,6 +30,8 @@ export function ChatMessages({
           agentType={message.agentType || AgentType.MANAGER}
           isSecurityReview={message.isSecurityReview}
           complianceStatus={message.complianceStatus}
+          collaborators={message.collaborators}
+          projectContext={message.projectContext}
         />
       ))}
       {isLoadingExample && (
@@ -57,6 +61,14 @@ export function ChatMessages({
           content="Performing security assessment..."
           agentType={AgentType.DEVOPS}
           isSecurityReview={true}
+        />
+      )}
+      {collaborationActive && (
+        <ChatMessage
+          type="agent"
+          content="Consulting with specialized agents..."
+          agentType={AgentType.MANAGER}
+          collaborators={[AgentType.FRONTEND, AgentType.BACKEND, AgentType.DATABASE]}
         />
       )}
     </div>

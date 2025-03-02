@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, Users, Lightbulb, Cpu } from "lucide-react";
 
 export interface ChatMessageProps {
   type: "user" | "agent" | "system";
@@ -13,6 +13,8 @@ export interface ChatMessageProps {
   agentType?: AgentType;
   isSecurityReview?: boolean;
   complianceStatus?: "passed" | "warning" | "failed" | null;
+  collaborators?: AgentType[];
+  projectContext?: string;
 }
 
 export function ChatMessage({ 
@@ -20,7 +22,9 @@ export function ChatMessage({
   content, 
   agentType = AgentType.MANAGER, 
   isSecurityReview = false,
-  complianceStatus = null
+  complianceStatus = null,
+  collaborators = [],
+  projectContext
 }: ChatMessageProps) {
   const isUser = type === "user";
   
@@ -76,6 +80,42 @@ export function ChatMessage({
     }
   };
   
+  // Render collaboration badge if applicable
+  const renderCollaborationBadge = () => {
+    if (!collaborators || collaborators.length === 0) return null;
+    
+    return (
+      <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 ml-2">
+        <Users className="h-3 w-3 mr-1" />
+        Collaborated ({collaborators.length})
+      </Badge>
+    );
+  };
+  
+  // Render context-aware badge if applicable
+  const renderContextAwareBadge = () => {
+    if (!projectContext) return null;
+    
+    return (
+      <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 ml-2">
+        <Lightbulb className="h-3 w-3 mr-1" />
+        Context-Aware
+      </Badge>
+    );
+  };
+  
+  // Render Claude API badge if applicable
+  const renderAPIBadge = () => {
+    if (isUser) return null;
+    
+    return (
+      <Badge variant="outline" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100 ml-2">
+        <Cpu className="h-3 w-3 mr-1" />
+        Claude 3.7
+      </Badge>
+    );
+  };
+  
   return (
     <div
       className={cn(
@@ -97,7 +137,7 @@ export function ChatMessage({
           isUser ? "items-end" : "items-start"
         )}
       >
-        <div className="text-sm font-medium flex items-center">
+        <div className="text-sm font-medium flex items-center flex-wrap gap-1">
           {isUser ? "You" : agentInfo.name}
           {!isUser && isSecurityReview && (
             <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 ml-2">
@@ -105,6 +145,9 @@ export function ChatMessage({
             </Badge>
           )}
           {!isUser && renderComplianceBadge()}
+          {!isUser && renderCollaborationBadge()}
+          {!isUser && renderContextAwareBadge()}
+          {!isUser && renderAPIBadge()}
         </div>
         
         <div
@@ -125,6 +168,25 @@ export function ChatMessage({
             content
           )}
         </div>
+        
+        {collaborators && collaborators.length > 0 && !isUser && (
+          <div className="text-xs text-muted-foreground mt-1">
+            <span className="font-medium">Contributors:</span>{" "}
+            {collaborators.map(type => {
+              const info = (() => {
+                switch (type) {
+                  case AgentType.FRONTEND: return "Frontend";
+                  case AgentType.BACKEND: return "Backend";
+                  case AgentType.DATABASE: return "Database";
+                  case AgentType.DEVOPS: return "DevOps";
+                  case AgentType.UX: return "UX";
+                  default: return "";
+                }
+              })();
+              return info ? info + " " : "";
+            }).join("• ")}
+          </div>
+        )}
       </div>
       
       {isUser && (

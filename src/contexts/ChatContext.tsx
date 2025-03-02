@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { ChatMessageProps } from "@/components/ChatMessage";
 import { AgentType } from "@/agents/AgentTypes";
@@ -49,6 +48,15 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [complianceChecks, setComplianceChecks] = useState<ComplianceCheck[]>([]);
   const [vulnerabilityAssessments, setVulnerabilityAssessments] = useState<any[]>([]);
   const [bestPracticesViolations, setBestPracticesViolations] = useState<any[]>([]);
+  
+  // Agent intelligence states
+  const [collaborationActive, setCollaborationActive] = useState(false);
+  const [contextAwareEnabled, setContextAwareEnabled] = useState(true);
+  const [currentCollaborators, setCurrentCollaborators] = useState<AgentType[]>([]);
+  const [projectPlans, setProjectPlans] = useState<any[]>([]);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  const [claudeAPIEnabled, setClaudeAPIEnabled] = useState(true);
+  const [agentMemory, setAgentMemory] = useState<Map<string, any>>(new Map());
 
   /**
    * Add a new message to the chat history
@@ -220,6 +228,91 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     setBestPracticesViolations(prev => [...prev, violation]);
   };
 
+  /**
+   * Add a new project plan
+   * 
+   * @param plan - The plan object to add
+   */
+  const addProjectPlan = (plan: any) => {
+    setProjectPlans(prev => [...prev, plan]);
+    if (!currentPlanId) {
+      setCurrentPlanId(plan.id);
+    }
+  };
+
+  /**
+   * Update an existing project plan
+   * 
+   * @param id - The ID of the plan to update
+   * @param plan - Partial plan object with updates
+   */
+  const updateProjectPlan = (id: string, plan: Partial<any>) => {
+    setProjectPlans(prev => 
+      prev.map(p => p.id === id ? { ...p, ...plan } : p)
+    );
+  };
+
+  /**
+   * Set the current active plan
+   * 
+   * @param id - The ID of the plan to set as active
+   */
+  const setActivePlan = (id: string | null) => {
+    setCurrentPlanId(id);
+  };
+
+  /**
+   * Store information in agent memory
+   * 
+   * @param key - The key to store the information under
+   * @param value - The information to store
+   */
+  const storeInAgentMemory = (key: string, value: any) => {
+    setAgentMemory(prev => {
+      const newMap = new Map(prev);
+      newMap.set(key, value);
+      return newMap;
+    });
+  };
+
+  /**
+   * Retrieve information from agent memory
+   * 
+   * @param key - The key to retrieve information for
+   * @returns The stored information or undefined if not found
+   */
+  const retrieveFromAgentMemory = (key: string): any => {
+    return agentMemory.get(key);
+  };
+
+  /**
+   * Enable or disable Claude API integration
+   * 
+   * @param enabled - Whether to enable the Claude API
+   */
+  const toggleClaudeAPI = (enabled: boolean) => {
+    setClaudeAPIEnabled(enabled);
+  };
+
+  /**
+   * Set the current collaborators
+   * 
+   * @param collaborators - The agent types to set as current collaborators
+   */
+  const setCollaborators = (collaborators: AgentType[]) => {
+    setCurrentCollaborators(collaborators);
+    setCollaborationActive(collaborators.length > 0);
+  };
+
+  /**
+   * Enable or disable context-aware responses
+   * 
+   * @param enabled - Whether to enable context-aware responses
+   */
+  const toggleContextAware = (enabled: boolean) => {
+    setContextAwareEnabled(enabled);
+  };
+
   // Provide the chat state and functions to all child components
   return (
     <ChatContext.Provider value={{
@@ -242,6 +335,12 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       complianceChecks,
       vulnerabilityAssessments,
       bestPracticesViolations,
+      collaborationActive,
+      contextAwareEnabled,
+      currentCollaborators,
+      projectPlans,
+      currentPlanId,
+      claudeAPIEnabled,
       addMessage,
       clearMessages,
       setIsAgentTyping,
@@ -267,7 +366,15 @@ export const ChatProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       addComplianceCheck,
       updateComplianceCheck,
       addVulnerabilityAssessment,
-      addBestPracticesViolation
+      addBestPracticesViolation,
+      addProjectPlan,
+      updateProjectPlan,
+      setActivePlan,
+      storeInAgentMemory,
+      retrieveFromAgentMemory,
+      toggleClaudeAPI,
+      setCollaborators,
+      toggleContextAware
     }}>
       {children}
     </ChatContext.Provider>
