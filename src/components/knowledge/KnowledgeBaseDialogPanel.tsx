@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { extractContentFromUrl } from "@/utils/resourceExtractor";
 import { Icons } from "@/components/ui/icons";
-import { Link } from "lucide-react";
+import { Link, FolderTree } from "lucide-react";
 
 interface KnowledgeBaseDialogPanelProps {
   open: boolean;
@@ -30,25 +30,83 @@ export function KnowledgeBaseDialogPanel({ open, onOpenChange }: KnowledgeBaseDi
     setIsProcessing(true);
     
     try {
-      // Process and add each file to knowledge base
-      files.forEach(file => {
-        const resource = {
-          id: uuidv4(),
-          title: file.name,
-          description: `${category} resource: ${file.name}`,
-          category: category,
-          type: file.type,
-          dateAdded: new Date().toISOString(),
-          url: URL.createObjectURL(file),
-          tags: [category.toLowerCase(), file.type.split('/')[0], 'resource'],
-          source: 'upload',
-          content: `Content of ${file.name}` // Placeholder for file content
-        };
-        
-        addKnowledgeResource(category, resource);
-      });
+      // Check if files are from a directory upload by examining webkitRelativePath
+      const isDirectoryUpload = files.some(file => file.webkitRelativePath);
       
-      toast.success(`Added ${files.length} ${category} resource(s) to knowledge base`);
+      if (isDirectoryUpload) {
+        // Group files by their directories
+        const filesByDirectory: Record<string, File[]> = {};
+        
+        files.forEach(file => {
+          const pathParts = file.webkitRelativePath.split('/');
+          const rootDir = pathParts[0];
+          
+          if (!filesByDirectory[rootDir]) {
+            filesByDirectory[rootDir] = [];
+          }
+          filesByDirectory[rootDir].push(file);
+        });
+        
+        // Add each directory as a separate resource group
+        Object.entries(filesByDirectory).forEach(([directory, dirFiles]) => {
+          // Create a resource for the directory itself
+          const directoryResource = {
+            id: uuidv4(),
+            title: `${directory} (Folder)`,
+            description: `${category} folder containing ${dirFiles.length} files`,
+            category: category,
+            type: 'folder',
+            dateAdded: new Date().toISOString(),
+            url: '#',
+            tags: [category.toLowerCase(), 'folder', directory.toLowerCase()],
+            source: 'upload',
+            content: `Folder: ${directory} containing ${dirFiles.length} files`
+          };
+          
+          addKnowledgeResource(category, directoryResource);
+          
+          // Add individual files within the directory
+          dirFiles.forEach(file => {
+            const filePath = file.webkitRelativePath;
+            const resource = {
+              id: uuidv4(),
+              title: filePath,
+              description: `${category} file: ${filePath}`,
+              category: category,
+              type: file.type || 'application/octet-stream',
+              dateAdded: new Date().toISOString(),
+              url: URL.createObjectURL(file),
+              tags: [category.toLowerCase(), 'file', directory.toLowerCase()],
+              source: 'upload',
+              content: `Content of ${filePath}` // Placeholder for file content
+            };
+            
+            addKnowledgeResource(category, resource);
+          });
+        });
+        
+        toast.success(`Added ${Object.keys(filesByDirectory).length} folders with ${files.length} files to knowledge base`);
+      } else {
+        // Process and add each individual file to knowledge base
+        files.forEach(file => {
+          const resource = {
+            id: uuidv4(),
+            title: file.name,
+            description: `${category} resource: ${file.name}`,
+            category: category,
+            type: file.type || 'application/octet-stream',
+            dateAdded: new Date().toISOString(),
+            url: URL.createObjectURL(file),
+            tags: [category.toLowerCase(), file.type?.split('/')[0] || 'file', 'resource'],
+            source: 'upload',
+            content: `Content of ${file.name}` // Placeholder for file content
+          };
+          
+          addKnowledgeResource(category, resource);
+        });
+        
+        toast.success(`Added ${files.length} ${category} resource(s) to knowledge base`);
+      }
     } catch (error) {
       console.error("Error adding files to knowledge base:", error);
       toast.error("Failed to add files to knowledge base");
@@ -127,13 +185,14 @@ export function KnowledgeBaseDialogPanel({ open, onOpenChange }: KnowledgeBaseDi
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Upload files</h4>
+                  <h4 className="text-sm font-medium">Upload files or folders</h4>
                   <FileUploadButton
                     onChange={(files) => handleFileUpload(files, "UI Components")}
                     markdownOnly={false}
                     wizardContext="ui-components"
                     disabled={isProcessing}
                     buttonText="Upload UI Files"
+                    allowDirectory={true}
                     className="w-full"
                   />
                   <p className="text-xs text-gray-500">
@@ -182,6 +241,7 @@ export function KnowledgeBaseDialogPanel({ open, onOpenChange }: KnowledgeBaseDi
                     wizardContext="tech-stack"
                     disabled={isProcessing}
                     buttonText="Upload Tech Docs"
+                    allowDirectory={true}
                     className="w-full"
                   />
                   <p className="text-xs text-gray-500">
@@ -230,6 +290,7 @@ export function KnowledgeBaseDialogPanel({ open, onOpenChange }: KnowledgeBaseDi
                     wizardContext="documentation"
                     disabled={isProcessing}
                     buttonText="Upload Documentation"
+                    allowDirectory={true}
                     className="w-full"
                   />
                   <p className="text-xs text-gray-500">

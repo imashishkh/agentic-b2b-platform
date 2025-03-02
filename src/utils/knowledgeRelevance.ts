@@ -52,6 +52,20 @@ export const generateKnowledgeContext = (
   if (!relevantResources.length) return "";
   
   return relevantResources.map(resource => {
+    // Check if the resource is a folder
+    const isFolder = resource.type === 'folder' || 
+                    (resource.tags && resource.tags.includes('folder'));
+    
+    if (isFolder) {
+      return `
+## ${resource.title || "Folder Resource"}
+Category: ${resource.category || "Uncategorized"}
+${resource.tags?.length ? `Tags: ${resource.tags.join(', ')}` : ''}
+${resource.description || ''}
+Type: Folder Structure
+      `.trim();
+    }
+    
     return `
 ## ${resource.title || "Untitled Resource"}
 Category: ${resource.category || "Uncategorized"}
@@ -167,4 +181,65 @@ export const findArchitectureResources = (
       tags.includes(keyword)
     );
   });
+};
+
+/**
+ * Group resources by folder structure
+ */
+export const groupResourcesByFolder = (
+  resources: KnowledgeResource[]
+): Record<string, KnowledgeResource[]> => {
+  const folders: Record<string, KnowledgeResource[]> = {
+    "root": []
+  };
+  
+  resources.forEach(resource => {
+    // Check if resource has folder information in tags
+    const folderTag = resource.tags?.find(tag => 
+      resource.title?.includes('/') || 
+      tag.endsWith('-folder') ||
+      tag === 'folder'
+    );
+    
+    if (folderTag && folderTag !== 'folder') {
+      // Extract folder name from tag
+      const folderName = folderTag.endsWith('-folder') 
+        ? folderTag.replace('-folder', '') 
+        : folderTag;
+      
+      if (!folders[folderName]) {
+        folders[folderName] = [];
+      }
+      folders[folderName].push(resource);
+    } else if (resource.type === 'folder') {
+      // This resource is itself a folder
+      const folderName = resource.title?.split(' ')[0] || 'untitled';
+      if (!folders[folderName]) {
+        folders[folderName] = [];
+      }
+      // Add the folder itself as metadata
+      folders[folderName].unshift(resource);
+    } else if (resource.title?.includes('/')) {
+      // Resource title contains a path
+      const pathParts = resource.title.split('/');
+      const folderName = pathParts[0];
+      
+      if (!folders[folderName]) {
+        folders[folderName] = [];
+      }
+      folders[folderName].push(resource);
+    } else {
+      // No folder information, add to root
+      folders.root.push(resource);
+    }
+  });
+  
+  // Remove empty folders
+  Object.keys(folders).forEach(key => {
+    if (folders[key].length === 0) {
+      delete folders[key];
+    }
+  });
+  
+  return folders;
 };
