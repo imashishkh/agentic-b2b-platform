@@ -6,26 +6,25 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
   DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings, Key, Check, AlertCircle, Info } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Key, Check, AlertCircle, Info } from "lucide-react";
 import { toast } from "sonner";
 
 // Local storage key for the API key
 const API_KEY_STORAGE_KEY = "claude_api_key";
 
-export function ApiSettingsDialog() {
-  const { toast: uiToast } = useToast();
+interface ApiSettingsDialogProps {
+  onOpenChange: (open: boolean) => void;
+}
+
+export function ApiSettingsDialog({ onOpenChange }: ApiSettingsDialogProps) {
   const [apiKey, setApiKey] = useState<string>(
     localStorage.getItem(API_KEY_STORAGE_KEY) || ""
   );
-  const [open, setOpen] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string>("");
 
   // Check if API key is set on mount and show a notification if not
@@ -41,21 +40,21 @@ export function ApiSettingsDialog() {
             duration: 6000,
             action: {
               label: "Settings",
-              onClick: () => setOpen(true)
+              onClick: () => onOpenChange(true)
             }
           });
           sessionStorage.setItem("api_key_notification_shown", "true");
         }, 3000); // Show after 3 seconds
       }
     }
-  }, []);
+  }, [onOpenChange]);
 
   const saveApiKey = () => {
     localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
     toast.success("Claude API key saved successfully", {
       description: "Your API key has been securely stored in your browser."
     });
-    setOpen(false);
+    onOpenChange(false);
   };
 
   const validateApiKey = (key: string) => {
@@ -94,16 +93,11 @@ export function ApiSettingsDialog() {
     toast.info("API Key Removed", {
       description: "Your Claude API key has been removed from local storage."
     });
-    setOpen(false);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700" title="API Settings">
-          <Settings className="h-5 w-5" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={true} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -159,9 +153,7 @@ export function ApiSettingsDialog() {
             Clear Key
           </Button>
           <div className="flex gap-2">
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button onClick={validateAndSave} className="gap-1">
               <Check className="h-4 w-4" />
               Save

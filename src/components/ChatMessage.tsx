@@ -60,7 +60,7 @@ export function ChatMessage({ type, content, isLoading = false, agentType = Agen
             )}
           </Card>
           <div className="flex items-center gap-1 mt-1">
-            <Tooltip content="Copy message">
+            <Tooltip tooltip="Copy message">
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -70,17 +70,17 @@ export function ChatMessage({ type, content, isLoading = false, agentType = Agen
                 <Copy className="h-3 w-3 text-gray-400 hover:text-gray-600" />
               </Button>
             </Tooltip>
-            <Tooltip content="Helpful">
+            <Tooltip tooltip="Helpful">
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <ThumbsUp className="h-3 w-3 text-gray-400 hover:text-green-600" />
               </Button>
             </Tooltip>
-            <Tooltip content="Not helpful">
+            <Tooltip tooltip="Not helpful">
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <ThumbsDown className="h-3 w-3 text-gray-400 hover:text-red-600" />
               </Button>
             </Tooltip>
-            <Tooltip content="Comment">
+            <Tooltip tooltip="Comment">
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <MessageCircle className="h-3 w-3 text-gray-400 hover:text-blue-600" />
               </Button>

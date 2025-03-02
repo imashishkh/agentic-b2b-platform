@@ -48,6 +48,27 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     }
   }, [chatRef, addMessage, messages]);
 
+  const processMarkdownFile = async (file: File) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          resolve(content);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = (error) => {
+        reject(error);
+      };
+      
+      reader.readAsText(file);
+    });
+  };
+
   const processMessage = async (message: string, files?: File[]) => {
     if (isProcessing || !message.trim()) return;
     
@@ -55,20 +76,73 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     setIsProcessing(true);
     
     try {
+      // If files were provided and it's a markdown file, process it
+      let enhancedMessage = message;
+      let fileContent = "";
+      
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.name.endsWith('.md') || file.type === 'text/markdown') {
+          try {
+            fileContent = await processMarkdownFile(file);
+            enhancedMessage = `${message}\n\nHere is the content of the file:\n\n${fileContent}`;
+            
+            // Add initial processing message
+            addMessage({
+              type: "agent",
+              content: "I'm analyzing your requirements document. This may take a moment...",
+              agentType: AgentType.MANAGER,
+            });
+          } catch (error) {
+            console.error("Error processing markdown file:", error);
+            addMessage({
+              type: "agent",
+              content: "I had trouble reading your markdown file. Please try uploading it again.",
+              agentType: AgentType.MANAGER,
+            });
+            setIsAgentTyping(false);
+            setIsProcessing(false);
+            return;
+          }
+        }
+      }
+      
       // Determine which agent should handle the message
-      const agentType = AgentFactory.determineAgentType(message, []);
+      const agentType = AgentFactory.determineAgentType(enhancedMessage, files || []);
       
       // Generate a response using the agent
       const agent = AgentFactory.createAgent(agentType);
-      const generatedResponse = await agent.generateResponse(message, []);
+      
+      // If we have file content, provide it to the agent for processing
+      const generatedResponse = await agent.generateResponse(enhancedMessage, files || []);
       
       if (isMounted.current) {
-        // Add agent response to chat with correct type
-        addMessage({
-          type: "agent",
-          content: generatedResponse,
-          agentType: agentType,
-        });
+        // For Markdown files, provide a more detailed response
+        if (fileContent) {
+          const detailedResponse = `I've analyzed your requirements document. Here's my understanding:
+
+${generatedResponse}
+
+Would you like me to:
+1. Break this down into specific tasks and milestones?
+2. Suggest a technical stack for implementation?
+3. Estimate timeline and resources needed?
+4. Something else?`;
+          
+          // Add agent response to chat with correct type
+          addMessage({
+            type: "agent",
+            content: detailedResponse,
+            agentType: agentType,
+          });
+        } else {
+          // Add standard agent response to chat
+          addMessage({
+            type: "agent",
+            content: generatedResponse,
+            agentType: agentType,
+          });
+        }
       }
     } catch (error) {
       console.error("Error processing message:", error);

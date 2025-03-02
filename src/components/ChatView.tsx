@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { ChatInput } from "./chat-input";
 import { ChatMessage } from "./ChatMessage";
@@ -10,6 +9,7 @@ import { ChatProcessor } from "./ChatProcessor";
 import { Settings, PanelLeft, Trash2, Download, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tooltip } from "./ui/tooltip";
+import { toast } from "sonner";
 
 export function ChatView() {
   const { messages, addMessage, clearMessages, isAgentTyping } = useChat();
@@ -19,7 +19,6 @@ export function ChatView() {
   const [showProjectPanel, setShowProjectPanel] = useState(false);
   const chatRef = useRef<any>(null);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -46,9 +45,6 @@ export function ChatView() {
   const handleStartWithExample = async () => {
     setIsLoadingExample(true);
     clearMessages(); // Clear existing messages
-    
-    // Add user message
-    addMessage({ type: "user", content: "Let's start with an example project" });
     
     const welcomeWithExample = `Okay, let's start with an example project:
 
@@ -80,7 +76,6 @@ Develop a fully functional e-commerce platform to sell products online.
 Let me know if you'd like to proceed with this example!
 `;
     
-    // Simulate agent response with a delay
     setTimeout(() => {
       addMessage({
         type: "agent",
@@ -106,7 +101,6 @@ Let me know if you'd like to proceed with this example!
       
       addMessage({ type: "user", content: `I've uploaded a requirements document: ${file.name}` });
       
-      // Simulate agent response with a delay
       setTimeout(() => {
         addMessage({
           type: "agent",
@@ -115,7 +109,6 @@ Let me know if you'd like to proceed with this example!
         });
       }, 1500);
       
-      // Here you would typically send the fileContent to the AI for processing
       console.log("File content:", fileContent);
     };
     
@@ -240,7 +233,6 @@ Let me know if you'd like to proceed with this example!
         </div>
       </div>
       
-      {/* API Settings Dialog */}
       {showApiSettings && (
         <ApiSettingsDialog 
           open={showApiSettings} 
@@ -248,7 +240,6 @@ Let me know if you'd like to proceed with this example!
         />
       )}
       
-      {/* Hidden ChatProcessor component */}
       <div style={{ display: 'none' }}>
         <ChatProcessor chatRef={chatRef} />
       </div>
