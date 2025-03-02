@@ -1,72 +1,56 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, Trash2 } from "lucide-react";
+import React from 'react';
 
-// Define the props interface for the resources
-export interface KnowledgeResourceProps {
+// Define the KnowledgeResource interface
+export interface KnowledgeResource {
   id: string;
   title: string;
-  url: string;
-  description: string;
-  category: string;
-  dateAdded: string;
+  url?: string;
+  type: string;
 }
 
-// Define the component props
+// Define the props interface for KnowledgeResourcesList component
 export interface KnowledgeResourcesListProps {
-  resources: KnowledgeResourceProps[];
+  resources: KnowledgeResource[];
   onRemove: (id: string) => void;
 }
 
-export const KnowledgeResourcesList: React.FC<KnowledgeResourcesListProps> = ({
-  resources,
-  onRemove
+// This component displays a list of knowledge resources
+export const KnowledgeResourcesList: React.FC<KnowledgeResourcesListProps> = ({ 
+  resources, 
+  onRemove 
 }) => {
-  if (resources.length === 0) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-sm text-muted-foreground">No resources available</p>
-      </div>
-    );
+  if (!resources || resources.length === 0) {
+    return <div className="text-gray-500 text-sm">No resources added yet.</div>;
   }
 
   return (
     <div className="space-y-2">
       {resources.map((resource) => (
-        <div
+        <div 
           key={resource.id}
-          className="p-3 border rounded-md flex justify-between items-start hover:bg-muted/20"
+          className="flex items-center justify-between p-2 bg-white rounded border"
         >
           <div>
-            <div className="flex items-center gap-1">
-              <a
+            <div className="font-medium text-sm">{resource.title}</div>
+            {resource.url && (
+              <a 
                 href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline flex items-center"
+                className="text-xs text-blue-600 hover:underline"
               >
-                {resource.title}
-                <ExternalLink className="h-3 w-3 ml-1" />
+                {resource.url}
               </a>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {resource.description}
-            </p>
-            <div className="mt-1 flex items-center">
-              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-                {resource.category}
-              </span>
-            </div>
+            )}
+            <div className="text-xs text-gray-500">Type: {resource.type}</div>
           </div>
-          <Button
-            size="icon"
-            variant="ghost"
+          <button
             onClick={() => onRemove(resource.id)}
-            className="h-8 w-8"
+            className="text-red-500 hover:text-red-700 text-xs"
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+            Remove
+          </button>
         </div>
       ))}
     </div>

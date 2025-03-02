@@ -2,12 +2,7 @@
 import React, { useState, useRef } from "react";
 import { ChatInput } from "@/components/chat-input";
 import { Button } from "@/components/ui/button";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Trash2, Download, HelpCircle, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -95,53 +90,38 @@ export function ChatFooter({
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between mb-2">
           <div className="flex items-center gap-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={handleClearChat}
-                    className="text-gray-500 hover:text-red-500"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Clear all messages</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip tooltip="Clear all messages">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleClearChat}
+                className="text-gray-500 hover:text-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </Tooltip>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    className="text-gray-500 hover:text-blue-500"
-                    onClick={handleDownload}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Download chat history</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip tooltip="Download chat history">
+              <Button 
+                size="sm" 
+                variant="ghost"
+                className="text-gray-500 hover:text-blue-500"
+                onClick={handleDownload}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </Tooltip>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    className="text-gray-500 hover:text-blue-500"
-                    onClick={handleHelp}
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Help</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip tooltip="Help">
+              <Button 
+                size="sm" 
+                variant="ghost"
+                className="text-gray-500 hover:text-blue-500"
+                onClick={handleHelp}
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </Tooltip>
           </div>
         </div>
         <div className="flex items-center gap-3">

@@ -1,8 +1,7 @@
 
-import React, { useRef } from "react";
+import React, { useRef, forwardRef } from "react";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { forwardRef } from "react";
 
 export type FileUploadButtonProps = {
   /**
