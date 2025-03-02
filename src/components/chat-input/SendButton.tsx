@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ArrowUpCircle } from "lucide-react";
+import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SendButtonProps {
@@ -16,15 +16,16 @@ export const SendButton: React.FC<SendButtonProps> = ({ disabled, onClick }) => 
   return (
     <button 
       className={cn(
-        "p-2 m-1 rounded-full transition-all duration-200",
+        "p-2 rounded-full transition-all duration-200 flex items-center justify-center",
         disabled
-          ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-          : "text-white bg-sayhalo-coral hover:bg-sayhalo-coral/90"
+          ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+          : "text-white bg-sayhalo-coral hover:bg-sayhalo-coral/90 shadow-sm"
       )}
       onClick={onClick}
       disabled={disabled}
+      aria-label="Send message"
     >
-      <ArrowUpCircle size={24} />
+      <Send size={20} className={disabled ? "" : "transform -rotate-45"} />
     </button>
   );
 };

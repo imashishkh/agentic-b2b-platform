@@ -1,18 +1,13 @@
 
 import React, { useRef } from "react";
-import { Upload, FolderUp } from "lucide-react";
+import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type FileUploadButtonProps = {
-  /**
-   * Icon to display: "file" for single file upload or "folder" for multiple files
-   */
-  icon: "file" | "folder";
-  
+export type FileUploadButtonProps = {
   /**
    * Callback function when files are selected
    */
-  onFileChange: (files: File[]) => void;
+  onChange: (files: File[]) => void;
   
   /**
    * Whether the button is disabled
@@ -20,11 +15,8 @@ type FileUploadButtonProps = {
   disabled?: boolean;
 };
 
-export function FileUploadButton({ icon, onFileChange, disabled }: FileUploadButtonProps) {
+export function FileUploadButton({ onChange, disabled }: FileUploadButtonProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Determine accept and multiple attributes based on icon type
-  const isFolder = icon === "folder";
   
   const handleButtonClick = () => {
     if (disabled) return;
@@ -36,7 +28,7 @@ export function FileUploadButton({ icon, onFileChange, disabled }: FileUploadBut
     
     const files = e.target.files;
     if (files && files.length > 0) {
-      onFileChange(Array.from(files));
+      onChange(Array.from(files));
     }
     // Reset the input so the same file can be uploaded again
     e.target.value = '';
@@ -52,21 +44,17 @@ export function FileUploadButton({ icon, onFileChange, disabled }: FileUploadBut
           disabled && "cursor-not-allowed opacity-60 hover:text-gray-500"
         )}
         disabled={disabled}
-        aria-label={isFolder ? "Upload Folder" : "Upload File"}
+        aria-label="Upload File"
       >
-        {isFolder ? (
-          <FolderUp className="h-5 w-5" />
-        ) : (
-          <Upload className="h-5 w-5" />
-        )}
+        <Upload className="h-5 w-5" />
       </button>
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
-        multiple={isFolder}
-        accept={isFolder ? undefined : "*/*"}
+        multiple
+        accept="*/*"
         disabled={disabled}
       />
     </>

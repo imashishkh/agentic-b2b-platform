@@ -37,8 +37,8 @@ export function MessageInput({ value, onChange, onKeyDown, disabled }: MessageIn
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={onKeyDown}
       disabled={disabled}
-      placeholder={disabled ? "Agent is thinking..." : "Type a message..."}
-      className="flex-1 border-0 bg-transparent py-2.5 pl-2 focus:ring-0 focus:outline-none text-gray-900"
+      placeholder={disabled ? "DevManager is thinking..." : "Type a message or upload a project requirements file..."}
+      className="flex-1 border-0 bg-transparent py-3 pl-2 focus:ring-0 focus:outline-none text-gray-900 min-w-0"
       aria-label="Message input"
     />
   );

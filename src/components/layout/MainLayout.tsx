@@ -5,7 +5,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { AgentType } from "@/agents/AgentTypes";
 import { ProjectFeaturesPanel } from "@/components/project/ProjectFeaturesPanel";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Layout } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layout, Settings } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -36,22 +37,39 @@ export function MainLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full">
         {/* Top Bar */}
-        <div className="flex justify-between items-center p-2 bg-white border-b">
-          <h1 className="text-xl font-semibold px-2">Agentic Chat</h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowProjectPanel(!showProjectPanel)}
-            className="flex items-center"
-          >
-            <Layout className="h-4 w-4 mr-1" />
-            {showProjectPanel ? "Hide" : "Show"} Project Features
-            {showProjectPanel ? (
-              <ChevronRight className="h-4 w-4 ml-1" />
-            ) : (
-              <ChevronLeft className="h-4 w-4 ml-1" />
-            )}
-          </Button>
+        <div className="flex justify-between items-center px-4 py-3 bg-white shadow-sm border-b">
+          <h1 className="text-xl font-semibold text-sayhalo-dark">DevManager AI</h1>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowApiSettings(true)}
+              className="flex items-center gap-1"
+            >
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">API Settings</span>
+            </Button>
+            
+            <Separator orientation="vertical" className="h-6" />
+            
+            <Button
+              variant={showProjectPanel ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => setShowProjectPanel(!showProjectPanel)}
+              className="flex items-center gap-1"
+            >
+              <Layout className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {showProjectPanel ? "Hide" : "Show"} Project Panel
+              </span>
+              {showProjectPanel ? (
+                <ChevronRight className="h-4 w-4 sm:ml-1" />
+              ) : (
+                <ChevronLeft className="h-4 w-4 sm:ml-1" />
+              )}
+            </Button>
+          </div>
         </div>
         
         {/* Content with Project Panel */}
@@ -63,7 +81,7 @@ export function MainLayout({
           
           {/* Project Features Panel */}
           {showProjectPanel && (
-            <div className="w-1/3 border-l bg-white overflow-y-auto">
+            <div className="w-1/3 border-l bg-white overflow-y-auto animate-slide-in-right">
               <ProjectFeaturesPanel />
             </div>
           )}

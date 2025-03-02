@@ -1,11 +1,12 @@
 
-// Update the chat input component to include the API settings dialog
 import React, { useState } from "react";
 import { MessageInput } from "./MessageInput";
 import { SendButton } from "./SendButton";
 import { FileUploadButton } from "./FileUploadButton";
 import { FilePreview } from "./FilePreview";
 import { ApiSettingsDialog } from "../ApiSettingsDialog";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 
 export type ChatInputProps = {
   onSendMessage: (message: string, files?: File[]) => void;
@@ -43,21 +44,28 @@ export function ChatInput({ onSendMessage, isDisabled = false }: ChatInputProps)
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-gray-200 bg-white p-4 flex flex-col gap-2"
+      className="border-t border-gray-200 bg-white p-4 flex flex-col gap-2 shadow-lg"
     >
       {files.length > 0 && (
         <FilePreview files={files} onRemove={removeFile} disabled={isDisabled} />
       )}
-      <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3">
-        <ApiSettingsDialog />
-        <FileUploadButton onChange={handleFileChange} disabled={isDisabled} />
+      <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 shadow-inner">
+        <div className="flex items-center">
+          <ApiSettingsDialog />
+          <FileUploadButton onChange={handleFileChange} disabled={isDisabled} />
+        </div>
+        
         <MessageInput
           value={message}
           onChange={setMessage}
           onKeyDown={handleKeyDown}
           disabled={isDisabled}
         />
-        <SendButton onClick={() => handleSubmit()} disabled={isDisabled || (!message.trim() && files.length === 0)} />
+        
+        <SendButton 
+          onClick={() => handleSubmit()} 
+          disabled={isDisabled || (!message.trim() && files.length === 0)} 
+        />
       </div>
     </form>
   );
