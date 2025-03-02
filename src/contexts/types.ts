@@ -257,6 +257,11 @@ export interface ChatContextType {
   vulnerabilityAssessments: any[];
   bestPracticesViolations: any[];
   collaborationActive: boolean;
+  contextAwareEnabled?: boolean;  // Add this property
+  currentCollaborators?: AgentType[];  // Add this property
+  projectPlans?: any[];  // Add this property
+  currentPlanId?: string | null;  // Add this property
+  claudeAPIEnabled?: boolean;  // Add this property
   addMessage: (message: any) => void;
   clearMessages: () => void;
   setIsAgentTyping: (isTyping: boolean) => void;
@@ -284,4 +289,12 @@ export interface ChatContextType {
   addVulnerabilityAssessment: (assessment: any) => void;
   addBestPracticesViolation: (violation: any) => void;
   setCollaborationActive: (isActive: boolean) => void;
+  addProjectPlan?: (plan: any) => void;  // Add these optional methods
+  updateProjectPlan?: (id: string, plan: Partial<any>) => void;
+  setActivePlan?: (id: string | null) => void;
+  storeInAgentMemory?: (key: string, value: any) => void;
+  retrieveFromAgentMemory?: (key: string) => any;
+  toggleClaudeAPI?: (enabled: boolean) => void;
+  setCollaborators?: (collaborators: AgentType[]) => void;
+  toggleContextAware?: (enabled: boolean) => void;
 }

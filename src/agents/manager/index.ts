@@ -1,9 +1,10 @@
+
 import { BaseAgent } from "../BaseAgent";
 import { AgentType } from "../AgentTypes";
 import TaskManager from "./TaskManager";
-import SecurityManager from "./SecurityManager";
+import * as SecurityManager from "./SecurityManager";
 import PerformanceManager from "./PerformanceManager";
-import KnowledgeManager from "./KnowledgeManager";
+import * as KnowledgeManager from "./KnowledgeManager";
 import MessageDetector from "./MessageDetector";
 import { 
   PerformanceMetric, 

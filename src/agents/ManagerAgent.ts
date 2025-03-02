@@ -101,19 +101,21 @@ Please share any specific resources you'd like to add to the project knowledge b
    * Get performance metrics
    */
   getPerformanceMetrics(): PerformanceMetric[] {
-    // Mock performance metrics
+    // Mock performance metrics - fixing 'value' to 'currentValue' to match type definition
     return [
       {
+        id: "1",
         name: "First Contentful Paint",
-        value: 1.2,
+        currentValue: 1.2,
         unit: "s",
         category: "frontend",
         description: "Time until the first content is painted on screen",
         threshold: { warning: 1.8, critical: 3.0 }
       },
       {
+        id: "2",
         name: "API Response Time",
-        value: 250,
+        currentValue: 250,
         unit: "ms",
         category: "backend",
         description: "Average API endpoint response time",
