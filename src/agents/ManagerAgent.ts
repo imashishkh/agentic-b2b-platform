@@ -1,4 +1,4 @@
-<lov-code>
+
 import { BaseAgent } from "./BaseAgent";
 import { AgentType } from "./AgentTypes";
 import { createAgent } from "./AgentFactory";
@@ -797,4 +797,250 @@ To add a resource, simply share a link with a brief description of what it conta
       });
     }
     
+    return requirements;
+  }
+  
+  /**
+   * Generate a security report based on scan findings and compliance check
+   * 
+   * @param findings - Security findings from scan
+   * @param requirements - Compliance requirements check
+   * @returns Formatted security report
+   */
+  generateSecurityReport(findings: SecurityFinding[], requirements: ComplianceRequirement[]): string {
+    const report = ["# Security Assessment Report\n\n"];
     
+    // Add overview
+    const criticalCount = findings.filter(f => f.severity === 'critical').length;
+    const highCount = findings.filter(f => f.severity === 'high').length;
+    const mediumCount = findings.filter(f => f.severity === 'medium').length;
+    const lowCount = findings.filter(f => f.severity === 'low').length;
+    
+    report.push("## Overview\n\n");
+    report.push("The security assessment has identified the following issues:\n\n");
+    report.push(`- **Critical Severity:** ${criticalCount} issues\n`);
+    report.push(`- **High Severity:** ${highCount} issues\n`);
+    report.push(`- **Medium Severity:** ${mediumCount} issues\n`);
+    report.push(`- **Low Severity:** ${lowCount} issues\n\n`);
+    
+    // Add vulnerability details if any
+    if (findings.length > 0) {
+      report.push("## Vulnerabilities Detected\n\n");
+      
+      // First list critical and high severity issues
+      const importantFindings = findings.filter(f => f.severity === 'critical' || f.severity === 'high');
+      if (importantFindings.length > 0) {
+        report.push("### High Priority Issues\n\n");
+        importantFindings.forEach(finding => {
+          report.push(`#### ${finding.description} (${finding.severity})\n\n`);
+          report.push(`**Location:** ${finding.codeLocation}\n\n`);
+          report.push(`**Recommendation:** ${finding.recommendation}\n\n`);
+        });
+      }
+      
+      // Then list medium and low severity issues
+      const otherFindings = findings.filter(f => f.severity === 'medium' || f.severity === 'low');
+      if (otherFindings.length > 0) {
+        report.push("### Other Issues\n\n");
+        otherFindings.forEach(finding => {
+          report.push(`- **${finding.description}** (${finding.severity}) - ${finding.recommendation}\n`);
+        });
+        report.push("\n");
+      }
+    }
+    
+    // Add compliance check results
+    if (requirements.length > 0) {
+      report.push("## Compliance Status\n\n");
+      
+      // List failed requirements first
+      const failedRequirements = requirements.filter(r => r.status === 'failed');
+      if (failedRequirements.length > 0) {
+        report.push("### Failed Requirements\n\n");
+        failedRequirements.forEach(req => {
+          report.push(`- **${req.name}:** ${req.description}\n`);
+          report.push(`  - **Recommendation:** ${req.recommendation}\n\n`);
+        });
+      }
+      
+      // List warning requirements
+      const warningRequirements = requirements.filter(r => r.status === 'warning');
+      if (warningRequirements.length > 0) {
+        report.push("### Requirements Needing Attention\n\n");
+        warningRequirements.forEach(req => {
+          report.push(`- **${req.name}:** ${req.description}\n`);
+          report.push(`  - **Recommendation:** ${req.recommendation}\n\n`);
+        });
+      }
+      
+      // Summarize passed requirements
+      const passedRequirements = requirements.filter(r => r.status === 'passed');
+      if (passedRequirements.length > 0) {
+        report.push(`### Passed Requirements (${passedRequirements.length})\n\n`);
+        report.push(`Your code passes ${passedRequirements.length} out of ${requirements.length} compliance checks.\n\n`);
+      }
+    }
+    
+    // Add next steps
+    report.push("## Recommended Next Steps\n\n");
+    
+    if (criticalCount > 0) {
+      report.push("1. **Immediately address all critical vulnerabilities**\n");
+    }
+    
+    if (highCount > 0) {
+      report.push(`${criticalCount > 0 ? "2" : "1"}. **Address high severity issues before deployment**\n`);
+    }
+    
+    if (failedRequirements?.length > 0) {
+      report.push(`${criticalCount > 0 || highCount > 0 ? "3" : "1"}. **Fix compliance failures**\n`);
+    }
+    
+    report.push(`- Implement a security review process for all new code\n`);
+    report.push(`- Consider implementing automated security scanning in your CI/CD pipeline\n`);
+    report.push(`- Conduct regular security training for developers\n\n`);
+    
+    return report.join("");
+  }
+  
+  /**
+   * Generate a plan for performance monitoring
+   * 
+   * @param appName - The name of the application
+   * @returns A performance monitoring plan
+   */
+  generatePerformanceMonitoringPlan(appName: string): string {
+    const plan = ["# Performance Monitoring Plan\n\n"];
+    
+    plan.push(`## Overview for ${appName}\n\n`);
+    plan.push("This plan outlines the key metrics, tools, and processes for monitoring and optimizing the performance of your e-commerce application.\n\n");
+    
+    // Key metrics
+    plan.push("## Key Performance Metrics\n\n");
+    
+    this.performanceMetrics.forEach(metric => {
+      plan.push(`### ${metric.name}\n\n`);
+      plan.push(`- **Description:** ${metric.description}\n`);
+      plan.push(`- **Target:** ${metric.target}\n`);
+      plan.push(`- **Measurement Method:** ${metric.measurementMethod}\n\n`);
+    });
+    
+    // Monitoring tools
+    plan.push("## Recommended Monitoring Tools\n\n");
+    
+    monitoringToolIntegrations.forEach(tool => {
+      plan.push(`### ${tool.name}\n\n`);
+      plan.push(`- **Purpose:** ${tool.purpose}\n`);
+      plan.push(`- **Key Features:** ${tool.features.join(', ')}\n`);
+      plan.push(`- **Implementation Complexity:** ${tool.implementationComplexity}\n\n`);
+    });
+    
+    // Performance optimizations
+    plan.push("## Recommended Optimizations\n\n");
+    
+    // Group recommendations by priority
+    const highPriorityRecs = this.performanceRecommendations.filter(r => r.priority === 'high');
+    const mediumPriorityRecs = this.performanceRecommendations.filter(r => r.priority === 'medium');
+    const lowPriorityRecs = this.performanceRecommendations.filter(r => r.priority === 'low');
+    
+    if (highPriorityRecs.length > 0) {
+      plan.push("### High Priority Optimizations\n\n");
+      highPriorityRecs.forEach(rec => {
+        plan.push(`- **${rec.title}**: ${rec.description}\n`);
+        plan.push(`  - Estimated Impact: ${rec.estimatedImpact}\n\n`);
+      });
+    }
+    
+    if (mediumPriorityRecs.length > 0) {
+      plan.push("### Medium Priority Optimizations\n\n");
+      mediumPriorityRecs.forEach(rec => {
+        plan.push(`- **${rec.title}**: ${rec.description}\n`);
+        plan.push(`  - Estimated Impact: ${rec.estimatedImpact}\n\n`);
+      });
+    }
+    
+    if (lowPriorityRecs.length > 0) {
+      plan.push("### Future Optimizations\n\n");
+      lowPriorityRecs.forEach(rec => {
+        plan.push(`- **${rec.title}**: ${rec.description}\n`);
+      });
+      plan.push("\n");
+    }
+    
+    // Implementation phases
+    plan.push("## Implementation Phases\n\n");
+    plan.push("### Phase 1: Initial Setup (1-2 Weeks)\n\n");
+    plan.push("- Implement basic monitoring for core metrics\n");
+    plan.push("- Establish performance baseline\n");
+    plan.push("- Identify critical bottlenecks\n\n");
+    
+    plan.push("### Phase 2: Core Optimizations (2-4 Weeks)\n\n");
+    plan.push("- Implement high-priority optimizations\n");
+    plan.push("- Enhance monitoring coverage\n");
+    plan.push("- Develop automated performance tests\n\n");
+    
+    plan.push("### Phase 3: Ongoing Optimization (Continuous)\n\n");
+    plan.push("- Implement medium and low priority optimizations\n");
+    plan.push("- Regularly review performance metrics\n");
+    plan.push("- Adjust targets based on user feedback and business requirements\n\n");
+    
+    // Next steps
+    plan.push("## Next Steps\n\n");
+    plan.push("1. Review and adjust the proposed metrics and targets\n");
+    plan.push("2. Select and implement initial monitoring tools\n");
+    plan.push("3. Establish a baseline performance measurement\n");
+    plan.push("4. Schedule regular performance review meetings\n\n");
+    
+    return plan.join("");
+  }
+  
+  /**
+   * Add a performance metric to track
+   * 
+   * @param metric - The performance metric to add
+   */
+  addPerformanceMetric(metric: PerformanceMetric): void {
+    // Check if metric with same name already exists
+    const existingIndex = this.performanceMetrics.findIndex(m => m.name === metric.name);
+    
+    if (existingIndex >= 0) {
+      // Update existing metric
+      this.performanceMetrics[existingIndex] = metric;
+      console.log(`Updated performance metric: ${metric.name}`);
+    } else {
+      // Add new metric
+      this.performanceMetrics.push(metric);
+      console.log(`Added new performance metric: ${metric.name}`);
+    }
+  }
+  
+  /**
+   * Add a performance optimization recommendation
+   * 
+   * @param recommendation - The optimization recommendation to add
+   */
+  addOptimizationRecommendation(recommendation: OptimizationRecommendation): void {
+    // Check if recommendation with same title already exists
+    const existingIndex = this.performanceRecommendations.findIndex(r => r.title === recommendation.title);
+    
+    if (existingIndex >= 0) {
+      // Update existing recommendation
+      this.performanceRecommendations[existingIndex] = recommendation;
+      console.log(`Updated optimization recommendation: ${recommendation.title}`);
+    } else {
+      // Add new recommendation
+      this.performanceRecommendations.push(recommendation);
+      console.log(`Added new optimization recommendation: ${recommendation.title}`);
+    }
+  }
+  
+  /**
+   * Generate a performance report based on current metrics
+   * 
+   * @returns A performance assessment report
+   */
+  generatePerformanceReport(): string {
+    // For now, use the utility function
+    return generatePerformanceReport(this.performanceMetrics, this.performanceRecommendations);
+  }
+}
