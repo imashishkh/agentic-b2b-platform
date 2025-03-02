@@ -8,6 +8,11 @@ export interface TooltipProps {
   className?: string;
 }
 
+const TooltipProvider = TooltipPrimitive.Provider;
+const TooltipRoot = TooltipPrimitive.Root;
+const TooltipTrigger = TooltipPrimitive.Trigger;
+const TooltipContent = TooltipPrimitive.Content;
+
 export function Tooltip({ children, tooltip, className }: TooltipProps) {
   // Only render the tooltip if the tooltip prop is provided
   if (!tooltip) {
@@ -15,22 +20,28 @@ export function Tooltip({ children, tooltip, className }: TooltipProps) {
   }
 
   return (
-    <TooltipPrimitive.Provider>
-      <TooltipPrimitive.Root>
-        <TooltipPrimitive.Trigger asChild>
+    <TooltipProvider>
+      <TooltipRoot>
+        <TooltipTrigger asChild>
           {children}
-        </TooltipPrimitive.Trigger>
-        <TooltipPrimitive.Content 
+        </TooltipTrigger>
+        <TooltipContent 
           className={`z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md animate-in fade-in-50 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 ${className || ""}`}
         >
           {tooltip}
-        </TooltipPrimitive.Content>
-      </TooltipPrimitive.Root>
-    </TooltipPrimitive.Provider>
+        </TooltipContent>
+      </TooltipRoot>
+    </TooltipProvider>
   );
 }
 
-// Re-export all the components needed for custom tooltips
+// Export all the components needed for custom tooltips
 export { 
-  TooltipPrimitive
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent
 };
+
+// Re-export the primitive for any advanced usage
+export { TooltipPrimitive };

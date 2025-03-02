@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskVisualization } from "./TaskVisualization";
-import { KnowledgeResourcesList } from "../knowledge/KnowledgeResourcesList";
+import { KnowledgeResourcesList, KnowledgeResource } from "../knowledge/KnowledgeResourcesList";
 import { ProjectFeaturesPanel } from "./ProjectFeaturesPanel";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Settings } from "lucide-react";
@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 
 export function EnhancedProjectPanel() {
   const [activeTab, setActiveTab] = useState("features");
-  const { addKnowledgeResource, setIsRequestingKnowledge } = useChat();
+  const { addKnowledgeResource, setIsRequestingKnowledge, knowledgeBase } = useChat();
   const [showSettings, setShowSettings] = useState(false);
   
   const handleAddResource = () => {
@@ -30,11 +30,25 @@ export function EnhancedProjectPanel() {
     toast.info("Please paste a documentation URL in the chat");
   };
   
+  const handleRemoveResource = (id: string) => {
+    // You can implement this based on your requirements
+    toast.success("Resource removed");
+  };
+  
   const handleSettingsSave = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Settings saved successfully");
     setShowSettings(false);
   };
+  
+  // Convert knowledgeBase to the format expected by KnowledgeResourcesList
+  const resources: KnowledgeResource[] = knowledgeBase.map(resource => ({
+    id: resource.id,
+    title: resource.title,
+    url: resource.url,
+    description: resource.description,
+    category: resource.category
+  }));
   
   return (
     <div className="h-full flex flex-col">
@@ -111,7 +125,10 @@ export function EnhancedProjectPanel() {
               <span>Add</span>
             </Button>
           </div>
-          <KnowledgeResourcesList />
+          <KnowledgeResourcesList 
+            resources={resources}
+            onRemove={handleRemoveResource}
+          />
         </TabsContent>
       </div>
     </div>

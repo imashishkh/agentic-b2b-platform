@@ -4,26 +4,24 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { useChat } from "@/contexts/ChatContext";
-import { KnowledgeResourcesList, KnowledgeResourceProps } from "@/components/knowledge/KnowledgeResourcesList";
+import { KnowledgeResourcesList, KnowledgeResource } from "@/components/knowledge/KnowledgeResourcesList";
 
 export function KnowledgeBasePanel() {
   const { toast } = useToast();
-  const [resources, setResources] = useState<KnowledgeResourceProps[]>([
+  const [resources, setResources] = useState<KnowledgeResource[]>([
     {
       id: "1",
       title: "E-commerce Best Practices",
       url: "https://example.com/ecommerce-best-practices",
       description: "A guide to best practices for e-commerce development",
-      category: "Industry Standards",
-      dateAdded: new Date().toISOString()
+      category: "Industry Standards"
     },
     {
       id: "2",
       title: "React Documentation",
       url: "https://reactjs.org/docs/getting-started.html",
       description: "Official React documentation",
-      category: "Technology Documentation",
-      dateAdded: new Date().toISOString()
+      category: "Technology Documentation"
     }
   ]);
 
