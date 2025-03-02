@@ -7,13 +7,17 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { KnowledgeBasePanel } from "./KnowledgeBasePanel";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { AgentType } from "@/agents/AgentTypes";
 
 /**
  * Props for the sidebar component
  */
 interface SidebarProps {
   className?: string;
+  currentAgentType?: AgentType;
+  setCurrentAgentType?: (agentType: AgentType) => void;
+  onToggleSettings?: () => void;
 }
 
 /**
@@ -28,9 +32,9 @@ enum SidebarTab {
 /**
  * Sidebar component for navigation and additional functionality
  */
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, currentAgentType, setCurrentAgentType, onToggleSettings }: SidebarProps) {
   const { knowledgeBase } = useChat();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<SidebarTab>(SidebarTab.CHAT);
   const [isOpen, setIsOpen] = useState(!isMobile);
 
