@@ -8,6 +8,8 @@ import { AgentType } from "@/agents/AgentTypes";
 import { ChatInput } from "@/components/chat-input";
 import { Trash2, Download, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { v4 as uuidv4 } from 'uuid';
+import { extractContentFromUrl } from "@/utils/resourceExtractor";
 
 /**
  * ChatContainer Component
@@ -25,7 +27,8 @@ export function ChatContainer() {
     clearMessages,
     isAgentTyping,
     isLoadingExample,
-    setIsAgentTyping
+    setIsAgentTyping,
+    addKnowledgeResource
   } = useChat();
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -117,11 +120,82 @@ export function ChatContainer() {
   };
 
   /**
+   * Handles knowledge resource uploads
+   * @param files - Files to add as knowledge resources
+   * @param category - Resource category
+   */
+  const handleKnowledgeUpload = (files: File[], category: string = "UI Components") => {
+    if (files.length === 0) return;
+    
+    setIsUploading(true);
+    
+    // Simulate file upload progress
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          // Add each file to knowledge base
+          files.forEach(file => {
+            const resource = {
+              id: uuidv4(),
+              title: file.name,
+              description: `${category} resource: ${file.name}`,
+              category: category,
+              type: file.type,
+              dateAdded: new Date().toISOString(),
+              url: URL.createObjectURL(file),
+              tags: [category.toLowerCase(), file.type.split('/')[0], 'resource'],
+              source: 'upload',
+              content: `Content of ${file.name}` // Placeholder for file content
+            };
+            
+            addKnowledgeResource(category, resource);
+          });
+          
+          // Add message about knowledge base update
+          addMessage({
+            type: "agent",
+            agentType: AgentType.MANAGER,
+            content: `I've added ${files.length} ${category} resource(s) to the knowledge base. I'll reference these when generating code and making design decisions.`
+          });
+          
+          toast.success(`Added ${files.length} resources to knowledge base`);
+          setIsUploading(false);
+          setUploadProgress(0);
+        }, 500);
+      }
+    }, 200);
+  };
+
+  /**
    * Handles file uploads directly from the UI
    * @param selectedFiles - Array of files selected by the user
+   * @param context - Context of the upload (requirements, ui-components, etc.)
    */
-  const handleFileUpload = (selectedFiles: File[]) => {
+  const handleFileUpload = (selectedFiles: File[], context?: string) => {
     if (selectedFiles.length > 0) {
+      // Handle UI components differently
+      if (context === "ui-components") {
+        handleKnowledgeUpload(selectedFiles, "UI Components");
+        return;
+      }
+      
+      // Handle knowledge base resources
+      if (context === "knowledge-base") {
+        handleKnowledgeUpload(selectedFiles, "Resources");
+        return;
+      }
+      
+      // Handle documentation
+      if (context === "documentation") {
+        handleKnowledgeUpload(selectedFiles, "Documentation");
+        return;
+      }
+      
+      // Default file handling for requirements etc.
       setFiles(selectedFiles);
       setIsUploading(true);
 
@@ -162,6 +236,54 @@ export function ChatContainer() {
           }, 500);
         }
       }, 200);
+    }
+  };
+  
+  /**
+   * Handles adding a URL to the knowledge base
+   * @param url - URL to add as a knowledge resource
+   * @param category - Resource category
+   */
+  const handleAddResourceUrl = async (url: string, category: string = "Documentation") => {
+    try {
+      setIsAgentTyping(true);
+      const resourceInfo = await extractContentFromUrl(url);
+      
+      const resource = {
+        id: uuidv4(),
+        title: resourceInfo.title || url,
+        description: resourceInfo.description || `Documentation resource from ${url}`,
+        category: category,
+        type: 'url',
+        dateAdded: new Date().toISOString(),
+        url: url,
+        tags: resourceInfo.tags || [category.toLowerCase(), 'url', 'documentation'],
+        source: 'url',
+        content: resourceInfo.content || url
+      };
+      
+      addKnowledgeResource(category, resource);
+      
+      // Add message about knowledge base update
+      addMessage({
+        type: "agent",
+        agentType: AgentType.MANAGER,
+        content: `I've added documentation from ${url} to the knowledge base. I'll reference this when answering questions about your project.`
+      });
+      
+      toast.success(`Added resource from ${url} to knowledge base`);
+      setIsAgentTyping(false);
+    } catch (error) {
+      console.error("Error adding resource URL:", error);
+      toast.error("Failed to add resource URL");
+      setIsAgentTyping(false);
+      
+      // Add error message
+      addMessage({
+        type: "agent",
+        agentType: AgentType.MANAGER,
+        content: `I had trouble processing the URL: ${url}. Please check that it's valid and try again.`
+      });
     }
   };
 
@@ -241,7 +363,10 @@ export function ChatContainer() {
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex-1 overflow-hidden">
-        <ChatView />
+        <ChatView 
+          onFileUpload={handleFileUpload}
+          onAddResourceUrl={handleAddResourceUrl}
+        />
       </div>
       
       <div className="border-t border-border/50 bg-background">

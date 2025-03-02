@@ -58,7 +58,36 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
             toast.error("Please upload a markdown (.md) file for project requirements");
           }
         } 
-        // For UI components or other files, accept any file type
+        // For UI components or other files, accept specified file types
+        else if (wizardContext === "ui-components") {
+          // Accept design files and images for UI components
+          const validFiles = selectedFiles.filter(file => 
+            file.type.startsWith('image/') || 
+            file.name.endsWith('.sketch') || 
+            file.name.endsWith('.fig') || 
+            file.name.endsWith('.xd') || 
+            file.name.endsWith('.pdf') || 
+            file.name.endsWith('.ai') || 
+            file.name.endsWith('.psd') || 
+            file.name.endsWith('.zip')
+          );
+          
+          if (validFiles.length > 0) {
+            console.log(`${validFiles.length} UI component files selected`);
+            toast.success(`Selected ${validFiles.length} files for processing`);
+            onChange(validFiles);
+          } else {
+            toast.error("Please upload valid UI design files or images");
+          }
+        }
+        // For documentation or knowledge base resources
+        else if (wizardContext === "documentation" || wizardContext === "knowledge-base") {
+          // Accept any file type for knowledge base
+          console.log(`${selectedFiles.length} files selected for knowledge base`);
+          toast.success(`Added ${selectedFiles.length} files to knowledge base`);
+          onChange(selectedFiles);
+        }
+        // For any other context, accept any file type
         else {
           const file = selectedFiles[0];
           console.log(`File selected: ${file.name} (${file.type})`);
@@ -79,6 +108,8 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
         return ".md,.markdown,.txt";
       } else if (wizardContext === "ui-components") {
         return "image/*,.sketch,.fig,.xd,.pdf,.ai,.psd,.zip";
+      } else if (wizardContext === "documentation" || wizardContext === "knowledge-base") {
+        return "*";
       } else {
         return "*"; // Accept all file types
       }
@@ -107,6 +138,7 @@ export const FileUploadButton = forwardRef<HTMLButtonElement, FileUploadButtonPr
           className="hidden"
           accept={getAcceptTypes()}
           disabled={disabled}
+          multiple={wizardContext === "ui-components" || wizardContext === "documentation" || wizardContext === "knowledge-base"}
         />
       </>
     );

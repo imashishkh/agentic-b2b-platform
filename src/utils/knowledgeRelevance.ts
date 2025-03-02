@@ -14,7 +14,12 @@ export const findRelevantResources = (
   
   // Calculate scores for all resources
   const scoredResources = knowledgeBase.map(resource => {
-    const score = calculateRelevanceScore(resource, query);
+    const score = calculateRelevanceScore({
+      title: resource.title || "",
+      description: resource.description || "",
+      tags: resource.tags,
+      content: resource.content
+    }, query);
     return { ...resource, calculatedScore: score };
   });
   
@@ -51,7 +56,7 @@ export const generateKnowledgeContext = (
 ## ${resource.title}
 Category: ${resource.category}
 ${resource.tags?.length ? `Tags: ${resource.tags.join(', ')}` : ''}
-${resource.description}
+${resource.description || ''}
 Reference: ${resource.url}
     `.trim();
   }).join('\n\n');
@@ -85,7 +90,7 @@ export const extractArchitectureInsights = (
   
   // Scan resources for relevant information
   resources.forEach(resource => {
-    const content = resource.content || resource.description;
+    const content = resource.content || resource.description || '';
     if (!content) return;
     
     const contentLower = content.toLowerCase();

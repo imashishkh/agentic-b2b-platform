@@ -1,7 +1,9 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle, ChevronRight } from "lucide-react";
 import { SuggestionOption } from "@/contexts/types";
+import { useChat } from "@/contexts/ChatContext";
 
 /**
  * SuggestionBox Component
@@ -33,6 +35,7 @@ export function SuggestionBox({
   isWizardStep = false,
   onDirectAction
 }: SuggestionBoxProps) {
+  const { addKnowledgeResource } = useChat();
   
   const handleOptionClick = (optionMessage: string) => {
     // Check if the option is a direct action
@@ -51,6 +54,7 @@ export function SuggestionBox({
            lowerMessage.includes("github") ||
            lowerMessage.includes("documentation") ||
            lowerMessage.includes("ui components") ||
+           lowerMessage.includes("knowledge base") ||
            lowerMessage.includes("resources");
   };
 
@@ -65,8 +69,8 @@ export function SuggestionBox({
       return "add-documentation";
     } else if (lowerMessage.includes("ui components")) {
       return "upload-ui-components";
-    } else if (lowerMessage.includes("resources")) {
-      return "add-resources";
+    } else if (lowerMessage.includes("knowledge base") || lowerMessage.includes("resources")) {
+      return "add-knowledge-resource";
     }
     return "generic";
   };
