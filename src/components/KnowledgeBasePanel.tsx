@@ -1,89 +1,84 @@
 
 import React, { useState } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { KnowledgeResourcesList } from "./knowledge/KnowledgeResourcesList";
-import { Card } from "./ui/card";
-import { ExternalLink, Plus } from "lucide-react";
-import { useChat } from "@/contexts/ChatContext";
-import { KnowledgeBaseResource } from "@/contexts/types";
-import { toast } from "sonner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { KnowledgeResourcesList } from "@/components/knowledge/KnowledgeResourcesList";
+import { useChatContext } from "@/contexts";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import { EnhancedKnowledgeBase } from "./knowledge/EnhancedKnowledgeBase";
 
-export default function KnowledgeBasePanel() {
-  const { addKnowledgeResource } = useChat();
-  const [url, setUrl] = useState("");
-  const [title, setTitle] = useState("");
-  
+export function KnowledgeBasePanel() {
+  const { knowledgeResources, addKnowledgeResource } = useChatContext();
+  const [resourceUrl, setResourceUrl] = useState("");
+  const [resourceTitle, setResourceTitle] = useState("");
+  const [resourceType, setResourceType] = useState("documentation");
+
   const handleAddResource = () => {
-    if (!url.trim() || !title.trim()) {
-      toast.error("Please fill in all fields");
-      return;
+    if (resourceUrl && resourceTitle) {
+      addKnowledgeResource({
+        id: crypto.randomUUID(),
+        title: resourceTitle,
+        url: resourceUrl,
+        type: resourceType,
+        dateAdded: new Date().toISOString(), // Return ISO string instead of Date object
+        status: "active"
+      });
+      setResourceUrl("");
+      setResourceTitle("");
     }
-    
-    if (!url.startsWith("http")) {
-      toast.error("Please enter a valid URL");
-      return;
-    }
-    
-    const newResource: KnowledgeBaseResource = {
-      id: Date.now().toString(),
-      url,
-      title,
-      category: "Technology",
-      description: "Added by user",
-      isIndexed: true,
-      dateAdded: new Date().toISOString(),
-    };
-    
-    addKnowledgeResource(newResource);
-    toast.success("Resource added to knowledge base");
-    
-    // Reset form
-    setUrl("");
-    setTitle("");
   };
-  
+
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Knowledge Base</h2>
-        <p className="text-sm text-gray-500">Add documentation links to enhance your project</p>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto">
-        <KnowledgeResourcesList />
-      </div>
-      
-      <Card className="m-3 p-3">
-        <h3 className="text-sm font-medium mb-2">Add Resource</h3>
-        <div className="space-y-2">
-          <Input
-            placeholder="Documentation URL"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          <Input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open("https://docs.lovable.dev", "_blank")}
-              className="text-xs"
-            >
-              <ExternalLink className="h-3 w-3 mr-1" />
-              Docs
-            </Button>
-            <Button size="sm" onClick={handleAddResource}>
-              <Plus className="h-3 w-3 mr-1" />
-              Add
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
+    <Card className="h-full overflow-hidden flex flex-col">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex justify-between items-center">
+          Knowledge Base
+        </CardTitle>
+        <CardDescription>
+          Add external resources to enhance the AI's knowledge
+        </CardDescription>
+      </CardHeader>
+      <Tabs defaultValue="resources" className="flex-1 overflow-hidden flex flex-col">
+        <TabsList className="px-6">
+          <TabsTrigger value="resources">Resources</TabsTrigger>
+          <TabsTrigger value="enhance">Enhanced View</TabsTrigger>
+        </TabsList>
+        <TabsContent value="resources" className="flex-1 overflow-hidden flex flex-col">
+          <CardContent className="pt-3 flex-1 overflow-hidden flex flex-col">
+            <div className="space-y-2 mb-4">
+              <Input
+                placeholder="Resource Title"
+                value={resourceTitle}
+                onChange={(e) => setResourceTitle(e.target.value)}
+              />
+              <Input
+                placeholder="URL (https://...)"
+                value={resourceUrl}
+                onChange={(e) => setResourceUrl(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="w-auto flex items-center gap-1 flex-1"
+                  onClick={handleAddResource}
+                >
+                  <Plus className="h-4 w-4" /> Add Resource
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto pr-2">
+              <KnowledgeResourcesList resources={knowledgeResources} />
+            </div>
+          </CardContent>
+        </TabsContent>
+        <TabsContent value="enhance" className="flex-1 overflow-auto">
+          <EnhancedKnowledgeBase />
+        </TabsContent>
+      </Tabs>
+    </Card>
   );
 }
