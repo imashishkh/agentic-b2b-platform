@@ -10,12 +10,14 @@ import {
   LogIn,
   UserPlus,
   Shield,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useChat } from "@/contexts/ChatContext";
 import { useState } from "react";
-import { KnowledgeBaseDialogPanel } from "@/components/knowledge/KnowledgeBaseDialogPanel";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { KnowledgeBasePanel } from "@/components/KnowledgeBasePanel";
 import { useUser } from "@/components/UserProvider";
 
 // Define user roles
@@ -108,9 +110,18 @@ export function Sidebar() {
           size="icon"
           className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2"
           onClick={() => setKnowledgeBaseOpen(true)}
+          aria-label="Knowledge Hub"
         >
           <Database className="h-5 w-5 group-hover:mr-2" />
-          <span className="hidden group-hover:inline-flex">Knowledge Base</span>
+          <span className="hidden group-hover:inline-flex">Knowledge Hub</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2"
+        >
+          <BookOpen className="h-5 w-5 group-hover:mr-2" />
+          <span className="hidden group-hover:inline-flex">E-commerce Docs</span>
         </Button>
         <Button
           variant="ghost"
@@ -128,14 +139,14 @@ export function Sidebar() {
           <HelpCircle className="h-5 w-5 group-hover:mr-2" />
           <span className="hidden group-hover:inline-flex">Help</span>
         </Button>
-        
       </div>
       
-      {/* Knowledge Base Dialog */}
-      <KnowledgeBaseDialogPanel 
-        open={knowledgeBaseOpen} 
-        onOpenChange={setKnowledgeBaseOpen} 
-      />
+      {/* Knowledge Hub Dialog - Using our enhanced KnowledgeBasePanel */}
+      <Dialog open={knowledgeBaseOpen} onOpenChange={setKnowledgeBaseOpen}>
+        <DialogContent className="max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <KnowledgeBasePanel />
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 }

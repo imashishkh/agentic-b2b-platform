@@ -472,6 +472,27 @@ export default function ChatView() {
             </DialogContent>
           </Dialog>
           
+          {/* E-commerce Knowledge Access Button */}
+          <div className="max-w-2xl mx-auto flex justify-center mb-3">
+            <Button 
+              variant="outline" 
+              className="text-sm"
+              onClick={() => {
+                addMessage({
+                  content: "I'd like to access the e-commerce knowledge base",
+                  type: "user",
+                });
+                
+                // Show e-commerce knowledge hub in sidebar
+                document.querySelector('[aria-label="Knowledge Hub"]')?.dispatchEvent(
+                  new MouseEvent('click', { bubbles: true })
+                );
+              }}
+            >
+              Access E-commerce Knowledge Hub
+            </Button>
+          </div>
+          
           {/* Chat processor - contains input field */}
           <ChatProcessor chatRef={chatProcessorRef} />
         </div>
