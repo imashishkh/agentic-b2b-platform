@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Test Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      color: #2196F3;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    .output {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      border-left: 4px solid #2196F3;
+    }
+    .error {
+      background: #ffebee;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      border-left: 4px solid #f44336;
+    }
+    .options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Module Test Page</h1>
+  <p>Use this page to test individual JavaScript/TypeScript modules in isolation, helping to pinpoint issues in the codebase.</p>
+  
+  <div class="options">
+    <select id="module-type">
+      <option value="js">JavaScript</option>
+      <option value="ts">TypeScript</option>
+      <option value="jsx">JSX</option>
+      <option value="tsx">TSX</option>
+    </select>
+    
+    <select id="preset-tests">
+      <option value="">-- Select a preset test --</option>
+      <option value="react-basic">Basic React Component</option>
+      <option value="react-hook">React Hook</option>
+      <option value="langchain">LangChain/LangGraph Test</option>
+      <option value="dom-test">DOM Manipulation Test</option>
+    </select>
+  </div>
+  
+  <textarea id="code-editor" placeholder="// Enter your code here to test..."></textarea>
+  
+  <div>
+    <button id="run-code">Run Code</button>
+    <button id="clear-output">Clear Output</button>
+  </div>
+  
+  <div id="output-container"></div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const codeEditor = document.getElementById('code-editor');
+      const runButton = document.getElementById('run-code');
+      const clearButton = document.getElementById('clear-output');
+      const outputContainer = document.getElementById('output-container');
+      const moduleTypeSelect = document.getElementById('module-type');
+      const presetTests = document.getElementById('preset-tests');
+      
+      // Preset code examples
+      const presets = {
+        'react-basic': `// Basic React component test
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+// Simple component
+function TestComponent() {
+  return <div>Hello from React!</div>;
+}
+
+// Render to DOM
+const root = document.createElement('div');
+document.body.appendChild(root);
+ReactDOM.render(<TestComponent />, root);
+
+// Should display "Hello from React!" in the document
+console.log('Component rendered successfully');`,
+        
+        'react-hook': `// React Hook test
+import { useState, useEffect } from 'react';
+
+// Mock hook usage
+function useTestHook() {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    console.log('Effect ran with count:', count);
+    // Clean up
+    return () => console.log('Cleaning up effect');
+  }, [count]);
+  
+  return {
+    count,
+    increment: () => setCount(count + 1)
+  };
+}
+
+// Mock component using the hook
+function TestComponent() {
+  const { count, increment } = useTestHook();
+  
+  // This would normally render, but we're just testing the hook
+  console.log('Component rendered with count:', count);
+  
+  // Simulate a click
+  increment();
+  
+  return null;
+}
+
+// Test the component (which tests the hook)
+const component = TestComponent();
+console.log('Hook test complete');`,
+        
+        'langchain': `// LangChain/LangGraph test
+import { StateGraph } from '@langchain/langgraph';
+
+// Create a simple state object
+const state = {
+  messages: [],
+  count: 0
+};
+
+// Try to create a basic StateGraph
+try {
+  const graph = new StateGraph({
+    channels: {
+      messages: {
+        value: (s) => s.messages,
+        default: () => []
+      },
+      count: {
+        value: (s) => s.count,
+        default: () => 0
+      }
+    }
+  });
+  
+  console.log('StateGraph created successfully');
+  
+  // Add a node
+  graph.addNode('test', (s) => {
+    console.log('Node executed with state:', s);
+    return {
+      messages: [...s.messages, 'New message'],
+      count: s.count + 1
+    };
+  });
+  
+  console.log('Node added successfully');
+  
+  // Compile the graph
+  const executor = graph.compile();
+  console.log('Graph compiled successfully');
+  
+  // Run the graph
+  const result = await executor.invoke(state);
+  console.log('Graph execution result:', result);
+} catch (error) {
+  console.error('LangGraph test failed:', error);
+  throw error;
+}`,
+        
+        'dom-test': `// DOM Manipulation Test
+// Create elements
+const container = document.createElement('div');
+container.id = 'test-container';
+container.style.padding = '10px';
+container.style.border = '1px solid #ccc';
+container.style.marginTop = '10px';
+
+// Add heading
+const heading = document.createElement('h3');
+heading.textContent = 'DOM Test Result';
+container.appendChild(heading);
+
+// Add some content
+const content = document.createElement('p');
+content.textContent = 'If you can see this, the DOM manipulation test is working!';
+container.appendChild(content);
+
+// Add the container to the document
+document.body.appendChild(container);
+
+// Test event listeners
+const button = document.createElement('button');
+button.textContent = 'Click me';
+button.style.padding = '5px 10px';
+button.style.backgroundColor = '#4CAF50';
+button.style.color = 'white';
+button.style.border = 'none';
+button.style.borderRadius = '4px';
+
+// Add event listener
+button.addEventListener('click', () => {
+  content.textContent = 'Button clicked! Event listeners are working.';
+});
+
+container.appendChild(button);
+console.log('DOM test completed successfully');`
+      };
+      
+      // Set up preset selection
+      presetTests.addEventListener('change', function() {
+        const selected = this.value;
+        if (selected && presets[selected]) {
+          codeEditor.value = presets[selected];
+          
+          // Set the appropriate module type
+          if (selected === 'react-basic' || selected === 'react-hook') {
+            moduleTypeSelect.value = 'tsx';
+          } else if (selected === 'langchain') {
+            moduleTypeSelect.value = 'ts';
+          } else {
+            moduleTypeSelect.value = 'js';
+          }
+        }
+      });
+      
+      // Run code button
+      runButton.addEventListener('click', function() {
+        const code = codeEditor.value;
+        if (!code.trim()) {
+          appendOutput('Please enter some code to run.', true);
+          return;
+        }
+        
+        runCode(code);
+      });
+      
+      // Clear output button
+      clearButton.addEventListener('click', function() {
+        outputContainer.innerHTML = '';
+        // Also clear any test containers
+        const testContainer = document.getElementById('test-container');
+        if (testContainer) {
+          testContainer.remove();
+        }
+      });
+      
+      // Run the code
+      function runCode(code) {
+        // Clear previous output
+        outputContainer.innerHTML = '';
+        
+        // Store original console methods
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleInfo = console.info;
+        
+        // Capture console output
+        const logs = [];
+        
+        console.log = function() {
+          logs.push(['log', Array.from(arguments).join(' ')]);
+          originalConsoleLog.apply(console, arguments);
+        };
+        
+        console.error = function() {
+          logs.push(['error', Array.from(arguments).join(' ')]);
+          originalConsoleError.apply(console, arguments);
+        };
+        
+        console.warn = function() {
+          logs.push(['warn', Array.from(arguments).join(' ')]);
+          originalConsoleWarn.apply(console, arguments);
+        };
+        
+        console.info = function() {
+          logs.push(['info', Array.from(arguments).join(' ')]);
+          originalConsoleInfo.apply(console, arguments);
+        };
+        
+        try {
+          // For real module testing we would need a proper transpiler,
+          // but for demonstration purposes we'll just use eval
+          // In a real implementation, you'd want to use Babel or similar
+          const moduleType = moduleTypeSelect.value;
+          
+          if (moduleType === 'js') {
+            // Basic JS execution
+            // Create a module script
+            const blob = new Blob([`
+              // Module wrapper
+              (async function() { 
+                ${code} 
+              })();
+            `], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = url;
+            script.onload = () => URL.revokeObjectURL(url);
+            script.onerror = (e) => appendOutput(`Script error: ${e.message}`, true);
+            document.head.appendChild(script);
+          } else {
+            // For other types, we'd need transpilation
+            // This is just a placeholder
+            appendOutput(`Running ${moduleType.toUpperCase()} code (note: full transpilation not available in this demo)`, false);
+            // Create a module script
+            const blob = new Blob([`
+              // Module wrapper
+              (async function() { 
+                ${code} 
+              })();
+            `], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = url;
+            script.onload = () => URL.revokeObjectURL(url);
+            script.onerror = (e) => appendOutput(`Script error: ${e.message}`, true);
+            document.head.appendChild(script);
+          }
+          
+          // Output any console logs
+          logs.forEach(([type, message]) => {
+            const isError = type === 'error';
+            appendOutput(`[${type.toUpperCase()}] ${message}`, isError);
+          });
+          
+        } catch (error) {
+          appendOutput(`Error: ${error.message}\n\nStack: ${error.stack}`, true);
+        } finally {
+          // Restore original console methods
+          console.log = originalConsoleLog;
+          console.error = originalConsoleError;
+          console.warn = originalConsoleWarn;
+          console.info = originalConsoleInfo;
+        }
+      }
+      
+      // Append to output container
+      function appendOutput(message, isError) {
+        const outputDiv = document.createElement('div');
+        outputDiv.className = isError ? 'error' : 'output';
+        outputDiv.textContent = message;
+        outputContainer.appendChild(outputDiv);
+      }
+    });
+  </script>
+</body>
+</html>

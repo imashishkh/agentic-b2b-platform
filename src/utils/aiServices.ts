@@ -10,7 +10,7 @@ export const askClaude = async (prompt: string): Promise<string> => {
   console.log("Asking Claude:", prompt);
   
   // Get the API key from localStorage if available
-  const apiKey = localStorage.getItem('claudeApiKey');
+  const apiKey = localStorage.getItem('claude_api_key');
   
   // If we have an API key, use it to make a real API call
   if (apiKey) {
@@ -246,7 +246,7 @@ Return ONLY the schema definition code without explanations or markdown formatti
   }
 };
 
-// Simulate Claude AI responses based on the prompt
+// Only used as a fallback when API calls fail
 const simulateClaudeResponse = (prompt: string): string => {
   // Check if the prompt is asking to analyze a markdown file
   if (prompt.includes("markdown file with e-commerce project requirements")) {

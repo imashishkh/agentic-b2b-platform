@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bookmark, ExternalLink, Code, FileCode, LayoutTemplate, CheckCircle, CircleDot, Lightning, Zap, Download } from "lucide-react";
+import { Bookmark, ExternalLink, Code, FileCode, LayoutTemplate, CheckCircle, CircleDot, Zap, Download } from "lucide-react";
 import { trackResourceUsage } from "@/utils/knowledgeRelevance";
 import useEcommerceKnowledge from "@/hooks/useEcommerceKnowledge";
 
@@ -20,7 +20,7 @@ const developmentStages = [
   { id: "development", name: "Development", icon: <Code className="h-4 w-4" /> },
   { id: "testing", name: "Testing", icon: <CheckCircle className="h-4 w-4" /> },
   { id: "deployment", name: "Deployment", icon: <CircleDot className="h-4 w-4" /> },
-  { id: "maintenance", name: "Maintenance", icon: <Lightning className="h-4 w-4" /> }
+  { id: "maintenance", name: "Maintenance", icon: <Zap className="h-4 w-4" /> }
 ];
 
 export const StagedResourceRecommendations: React.FC<StagedResourceRecommendationsProps> = ({
@@ -114,7 +114,7 @@ export const StagedResourceRecommendations: React.FC<StagedResourceRecommendatio
     <Card className="mb-4">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center">
-          <Lightning className="h-4 w-4 mr-2" />
+          <Zap className="h-4 w-4 mr-2" />
           Development Stage Recommendations
         </CardTitle>
         <CardDescription className="text-xs">

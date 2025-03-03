@@ -127,6 +127,27 @@ export function Sidebar() {
           variant="ghost"
           size="icon"
           className="group-hover:w-full group-hover:justify-start h-9 group-hover:px-2 group-hover:py-2"
+          onClick={() => {
+            const dialogRoot = document.createElement('div');
+            document.body.appendChild(dialogRoot);
+            
+            // Create a new react root and render the ApiSettingsDialog
+            import('react-dom/client').then(({ createRoot }) => {
+              const root = createRoot(dialogRoot);
+              import('@/components/ApiSettingsDialog').then(({ ApiSettingsDialog }) => {
+                root.render(
+                  <ApiSettingsDialog 
+                    onOpenChange={(open) => {
+                      if (!open) {
+                        root.unmount();
+                        document.body.removeChild(dialogRoot);
+                      }
+                    }} 
+                  />
+                );
+              });
+            });
+          }}
         >
           <Settings className="h-5 w-5 group-hover:mr-2" />
           <span className="hidden group-hover:inline-flex">Settings</span>

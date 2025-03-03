@@ -56,13 +56,59 @@ export class ManagerAgent extends BaseAgent {
     try {
       // Sanitize input
       const sanitizedContent = this.sanitizeInput(markdownContent);
+
+      // Check if we have a Claude API key
+      const claudeApiKey = localStorage.getItem('claude_api_key');
       
-      // This would be an actual API call in production
-      const response = await this.makeApiRequestWithRetry(
-        "https://api.example.com/process-markdown",
-        { content: sanitizedContent },
-        {
-          fallbackResponse: `# Project Analysis
+      if (claudeApiKey) {
+        try {
+          // Create a specialized prompt for Claude to analyze the requirements
+          const prompt = `You are a software development manager specializing in e-commerce projects. 
+          Please analyze the following project requirements document and provide a structured breakdown:
+          
+          ${sanitizedContent}
+          
+          Please organize your response with these sections:
+          1. Key Features - List the main features requested in the requirements
+          2. Technical Requirements - Identify any technical specifications or constraints
+          3. Project Phases - Suggest a logical breakdown of the project into phases
+          4. Potential Challenges - Identify any potential challenges or risks
+          
+          Format your response with markdown headers and bullet points for clarity.`;
+          
+          // Call Claude API
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': claudeApiKey,
+              'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+              model: "claude-3-sonnet-20240229",
+              max_tokens: 4000,
+              messages: [
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ]
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Claude API error: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          return data.content[0].text;
+        } catch (apiError) {
+          console.error("Error calling Claude API:", apiError);
+          throw apiError;
+        }
+      } else {
+        // Fallback if no API key is available
+        return `# Project Analysis
 
 I've analyzed your requirements document and identified the following components:
 
@@ -79,9 +125,8 @@ I've analyzed your requirements document and identified the following components
 - Database schema for users, products, and orders
 - Security implementation
 
-Would you like me to elaborate on any specific aspect of the requirements?`
-        }
-      );
+Would you like me to elaborate on any specific aspect of the requirements?`;
+      }
       
       return response;
     } catch (error) {

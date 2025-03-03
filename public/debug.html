@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic Chat Debug Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { color: #2196F3; }
+    h2 { 
+      color: #555;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      margin-top: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .error-box {
+      background-color: #ffebee;
+      border-left: 4px solid #f44336;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .warning-box {
+      background-color: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .info-box {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .code {
+      font-family: 'Courier New', monospace;
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    button.secondary {
+      background: #FF9800;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    #diagnostics {
+      margin-top: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Agentic Chat Debug Tool</h1>
+    <p>This page helps diagnose issues with the Agentic Chat application.</p>
+    
+    <div class="info-box">
+      <strong>Instructions:</strong> Use this page to diagnose issues if the main application fails to load. The buttons below will run various checks on your environment and application.
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <button id="run-diagnostics">Run Diagnostics</button>
+      <button id="check-dependencies" class="secondary">Check Dependencies</button>
+      <button id="clear-cache">Clear Cache & Storage</button>
+      <button id="go-to-app">Go To Application</button>
+    </div>
+  </div>
+  
+  <div id="diagnostics" class="hidden">
+    <h2>System Diagnostics</h2>
+    
+    <div class="grid">
+      <div class="card">
+        <h3>Browser Information</h3>
+        <div id="browser-info" class="code"></div>
+      </div>
+      
+      <div class="card">
+        <h3>Local Storage Status</h3>
+        <div id="storage-info" class="code"></div>
+      </div>
+    </div>
+    
+    <h2>Application Status</h2>
+    
+    <div class="card">
+      <h3>Script Loading</h3>
+      <div id="script-status" class="code">Checking scripts...</div>
+    </div>
+    
+    <div class="card">
+      <h3>Main Entry Points</h3>
+      <div id="entry-points" class="code">Checking entry points...</div>
+    </div>
+    
+    <h2>Troubleshooting Steps</h2>
+    
+    <div class="card">
+      <h3>Common Solutions</h3>
+      <ol>
+        <li>Clear your browser cache and reload the application</li>
+        <li>Try a different browser (Chrome, Firefox, Edge)</li>
+        <li>Check browser extensions that might be blocking scripts</li>
+        <li>Ensure your network connection is stable</li>
+        <li>Check for JavaScript console errors</li>
+      </ol>
+      
+      <div class="warning-box">
+        <strong>Note:</strong> If you're using strict privacy settings or extensions that block scripts, this application may not function correctly.
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Document ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up button handlers
+      document.getElementById('run-diagnostics').addEventListener('click', runDiagnostics);
+      document.getElementById('check-dependencies').addEventListener('click', checkDependencies);
+      document.getElementById('clear-cache').addEventListener('click', clearCacheAndStorage);
+      document.getElementById('go-to-app').addEventListener('click', () => window.location.href = '/');
+      
+      // Initialize browser info 
+      document.getElementById('browser-info').textContent = getBrowserInfo();
+    });
+    
+    // Get browser information
+    function getBrowserInfo() {
+      return `Browser: ${navigator.userAgent}
+Platform: ${navigator.platform}
+Cookies Enabled: ${navigator.cookieEnabled}
+Language: ${navigator.language}
+Online: ${navigator.onLine}`;
+    }
+    
+    // Run system diagnostics
+    function runDiagnostics() {
+      // Show diagnostics section
+      document.getElementById('diagnostics').classList.remove('hidden');
+      
+      // Check storage
+      checkStorage();
+      
+      // Check script loading
+      checkScripts();
+      
+      // Check application entry points
+      checkEntryPoints();
+    }
+    
+    // Check local storage and session storage
+    function checkStorage() {
+      let storageInfo = '';
+      
+      // Check if localStorage is available
+      try {
+        const testKey = 'test_storage_' + Date.now();
+        localStorage.setItem(testKey, 'test');
+        localStorage.removeItem(testKey);
+        storageInfo += 'LocalStorage: Available\n';
+        storageInfo += `LocalStorage Items: ${localStorage.length}\n`;
+      } catch (e) {
+        storageInfo += `LocalStorage: Not available (${e.message})\n`;
+      }
+      
+      // Check if sessionStorage is available
+      try {
+        const testKey = 'test_session_' + Date.now();
+        sessionStorage.setItem(testKey, 'test');
+        sessionStorage.removeItem(testKey);
+        storageInfo += 'SessionStorage: Available\n';
+        storageInfo += `SessionStorage Items: ${sessionStorage.length}\n`;
+      } catch (e) {
+        storageInfo += `SessionStorage: Not available (${e.message})\n`;
+      }
+      
+      // Check IndexedDB availability
+      if ('indexedDB' in window) {
+        storageInfo += 'IndexedDB: Available\n';
+      } else {
+        storageInfo += 'IndexedDB: Not available\n';
+      }
+      
+      // Check Cache API availability
+      if ('caches' in window) {
+        storageInfo += 'Cache API: Available\n';
+      } else {
+        storageInfo += 'Cache API: Not available\n';
+      }
+      
+      document.getElementById('storage-info').textContent = storageInfo;
+    }
+    
+    // Check script loading
+    function checkScripts() {
+      const scriptStatus = document.getElementById('script-status');
+      scriptStatus.textContent = 'Checking scripts...\n';
+      
+      // List of critical scripts to check
+      const scriptsToCheck = [
+        '/src/main.tsx',
+        '/node_modules/.vite/deps/react.js',
+        '/node_modules/.vite/deps/react-dom_client.js'
+      ];
+      
+      let scriptsChecked = 0;
+      
+      scriptsToCheck.forEach(scriptSrc => {
+        fetch(scriptSrc)
+          .then(response => {
+            if (response.ok) {
+              scriptStatus.textContent += `✅ ${scriptSrc}: Loaded successfully\n`;
+            } else {
+              scriptStatus.textContent += `❌ ${scriptSrc}: Failed to load (${response.status})\n`;
+            }
+          })
+          .catch(error => {
+            scriptStatus.textContent += `❌ ${scriptSrc}: Error (${error.message})\n`;
+          })
+          .finally(() => {
+            scriptsChecked++;
+            if (scriptsChecked === scriptsToCheck.length) {
+              // All scripts checked
+              scriptStatus.textContent += '\nScript check completed.\n';
+            }
+          });
+      });
+    }
+    
+    // Check application entry points
+    function checkEntryPoints() {
+      const entryPoints = document.getElementById('entry-points');
+      entryPoints.textContent = 'Checking entry points...\n';
+      
+      // Check index.html
+      fetch('/index.html')
+        .then(response => {
+          if (response.ok) {
+            entryPoints.textContent += '✅ index.html: Available\n';
+          } else {
+            entryPoints.textContent += `❌ index.html: Failed (${response.status})\n`;
+          }
+        })
+        .catch(error => {
+          entryPoints.textContent += `❌ index.html: Error (${error.message})\n`;
+        });
+      
+      // Check dev server status
+      fetch('/')
+        .then(response => {
+          if (response.ok) {
+            entryPoints.textContent += '✅ Development server: Running\n';
+          } else {
+            entryPoints.textContent += `❌ Development server: Issues detected (${response.status})\n`;
+          }
+        })
+        .catch(error => {
+          entryPoints.textContent += `❌ Development server: Error (${error.message})\n`;
+        });
+    }
+    
+    // Check dependencies
+    function checkDependencies() {
+      // Create a new window to show package.json without navigating away
+      const dependencyWindow = window.open('', '_blank', 'width=800,height=600');
+      
+      fetch('/package.json')
+        .then(response => response.json())
+        .then(data => {
+          let html = '<html><head><title>Dependencies</title>';
+          html += '<style>body { font-family: sans-serif; padding: 20px; } ';
+          html += 'h1 { color: #2196F3; } ';
+          html += 'h2 { color: #555; border-bottom: 1px solid #eee; padding-bottom: 8px; } ';
+          html += 'table { border-collapse: collapse; width: 100%; } ';
+          html += 'th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; } ';
+          html += 'th { background-color: #f5f5f5; color: #333; } ';
+          html += '</style></head><body>';
+          html += '<h1>Package Dependencies</h1>';
+          
+          // Dependencies
+          html += '<h2>Dependencies</h2>';
+          html += '<table><tr><th>Package</th><th>Version</th></tr>';
+          
+          for (const [name, version] of Object.entries(data.dependencies || {})) {
+            html += `<tr><td>${name}</td><td>${version}</td></tr>`;
+          }
+          
+          html += '</table>';
+          
+          // Dev Dependencies
+          html += '<h2>Dev Dependencies</h2>';
+          html += '<table><tr><th>Package</th><th>Version</th></tr>';
+          
+          for (const [name, version] of Object.entries(data.devDependencies || {})) {
+            html += `<tr><td>${name}</td><td>${version}</td></tr>`;
+          }
+          
+          html += '</table>';
+          html += '</body></html>';
+          
+          dependencyWindow.document.write(html);
+        })
+        .catch(error => {
+          if (dependencyWindow) {
+            dependencyWindow.document.write(`<html><body><h1>Error</h1><p>Failed to load package.json: ${error.message}</p></body></html>`);
+          }
+        });
+    }
+    
+    // Clear cache and storage
+    function clearCacheAndStorage() {
+      const confirmClear = confirm('This will clear all application data. Continue?');
+      
+      if (confirmClear) {
+        // Clear localStorage
+        try {
+          localStorage.clear();
+          console.log('LocalStorage cleared');
+        } catch (e) {
+          console.error('Failed to clear localStorage:', e);
+        }
+        
+        // Clear sessionStorage
+        try {
+          sessionStorage.clear();
+          console.log('SessionStorage cleared');
+        } catch (e) {
+          console.error('Failed to clear sessionStorage:', e);
+        }
+        
+        // Clear Cache API if available
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            return Promise.all(
+              cacheNames.map(cacheName => {
+                return caches.delete(cacheName);
+              })
+            );
+          }).then(() => {
+            console.log('Caches cleared');
+          }).catch(error => {
+            console.error('Failed to clear caches:', error);
+          });
+        }
+        
+        alert('Storage cleared successfully. Click "Go To Application" to reload the app.');
+      }
+    }
+  </script>
+</body>
+</html>

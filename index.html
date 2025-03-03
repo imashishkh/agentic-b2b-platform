@@ -11,27 +11,181 @@
 
   <body>
     <div id="root"></div>
-    <!-- Error display div that will show if React fails to load -->
-    <div id="error-display" style="display:none; margin: 20px; padding: 20px; border: 1px solid #f44336; border-radius: 4px;">
-      <h2 style="color: #f44336;">Failed to load application</h2>
-      <p>There was an error loading the application. Please check the console for details.</p>
-      <div id="error-details" style="background: #f5f5f5; padding: 10px; margin-top: 10px; font-family: monospace; white-space: pre-wrap;"></div>
+    <!-- Enhanced error display for better debugging -->
+    <div id="error-display" style="display:none; margin: 20px; padding: 20px; border: 1px solid #f44336; border-radius: 4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+      <h2 style="color: #f44336; margin-top: 0;">Application Error</h2>
+      <p id="error-message">An error occurred while loading the application.</p>
+      
+      <div style="margin: 15px 0;">
+        <h3 style="font-size: 16px; margin: 5px 0;">Error Details</h3>
+        <div id="error-details" style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; white-space: pre-wrap; overflow-x: auto; max-height: 300px; overflow-y: auto;"></div>
+      </div>
+      
+      <div style="margin: 15px 0;">
+        <h3 style="font-size: 16px; margin: 5px 0;">Error Location</h3>
+        <div id="error-location" style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace;"></div>
+      </div>
+      
+      <div style="margin: 15px 0;">
+        <h3 style="font-size: 16px; margin: 5px 0;">Browser Information</h3>
+        <div id="browser-info" style="background: #f5f5f5; padding: 15px; border-radius: 4px;"></div>
+      </div>
+      
+      <div style="margin: 15px 0;">
+        <h3 style="font-size: 16px; margin: 5px 0;">Console Logs</h3>
+        <div id="console-logs" style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; white-space: pre-wrap; overflow-x: auto; max-height: 200px; overflow-y: auto;"></div>
+      </div>
+      
+      <div>
+        <button id="reload-btn" style="background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">Reload Application</button>
+        <button id="clear-cache-btn" style="background: #FF9800; color: white; border: none; padding: 10px 15px; border-radius: 4px; margin-left: 10px; cursor: pointer;">Clear Cache & Reload</button>
+      </div>
     </div>
+    
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module">
-      // Show error display after 3 seconds if the app hasn't loaded
+    
+    <!-- Error handler script -->
+    <script>
+      // Store original console methods
+      const originalConsoleError = console.error;
+      const originalConsoleWarn = console.warn;
+      const originalConsoleLog = console.log;
+      
+      // Logs collection
+      const logs = {
+        errors: [],
+        warnings: [],
+        logs: []
+      };
+      
+      // Override console methods to capture logs
+      console.error = function() {
+        logs.errors.push(Array.from(arguments).join(' '));
+        originalConsoleError.apply(console, arguments);
+      };
+      
+      console.warn = function() {
+        logs.warnings.push(Array.from(arguments).join(' '));
+        originalConsoleWarn.apply(console, arguments);
+      };
+      
+      console.log = function() {
+        logs.logs.push(Array.from(arguments).join(' '));
+        originalConsoleLog.apply(console, arguments);
+      };
+      
+      // Global error handler
+      window.addEventListener('error', function(event) {
+        showErrorDisplay(event);
+      });
+      
+      // Unhandled promise rejection handler
+      window.addEventListener('unhandledrejection', function(event) {
+        const error = event.reason;
+        showErrorDisplay({
+          message: error.message || 'Unhandled Promise Rejection',
+          filename: error.fileName || error.sourceURL || '',
+          lineno: error.lineNumber || error.line || 0,
+          colno: error.columnNumber || error.column || 0,
+          error: error
+        });
+      });
+      
+      function showErrorDisplay(event) {
+        const errorDisplay = document.getElementById('error-display');
+        const errorMessage = document.getElementById('error-message');
+        const errorDetails = document.getElementById('error-details');
+        const errorLocation = document.getElementById('error-location');
+        const browserInfo = document.getElementById('browser-info');
+        const consoleLogs = document.getElementById('console-logs');
+        
+        if (errorDisplay && errorMessage && errorDetails && errorLocation && browserInfo && consoleLogs) {
+          // Show error container
+          errorDisplay.style.display = 'block';
+          
+          // Set error message
+          if (event.message) {
+            errorMessage.textContent = event.message;
+          }
+          
+          // Set error details
+          if (event.error) {
+            errorDetails.textContent = event.error.stack || JSON.stringify(event.error, null, 2);
+          } else {
+            errorDetails.textContent = 'No stack trace available';
+          }
+          
+          // Set error location
+          let locationText = 'Unknown location';
+          if (event.filename) {
+            const file = event.filename.split('/').pop();
+            locationText = `File: ${file}\nLine: ${event.lineno || 'unknown'}\nColumn: ${event.colno || 'unknown'}`;
+          }
+          errorLocation.textContent = locationText;
+          
+          // Set browser info
+          browserInfo.textContent = `Browser: ${navigator.userAgent}\nPlatform: ${navigator.platform}`;
+          
+          // Set console logs
+          const allLogs = [
+            ...logs.errors.map(log => `ERROR: ${log}`),
+            ...logs.warnings.map(log => `WARNING: ${log}`),
+            ...logs.logs.slice(-20).map(log => `LOG: ${log}`) // Last 20 logs
+          ].join('\n\n');
+          
+          consoleLogs.textContent = allLogs || 'No console logs captured';
+        }
+      }
+      
+      // Check application load after timeout
       setTimeout(() => {
         const root = document.getElementById('root');
-        const errorDisplay = document.getElementById('error-display');
-        
-        // If the root is empty, show the error display
         if (root && root.childNodes.length === 0) {
-          errorDisplay.style.display = 'block';
-          console.error('Application failed to load within timeout period');
+          showErrorDisplay({
+            message: 'Application failed to load within timeout period',
+            error: new Error('Application failed to load within timeout period. This could be due to a JavaScript error or a slow network connection.')
+          });
         }
-      }, 3000);
+      }, 5000);
+      
+      // Document ready event
+      document.addEventListener('DOMContentLoaded', function() {
+        // Setup reload button
+        const reloadBtn = document.getElementById('reload-btn');
+        if (reloadBtn) {
+          reloadBtn.addEventListener('click', function() {
+            window.location.reload();
+          });
+        }
+        
+        // Setup clear cache button
+        const clearCacheBtn = document.getElementById('clear-cache-btn');
+        if (clearCacheBtn) {
+          clearCacheBtn.addEventListener('click', function() {
+            // Clear application cache if supported
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                names.forEach(function(name) {
+                  caches.delete(name);
+                });
+              });
+            }
+            
+            // Clear local storage
+            localStorage.clear();
+            
+            // Clear session storage
+            sessionStorage.clear();
+            
+            // Reload the page
+            window.location.reload(true);
+          });
+        }
+      });
     </script>
+    
+    <!-- Application script -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

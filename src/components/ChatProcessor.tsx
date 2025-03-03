@@ -406,7 +406,9 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     try {
       clearSuggestions();
       
-      const isSpecificAction = await handleSpecificActions(message);
+      // Skip hardcoded responses when a real Claude API key is present
+      const apiKey = localStorage.getItem('claude_api_key');
+      const isSpecificAction = !apiKey ? await handleSpecificActions(message) : false;
       if (isSpecificAction) {
         setIsProcessing(false);
         return;
