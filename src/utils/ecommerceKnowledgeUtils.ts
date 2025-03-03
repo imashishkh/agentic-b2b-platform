@@ -553,7 +553,7 @@ export function generateApiDocTemplate(apiType: string): string {
   let content = '';
   
   if (apiTypeLower.includes('payment')) {
-    content = `## Overview
+    content = String.raw`## Overview
 
 This document outlines how to integrate with payment gateways for processing transactions in your e-commerce application.
 
@@ -713,7 +713,7 @@ export async function handleWebhook(req, res) {
 - Verify error handling and user feedback
 `;
   } else if (apiTypeLower.includes('product') || apiTypeLower.includes('catalog')) {
-    content = `## Overview
+    content = String.raw`## Overview
 
 This document outlines how to integrate with product catalog APIs for managing and displaying products in your e-commerce application.
 
@@ -880,7 +880,7 @@ export function ProductListing() {
 - Gracefully degrade UI when API is unavailable
 `;
   } else if (apiTypeLower.includes('shipping') || apiTypeLower.includes('fulfillment')) {
-    content = `## Overview
+    content = String.raw`## Overview
 
 This document outlines how to integrate with shipping and fulfillment APIs for calculating shipping rates, tracking packages, and managing fulfillment in your e-commerce application.
 
@@ -1164,7 +1164,7 @@ export function ShippingOptions({
 `;
   } else {
     // Default generic API docs
-    content = `## Overview
+    content = String.raw`## Overview
 
 This document outlines how to integrate with e-commerce APIs in your application.
 
