@@ -18,7 +18,7 @@ import { initialMessages, initialState } from "./initialState";
  * Create the context with undefined as initial value
  * This forces consumers to use the useChat hook instead of directly accessing the context
  */
-const ChatContext = createContext<ChatContextType | undefined>(undefined);
+export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 /**
  * ChatProvider component that wraps the application to provide chat state

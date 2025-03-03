@@ -3,9 +3,11 @@ import { RepositoryManager } from "./RepositoryManager";
 import { CodeGenerator } from "./CodeGenerator";
 import { AgentIntegration } from "./AgentIntegration";
 import { TemplateLibrary } from "./TemplateLibrary";
+import { AgentSwarmChat } from "@/components/swarm";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GitHubRepo } from "@/services/GitHubService";
+import { BrainCircuit } from "lucide-react";
 
 export function EcommerceWorkspace() {
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
@@ -36,6 +38,10 @@ export function EcommerceWorkspace() {
           <TabsTrigger value="repositories">Repositories</TabsTrigger>
           <TabsTrigger value="code-generator">Code Generator</TabsTrigger>
           <TabsTrigger value="ai-agent">AI Agent</TabsTrigger>
+          <TabsTrigger value="agent-swarm" className="flex items-center">
+            <BrainCircuit className="mr-1 h-4 w-4" />
+            Agent Swarm
+          </TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
         
@@ -72,6 +78,24 @@ export function EcommerceWorkspace() {
         
         <TabsContent value="ai-agent">
           <AgentIntegration />
+        </TabsContent>
+        
+        <TabsContent value="agent-swarm">
+          <div className="grid gap-6">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="font-medium mb-2 flex items-center">
+                <BrainCircuit className="mr-2 h-5 w-5" />
+                B2B E-commerce Agent Swarm
+              </h3>
+              <p className="text-sm text-gray-500">
+                Our new Agent Swarm technology uses LangGraph to coordinate multiple specialized AI agents 
+                that work together on complex B2B e-commerce development tasks. This collaborative approach 
+                enables more sophisticated solutions than single-agent systems.
+              </p>
+            </div>
+            
+            <AgentSwarmChat />
+          </div>
         </TabsContent>
         
         <TabsContent value="templates">

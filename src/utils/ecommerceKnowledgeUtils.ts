@@ -686,13 +686,13 @@ export async function handleWebhook(req, res) {
         await updateOrderStatus(failedPayment.id, 'failed');
         break;
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        console.log("Unhandled event type: " + event.type);
     }
     
     res.json({ received: true });
   } catch (err) {
     console.error('Webhook error:', err);
-    res.status(400).send(`Webhook Error: ${err.message}`);
+    res.status(400).send(\`Webhook Error: \${err.message}\`);
   }
 }
 \`\`\`
@@ -1318,7 +1318,7 @@ export async function handleWebhook(req, res) {
       break;
     // Handle other event types
     default:
-      console.log(\`Unhandled event type: \${event.type}\`);
+      console.log("Unhandled event type: " + event.type);
   }
   
   // Acknowledge receipt of the webhook
