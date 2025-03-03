@@ -4,13 +4,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useAgentSwarm } from '@/hooks/useAgentSwarm';
+// Temporarily comment out import to prevent white screen
+// import { useAgentSwarm } from '@/hooks/useAgentSwarm';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageCircle, Code, Lightbulb, FileText, UserCircle, Bot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SwarmMessage, SwarmArtifact } from '@/agents/swarm/types';
+
+// Temporarily define interfaces here instead of importing
+interface SwarmMessage {
+  id: string;
+  from: string;
+  to: string | null;
+  content: string;
+  type: string;
+  timestamp: number;
+}
+
+interface SwarmArtifact {
+  id: string;
+  creator: string;
+  name: string;
+  type: string;
+  content: string;
+  timestamp: number;
+}
 
 /**
  * Component for displaying and interacting with the agent swarm
@@ -20,16 +39,42 @@ export function AgentSwarmChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('messages');
   
-  // Initialize the agent swarm
-  const { 
-    processing, 
-    messages, 
-    artifacts, 
-    sendMessage,
-    error
-  } = useAgentSwarm({
-    swarmType: 'ecommerce'
-  });
+  // Mock implementation of useAgentSwarm
+  const [processing, setProcessing] = useState(false);
+  const [messages, setMessages] = useState<SwarmMessage[]>([]);
+  const [artifacts, setArtifacts] = useState<SwarmArtifact[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Mock sendMessage function
+  const sendMessage = async (message: string) => {
+    setProcessing(true);
+    
+    // Simulate processing delay
+    setTimeout(() => {
+      // Create a user message
+      const userMessage: SwarmMessage = {
+        id: Math.random().toString(),
+        from: 'user',
+        to: null,
+        content: message,
+        type: 'request',
+        timestamp: Date.now()
+      };
+      
+      // Create a response from the swarm
+      const responseMessage: SwarmMessage = {
+        id: Math.random().toString(),
+        from: 'manager',
+        to: null,
+        content: `This is a placeholder response because the LangGraph integration is currently being configured. Your message was: "${message}"`,
+        type: 'response',
+        timestamp: Date.now() + 1000
+      };
+      
+      setMessages(prevMessages => [...prevMessages, userMessage, responseMessage]);
+      setProcessing(false);
+    }, 1000);
+  };
 
   // Scroll to bottom when messages change
   useEffect(() => {
