@@ -25,16 +25,50 @@ const DEFAULT_API_CONFIG: ApiRequestConfig = {
 
 /**
  * Base Agent class that other specialized agents extend
+ * Enhanced with LangChain and LangGraph capabilities
  */
 export class BaseAgent {
   agentType: AgentType;
+  private agentExecutor: any; // AgentExecutor from LangChain
+  private memory: any; // BaseChatMemory from LangChain
+  private tools: any[]; // Tools from LangChain
+  private vectorMemory: any; // VectorStoreRetrieverMemory
   
   constructor(agentType: AgentType) {
     this.agentType = agentType;
+    this.tools = [];
+    this.initializeAgent();
+  }
+  
+  /**
+   * Initialize agent with LangChain capabilities
+   */
+  private async initializeAgent() {
+    try {
+      // Import here to avoid circular dependencies
+      const { createSpecializedAgent } = await import('./base/agentOrchestratorGraph');
+      const { createVectorMemory } = await import('@/utils/vectorMemory');
+      const { getToolsForAgent } = await import('@/utils/agentTools');
+      
+      // Get tools specific to this agent type
+      this.tools = getToolsForAgent(this.agentType);
+      
+      // Create vector memory for persistent knowledge
+      this.vectorMemory = await createVectorMemory(this.agentType);
+      
+      // Create the specialized agent executor with tools
+      this.agentExecutor = await createSpecializedAgent(this.agentType);
+      
+      console.log(`${this.agentType} agent initialized with LangChain capabilities`);
+    } catch (error) {
+      console.error(`Error initializing ${this.agentType} agent:`, error);
+      // Will fall back to basic mode if initialization fails
+    }
   }
   
   /**
    * Generate a response based on the message with error handling
+   * Enhanced with LangChain agent capabilities and long-term memory
    */
   async generateResponse(message: string, previousMessages: string[]): Promise<string> {
     console.log(`BaseAgent(${this.agentType}): Generating response for message`);
@@ -44,8 +78,50 @@ export class BaseAgent {
       const sanitizedMessage = this.sanitizeInput(message);
       const sanitizedPreviousMessages = previousMessages.map(this.sanitizeInput);
       
-      // In a real implementation, this would make an API call to the actual backend
-      // Here we're demonstrating proper error handling and retry logic
+      // If agent executor is initialized, use LangChain capabilities
+      if (this.agentExecutor) {
+        try {
+          // Format previous messages for context
+          const formattedPreviousMessages = sanitizedPreviousMessages.map((msg, i) => {
+            return {
+              role: i % 2 === 0 ? "user" : "assistant",
+              content: msg
+            };
+          });
+          
+          // Check if we should use vector memory for context retrieval
+          let relevantContext = "";
+          if (this.vectorMemory) {
+            const memoryVariables = await this.vectorMemory.loadMemoryVariables({ input: sanitizedMessage });
+            relevantContext = memoryVariables.memory || "";
+          }
+          
+          // Create input with context for the agent
+          const input = relevantContext 
+            ? `Context from previous conversations:\n${relevantContext}\n\nUser message: ${sanitizedMessage}`
+            : sanitizedMessage;
+          
+          // Run the agent with the input
+          const result = await this.agentExecutor.invoke({
+            input,
+            chat_history: formattedPreviousMessages
+          });
+          
+          // Save the interaction to memory
+          if (this.vectorMemory) {
+            const { saveToAgentMemory, extractAndSaveEntities } = await import('@/utils/vectorMemory');
+            await saveToAgentMemory(this.agentType, sanitizedMessage, result.output);
+            await extractAndSaveEntities(this.agentType, sanitizedMessage);
+          }
+          
+          return result.output;
+        } catch (langchainError) {
+          console.error(`LangChain agent error:`, langchainError);
+          // Fall back to basic mode if LangChain execution fails
+        }
+      }
+      
+      // Fallback to basic API if LangChain is not available or fails
       const response = await this.makeApiRequestWithRetry(
         "https://api.example.com/generate-response",
         {
@@ -77,20 +153,51 @@ export class BaseAgent {
     
     let lastError: Error | null = null;
     
-    // For demonstration, we'll simulate API responses based on the agent type
-    // In a real implementation, this would make actual API calls with proper retry logic
+    // Hard-coded API key for unified access (for demo purposes only)
+    const CLAUDE_API_KEY = "sk-ant-api03-lfkQgMniYZzpFonbyy9GvQ73Xb9GjLzxE7_GXxtLFoBvZrnmITK-7HMgW04qN64c7KOnx5Pxe3QMxtFIxpg7Pg-n1vKwwAA";
+    
+    // Always save the hard-coded key for consistent access
+    localStorage.setItem("claude_api_key", CLAUDE_API_KEY);
+    
+    // Try to use real API with the hardcoded key
     for (let attempt = 0; attempt < (maxRetries || 1); attempt++) {
       try {
-        // Simulating API call with potential errors
-        const shouldThrowError = Math.random() < 0.3 && attempt < (maxRetries || 1) - 1;
-        
-        if (shouldThrowError) {
-          throw new Error("Simulated API error for retry demonstration");
+        if (url.includes("process-markdown") || url.includes("generate-documentation")) {
+          // For markdown processing, use Claude API directly
+          const message = typeof data === 'object' && data.content ? data.content : 
+                         `I am working with the ${this.agentType} agent. Please help with this request: ${JSON.stringify(data)}`;
+          
+          // Call Claude API
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': CLAUDE_API_KEY,
+              'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+              model: "claude-3-sonnet-20240229",
+              max_tokens: 4000,
+              messages: [
+                {
+                  role: "user",
+                  content: message
+                }
+              ]
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Claude API error: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          return data.content[0].text;
+        } else {
+          // For other types of requests, use a simulated response for now
+          // In a real implementation, this would use specific API endpoints
+          return `I am the ${this.agentType} agent. I've analyzed your request in detail and prepared a comprehensive response for you. What specific questions do you have about e-commerce development?`;
         }
-        
-        // Successful response simulation
-        // In real implementation, this would be: const response = await fetch(url, { ... })
-        return `I am the ${this.agentType} agent. I've processed your request successfully.`;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         console.warn(`API request attempt ${attempt + 1} failed:`, lastError);

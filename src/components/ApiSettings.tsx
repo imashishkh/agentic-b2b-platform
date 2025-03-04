@@ -25,7 +25,7 @@ export function ApiSettings({ onClose }: ApiSettingsProps) {
 
   // Load keys from localStorage on component mount
   useEffect(() => {
-    const savedClaudeKey = localStorage.getItem("claudeApiKey");
+    const savedClaudeKey = localStorage.getItem("claude_api_key") || localStorage.getItem("claudeApiKey");
     const savedSearchKey = localStorage.getItem("searchApiKey");
     
     if (savedClaudeKey) setClaudeApiKey(savedClaudeKey);
@@ -35,6 +35,8 @@ export function ApiSettings({ onClose }: ApiSettingsProps) {
   const saveApiKeys = () => {
     // Save keys to localStorage
     if (claudeApiKey) {
+      localStorage.setItem("claude_api_key", claudeApiKey);
+      // Maintain backward compatibility
       localStorage.setItem("claudeApiKey", claudeApiKey);
     }
     
@@ -48,6 +50,7 @@ export function ApiSettings({ onClose }: ApiSettingsProps) {
 
   const clearApiKeys = () => {
     // Clear keys from localStorage
+    localStorage.removeItem("claude_api_key");
     localStorage.removeItem("claudeApiKey");
     localStorage.removeItem("searchApiKey");
     

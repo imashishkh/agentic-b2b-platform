@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ManagerAgent } from "@/agents/ManagerAgent";
 import { extractTasksWithDependencies, generateDependencyGraph } from "@/utils/markdownParser";
 import { KnowledgeResource, SetupWizardStep } from "@/contexts/types";
+import { EnhancedSetupWizard } from "@/components/EnhancedSetupWizard";
 
 export interface ChatProcessorProps {
   chatRef: React.MutableRefObject<any>;
@@ -62,6 +63,24 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
           
           // Set initial wizard step
           setCurrentWizardStep(SetupWizardStep.INITIAL);
+          
+          // Initialize the wizard with a welcome message showing our enhanced features
+          setTimeout(() => {
+            addMessage({
+              type: "agent",
+              content: `# Welcome to the Enhanced E-commerce Setup Wizard
+              
+I'll help you set up your e-commerce project with a streamlined process. Our enhanced wizard now includes:
+
+1. **Visual File Upload & Analysis**: See real-time parsing progress and which agent is analyzing each section
+2. **GitHub Integration**: Connect your repository with streamlined setup and project structure templates
+3. **UI Component Visualization**: Create and organize your UI components with drag-and-drop
+4. **Approval Workflow**: Review and approve project phases before implementation begins
+
+Let's get started by uploading your project requirements document.`,
+              agentType: AgentType.MANAGER,
+            });
+          }, 1000);
         }
       }, 1500);
     }
@@ -75,9 +94,28 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
       reader.onload = async (e) => {
         try {
           const content = e.target?.result as string;
+          
+          // Log debug information
           console.log("File content loaded, length:", content.length);
           console.log("File content preview:", content.substring(0, 200) + "...");
-          resolve(content);
+          
+          // Validate content
+          if (!content || content.trim() === "") {
+            console.error("File content is empty");
+            reject(new Error("File content is empty"));
+            return;
+          }
+          
+          // Handle UTF-8 BOM if present
+          const cleanContent = content.charCodeAt(0) === 0xFEFF 
+            ? content.slice(1) 
+            : content;
+            
+          // Additional debugging
+          console.log("Content starts with:", cleanContent.substring(0, 50));
+          console.log("Content ends with:", cleanContent.substring(cleanContent.length - 50));
+          
+          resolve(cleanContent);
         } catch (error) {
           console.error("Error processing file content:", error);
           reject(error);
@@ -89,7 +127,7 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
         reject(error);
       };
       
-      reader.readAsText(file);
+      reader.readAsText(file, 'UTF-8');
     });
   };
 
@@ -646,5 +684,13 @@ export function ChatProcessor({ chatRef }: ChatProcessorProps) {
     }
   };
 
-  return null;
+  // Render the enhanced setup wizard when in a wizard step
+  const shouldShowWizard = currentWizardStep !== SetupWizardStep.INITIAL && 
+                         currentWizardStep !== SetupWizardStep.PROJECT_COMPLETED;
+  
+  return (
+    <>
+      {shouldShowWizard && <EnhancedSetupWizard />}
+    </>
+  );
 }

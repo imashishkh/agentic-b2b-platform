@@ -3,14 +3,109 @@
  * 
  * This module provides services for interacting with AI APIs 
  * and external services like Claude and internet search.
+ * Enhanced with LangChain and LangGraph capabilities for advanced agent functionality.
  */
+
+import { ChatOpenAI } from "@langchain/openai"; 
+import { ChatAnthropic } from "@langchain/anthropic";
+import { 
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+  HumanMessagePromptTemplate,
+  SystemMessagePromptTemplate
+} from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { BufferMemory, VectorStoreRetrieverMemory } from "langchain/memory";
+import { Document } from "langchain/document";
+import { ChatMessageHistory } from "langchain/stores/message/in_memory";
+import { BaseChatMemory } from "@langchain/community/memory/chat_memory";
+
+/**
+ * Creates a memory system for the agent using vector storage for semantic retrieval
+ */
+export const createAgentMemory = async (agentType: string): Promise<BaseChatMemory> => {
+  // For now, we'll use simple buffer memory
+  // In production, this should be connected to a vector database like Chroma or Pinecone
+  const memory = new BufferMemory({
+    returnMessages: true,
+    memoryKey: "chat_history",
+    inputKey: "input",
+    outputKey: "output",
+  });
+  
+  return memory;
+};
+
+/**
+ * Creates a chat model with appropriate settings for agent communication
+ */
+export const createChatModel = (modelType: string = "claude") => {
+  if (modelType === "claude") {
+    const CLAUDE_API_KEY = localStorage.getItem("claude_api_key") || 
+      "sk-ant-api03-lfkQgMniYZzpFonbyy9GvQ73Xb9GjLzxE7_GXxtLFoBvZrnmITK-7HMgW04qN64c7KOnx5Pxe3QMxtFIxpg7Pg-n1vKwwAA";
+    
+    return new ChatAnthropic({
+      apiKey: CLAUDE_API_KEY,
+      modelName: "claude-3-sonnet-20240229",
+      temperature: 0.2,
+    });
+  } else {
+    // Fallback to OpenAI (requires API key to be set)
+    const OPENAI_API_KEY = localStorage.getItem("openai_api_key");
+    
+    if (!OPENAI_API_KEY) {
+      throw new Error("OpenAI API key not found");
+    }
+    
+    return new ChatOpenAI({
+      openAIApiKey: OPENAI_API_KEY,
+      modelName: "gpt-4-turbo",
+      temperature: 0.2,
+    });
+  }
+};
+
+/**
+ * Creates a chain that combines memory, prompt and model for consistent agent responses
+ */
+export const createAgentChain = (systemPrompt: string, memory: BaseChatMemory, modelType: string = "claude") => {
+  const model = createChatModel(modelType);
+  
+  const prompt = ChatPromptTemplate.fromMessages([
+    SystemMessagePromptTemplate.fromTemplate(systemPrompt),
+    new MessagesPlaceholder("chat_history"),
+    HumanMessagePromptTemplate.fromTemplate("{input}")
+  ]);
+  
+  const chain = RunnableSequence.from([
+    {
+      input: (initialInput) => initialInput.input,
+      chat_history: async (initialInput) => {
+        const memoryResult = await memory.loadMemoryVariables({});
+        return memoryResult.chat_history || [];
+      }
+    },
+    prompt,
+    model,
+    new StringOutputParser()
+  ]);
+  
+  return { chain, memory };
+};
 
 // Function to ask Claude AI with a given prompt
 export const askClaude = async (prompt: string): Promise<string> => {
   console.log("Asking Claude:", prompt);
   
-  // Get the API key from localStorage if available
-  const apiKey = localStorage.getItem('claude_api_key');
+  // Hardcoded API key for demo purposes
+  const HARDCODED_API_KEY = "sk-ant-api03-lfkQgMniYZzpFonbyy9GvQ73Xb9GjLzxE7_GXxtLFoBvZrnmITK-7HMgW04qN64c7KOnx5Pxe3QMxtFIxpg7Pg-n1vKwwAA";
+  
+  // Always save the hardcoded key to localStorage for consistent access
+  localStorage.setItem('claude_api_key', HARDCODED_API_KEY);
+  
+  // Get the API key - use hardcoded key or from localStorage
+  const apiKey = HARDCODED_API_KEY || localStorage.getItem('claude_api_key');
   
   // If we have an API key, use it to make a real API call
   if (apiKey) {

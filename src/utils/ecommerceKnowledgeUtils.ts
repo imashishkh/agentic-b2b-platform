@@ -420,6 +420,18 @@ export function findBestPractices(
 export function generateSampleEcommerceResources(): KnowledgeResource[] {
   return [
     {
+      id: "ec-resource-medusa",
+      title: "Medusa - Headless Commerce Platform",
+      content: "Medusa is an open-source headless commerce platform designed for JavaScript developers. It provides a modular architecture with plugin system, REST APIs with GraphQL support, PostgreSQL database, and a microservices-friendly design with event-driven architecture. Key features include advanced product management, order management with complex fulfillment flows, inventory tracking across locations, flexible pricing rules, multi-region support, cart functionality with promotions, payment and shipping integrations. It's particularly strong for B2B with company accounts, hierarchical access, custom pricing, quote management, and purchase approval workflows. Its event-driven architecture is ideal for complex B2B workflows, and it offers better extensibility through plugins and service-based design.",
+      category: "Design Patterns",
+      tags: ["headless commerce", "e-commerce platform", "b2b", "javascript", "typescript", "medusa"],
+      description: "An open-source headless commerce platform built with JavaScript/TypeScript, ideal for B2B requirements",
+      url: "https://github.com/medusajs/medusa",
+      productRelated: false,
+      marketSegment: "B2B",
+      dateAdded: new Date().toISOString()
+    },
+    {
       id: "ec-resource-1",
       title: "Product Catalog Best Practices",
       content: "Effective product catalogs should include high-quality images, detailed descriptions, clear pricing, availability indicators, and categorization. Consider using faceted search for large catalogs to help customers find products quickly. Implement customer reviews and ratings to build trust.",
@@ -533,6 +545,30 @@ export function generateSampleEcommerceResources(): KnowledgeResource[] {
       url: "https://example.com/subscription-components",
       productRelated: true,
       catalogType: "Subscription",
+      dateAdded: new Date().toISOString()
+    },
+    {
+      id: "ec-resource-medusa-api",
+      title: "Medusa API Integration Guide",
+      content: "Detailed guide for integrating with Medusa's API endpoints for B2B e-commerce applications. Covers authentication, product management, order processing, customer accounts, cart functionality, and B2B-specific features like company hierarchies, quote requests, and approval workflows. Includes code samples for common operations and best practices for extending the platform.",
+      category: "Design Patterns",
+      tags: ["headless commerce", "api", "medusa", "integration", "b2b"],
+      description: "How to integrate and extend Medusa for B2B e-commerce applications",
+      url: "https://docs.medusajs.com/api/admin",
+      productRelated: false,
+      marketSegment: "B2B",
+      dateAdded: new Date().toISOString()
+    },
+    {
+      id: "ec-resource-medusa-module",
+      title: "Building Custom Modules with Medusa",
+      content: "Step-by-step guide for creating custom modules to extend Medusa's functionality. Explains how to leverage Medusa's plugin architecture and service-based design to add custom business logic, integrations, and B2B capabilities. Includes examples for implementing quote management, approval workflows, and customer-specific pricing, which are essential for B2B e-commerce similar to Alibaba.com.",
+      category: "Design Patterns",
+      tags: ["medusa", "customization", "modules", "plugins", "b2b"],
+      description: "How to extend Medusa with custom modules for B2B requirements",
+      url: "https://docs.medusajs.com/development/plugins/create",
+      productRelated: false,
+      marketSegment: "B2B",
       dateAdded: new Date().toISOString()
     }
   ];

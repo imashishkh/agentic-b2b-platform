@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { SimpleSetupTest } from "@/components/SimpleSetupTest";
 
 /**
  * ChatView Component
@@ -363,6 +364,43 @@ export default function ChatView() {
     }
   };
 
+  // State to track whether to show the simplified setup or regular chat view
+  // Setting to false to bypass the setup wizard as requested
+  const [showSimplifiedSetup, setShowSimplifiedSetup] = useState(false);
+  
+  // Function to switch from simplified setup to regular chat view
+  const switchToRegularChat = () => {
+    setShowSimplifiedSetup(false);
+  };
+  
+  // Show our simplified e-commerce setup when in initial state
+  if (showSimplifiedSetup) {
+    return (
+      <div className="flex h-full overflow-hidden bg-background relative">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <ChatHeader />
+          
+          {/* Display simplified setup wizard */}
+          <div className="relative flex-1 overflow-hidden">
+            <SimpleSetupTest />
+            
+            {/* Button to switch to regular chat interface */}
+            <div className="absolute bottom-4 right-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={switchToRegularChat}
+              >
+                Switch to Chat Interface
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Regular chat interface
   return (
     <div className="flex h-full overflow-hidden bg-background relative">
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -491,6 +529,8 @@ export default function ChatView() {
             >
               Access E-commerce Knowledge Hub
             </Button>
+            
+            {/* Removed setup wizard button as requested */}
           </div>
           
           {/* Chat processor - contains input field */}
